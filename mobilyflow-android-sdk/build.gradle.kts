@@ -48,9 +48,9 @@ dependencies {
 publishing {
     publications {
         create<MavenPublication>("release") {
-            groupId = "com.github.mobilyflow"
+            groupId = "com.github.MobilyFlow"
             artifactId = "mobilyflow-android-sdk"
-            version = "0.0.3"
+            version = "0.0.4"
 
             afterEvaluate {
                 from(components.findByName("release"))
