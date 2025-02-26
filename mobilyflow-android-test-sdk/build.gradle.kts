@@ -3,7 +3,6 @@ import com.android.build.gradle.internal.scope.publishBuildArtifacts
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("maven-publish")
 }
 
 android {
@@ -63,18 +62,4 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
 
     implementation(project(":mobilyflow-android-sdk"))
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "com.github.MobilyFlow"
-            artifactId = "mobilyflow-android-sdk"
-            version = "0.0.1"
-
-            afterEvaluate {
-                from(components.findByName("release"))
-            }
-        }
-    }
 }

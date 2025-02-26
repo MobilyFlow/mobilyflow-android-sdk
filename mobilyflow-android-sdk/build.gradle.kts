@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("maven-publish")
 }
 
 android {
@@ -42,4 +43,18 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.okhttp)
     implementation(libs.billing)
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            groupId = "com.github.MobilyFlow"
+            artifactId = "mobilyflow-android-sdk"
+            version = "0.0.2"
+
+            afterEvaluate {
+                from(components.findByName("release"))
+            }
+        }
+    }
 }
