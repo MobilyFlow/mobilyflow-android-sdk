@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ConsumeParams
@@ -41,7 +42,8 @@ class MobilyPurchaseSDK(
     val environment: MobilyEnvironment,
     options: MobilyPurchaseSDKOptions? = null,
 ) {
-    private val API = MobilyPurchaseAPI(appId, apiKey, environment, getPreferredLanguages(options?.languages), options?.apiURL)
+    private val API =
+        MobilyPurchaseAPI(appId, apiKey, environment, getPreferredLanguages(options?.languages), options?.apiURL)
     private val billingClient = BillingClientWrapper(context) { billingResult, purchases ->
         // Note: for out-of-app purchase, this function is called only when app is in background (but not when restart)
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && !purchases.isNullOrEmpty()) {
@@ -67,6 +69,7 @@ class MobilyPurchaseSDK(
     private var lifecycleListener: AppLifecycleProvider.AppLifecycleCallbacks
 
     init {
+        Log.d("MobilyFlow", "Update binary")
         Monitoring.initialize(context, "MobilyFlow", options?.debug == true) { logFile ->
             API.uploadMonitoring(customerId, logFile)
         }
