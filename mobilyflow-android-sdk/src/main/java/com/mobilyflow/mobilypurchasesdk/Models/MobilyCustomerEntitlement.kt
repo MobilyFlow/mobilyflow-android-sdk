@@ -4,10 +4,10 @@ import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Enums.Platform
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.sha256
+import kotlinx.datetime.LocalDateTime
 import org.json.JSONObject
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class MobilyCustomerEntitlement(
     val type: ProductType,
@@ -52,14 +52,8 @@ class MobilyCustomerEntitlement(
                 }
 
                 subscription = SubscriptionEntitlement(
-                    startDate = LocalDateTime.parse(
-                        jsonEntity.getString("startDate"),
-                        DateTimeFormatter.ISO_DATE_TIME
-                    ),
-                    expirationDate = LocalDateTime.parse(
-                        jsonEntity.getString("expirationDate"),
-                        DateTimeFormatter.ISO_DATE_TIME
-                    ),
+                    startDate = Utils.parseDate(jsonEntity.getString("startDate")),
+                    expirationDate = Utils.parseDate(jsonEntity.getString("expirationDate")),
                     autoRenewEnable = autoRenewEnable,
                     platform = Platform.valueOf(jsonEntity.getString("platform").uppercase()),
                     isManagedByThisStoreAccount = storeAccountTx != null,

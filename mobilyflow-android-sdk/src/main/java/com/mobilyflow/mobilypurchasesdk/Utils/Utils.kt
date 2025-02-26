@@ -1,9 +1,13 @@
 package com.mobilyflow.mobilypurchasesdk.Utils
 
 import android.icu.text.NumberFormat
+import java.text.NumberFormat as LegacyNumberFormat
+import java.util.Currency as LegacyCurrency
 import android.icu.util.Currency
+import android.os.Build
 import androidx.core.os.LocaleListCompat
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
+import kotlinx.datetime.LocalDateTime
 import org.json.JSONArray
 import java.security.MessageDigest
 import java.util.Locale
@@ -16,9 +20,15 @@ abstract class Utils {
 
         fun formatPrice(price: Double, currencyCode: String): String {
             try {
-                val formatter = NumberFormat.getCurrencyInstance()
-                formatter.currency = Currency.getInstance(currencyCode)
-                return formatter.format(price)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    val formatter = NumberFormat.getCurrencyInstance()
+                    formatter.currency = Currency.getInstance(currencyCode)
+                    return formatter.format(price)
+                } else {
+                    val formatter = LegacyNumberFormat.getCurrencyInstance()
+                    formatter.currency = LegacyCurrency.getInstance(currencyCode)
+                    return formatter.format(price)
+                }
             } catch (e: IllegalArgumentException) {
                 Logger.e("formatPrice fail for args $price $currencyCode -> fallback")
                 return String.format(Locale.getDefault(), "%.2f %s", price, currencyCode)
@@ -59,6 +69,10 @@ abstract class Utils {
             }
 
             return usedLanguages.toTypedArray()
+        }
+
+        fun parseDate(isoDate: String): LocalDateTime {
+            return LocalDateTime.parse(isoDate, LocalDateTime.Formats.ISO)
         }
     }
 }

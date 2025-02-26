@@ -2,15 +2,15 @@ package com.mobilyflow.mobilypurchasesdk.Monitoring
 
 import android.app.Activity
 import android.util.Log
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayIn
 import java.io.BufferedOutputStream
 import java.io.Closeable
 import java.io.File
 import java.io.FileOutputStream
 import java.text.Normalizer
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -94,8 +94,8 @@ class Logger private constructor(internal val baseDir: File, private val tag: St
      *  2. Remove old log file, keeping only files from last 5 days
      */
     private fun ensureFileRotation() {
-        val nowDate = LocalDate.now()
-        if (stream == null || nowDate.isAfter(lastWritingDate)) {
+        val nowDate = Clock.System.todayIn(TimeZone.UTC)
+        if (stream == null || nowDate.toEpochDays() > lastWritingDate!!.toEpochDays()) {
             // Need to rotate
 
             val logFolder = File(baseDir, "mobilyflow/logs")
@@ -131,8 +131,8 @@ class Logger private constructor(internal val baseDir: File, private val tag: St
                             val matcher = regex.matcher(logFile.name)
 
                             if (matcher.find()) {
-                                val fileDate = LocalDate.parse(matcher.group(1))
-                                val daysBetween = fileDate.until(nowDate, ChronoUnit.DAYS)
+                                val fileDate = LocalDate.parse(matcher.group(1)!!)
+                                val daysBetween = nowDate.toEpochDays() - fileDate.toEpochDays()
                                 if (daysBetween >= 5) {
                                     logFile.delete()
                                 }
@@ -165,8 +165,7 @@ class Logger private constructor(internal val baseDir: File, private val tag: St
             Log.println(level, tag, finalMsg)
         }
 
-        finalMsg = LocalDateTime.now()
-            .format(DateTimeFormatter.ISO_DATE_TIME) + " [" + getLevelLabel(level) + "] " + finalMsg + '\n'
+        finalMsg = Clock.System.now().toString() + " [" + getLevelLabel(level) + "] " + finalMsg + '\n'
         synchronized(this) {
             runCatching {
                 stream!!.write(finalMsg.toByteArray())
@@ -215,7 +214,8 @@ class Logger private constructor(internal val baseDir: File, private val tag: St
         }
 
         internal fun getLogFileName(slug: String, date: LocalDate? = null): String {
-            return slug + "_" + (date ?: LocalDate.now()).format(DateTimeFormatter.ISO_DATE) + ".log"
+            val dateStr = date?.toString() ?: Clock.System.todayIn(TimeZone.UTC).toString()
+            return slug + "_" + dateStr + ".log"
         }
 
         internal fun slugify(input: String): String {

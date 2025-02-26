@@ -2,9 +2,9 @@ package com.mobilyflow.mobilypurchasesdk.Models
 
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Utils.Utils
+import kotlinx.datetime.LocalDateTime
 import org.json.JSONObject
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 
 class MobilyProduct(
@@ -43,14 +43,8 @@ class MobilyProduct(
 
             val product = MobilyProduct(
                 id = jsonProduct.getString("id"),
-                createdAt = LocalDateTime.parse(
-                    jsonProduct.getString("createdAt"),
-                    DateTimeFormatter.ISO_DATE_TIME
-                ),
-                updatedAt = LocalDateTime.parse(
-                    jsonProduct.getString("updatedAt"),
-                    DateTimeFormatter.ISO_DATE_TIME
-                ),
+                createdAt = Utils.parseDate(jsonProduct.getString("createdAt")),
+                updatedAt = Utils.parseDate(jsonProduct.getString("updatedAt")),
                 identifier = jsonProduct.getString("identifier"),
                 appId = jsonProduct.getString("appId"),
 

@@ -1,6 +1,7 @@
 package com.mobilyflow.mobilypurchasesdk.SDKHelpers
 
 import android.content.pm.PackageInfo
+import android.os.Build
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Monitoring
@@ -15,8 +16,8 @@ class MobilyPurchaseSDKDiagnostics(val billingClient: BillingClientWrapper, var 
                 val packageName = billingClient.context.packageName
                 val pInfo: PackageInfo = billingClient.context.packageManager.getPackageInfo(packageName, 0)
                 val versionName = pInfo.versionName
-                val versionCode = pInfo.longVersionCode
-
+                val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pInfo.longVersionCode else pInfo.versionCode
+                
                 Logger.d("App $packageName version $versionName ($versionCode)")
             }
             runCatching {

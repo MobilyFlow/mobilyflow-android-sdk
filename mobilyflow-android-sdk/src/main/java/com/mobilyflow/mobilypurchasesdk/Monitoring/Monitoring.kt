@@ -2,12 +2,18 @@ package com.mobilyflow.mobilypurchasesdk.Monitoring
 
 import android.app.Activity
 import android.content.Context
+import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.minus
+import kotlinx.datetime.plus
+import kotlinx.datetime.todayIn
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.time.LocalDate
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -72,8 +78,8 @@ abstract class Monitoring {
         ): File {
             checkInit()
 
-            var from = fromDate ?: LocalDate.now()
-            val to = toDate ?: LocalDate.now()
+            var from = fromDate ?: Clock.System.todayIn(TimeZone.UTC)
+            val to = toDate ?: Clock.System.todayIn(TimeZone.UTC)
 
             val buffer = ByteArray(8192)
             var bytesRead: Int
@@ -86,7 +92,7 @@ abstract class Monitoring {
 
             FileOutputStream(targetFile, false).use { fos ->
                 BufferedOutputStream(fos).use { writer ->
-                    while (!from.isAfter(to)) { // Is before or equal
+                    while (from.toEpochDays() <= to.toEpochDays()) { // Is before or equal
 
                         val logFile = File(baseDir, "mobilyflow/logs/" + Logger.getLogFileName(slug!!, from))
                         if (logFile.exists() && logFile.isFile) {
@@ -102,7 +108,7 @@ abstract class Monitoring {
                             }
 
                             val lastWritingDate = Logger.logger!!.lastWritingDate
-                            if (lastWritingDate != null && from.isEqual(lastWritingDate)) {
+                            if (lastWritingDate != null && from.toEpochDays() == lastWritingDate.toEpochDays()) {
                                 // In case we export the current logFile, we need to synchronize the read process
                                 synchronized(Logger.logger!!) {
                                     if (clearLogs) {
@@ -126,7 +132,7 @@ abstract class Monitoring {
                                 }
                             }
                         }
-                        from = from.plusDays(1)
+                        from = from.plus(1, DateTimeUnit.DAY)
                     }
                 }
             }
@@ -141,7 +147,7 @@ abstract class Monitoring {
          * If clearLogs is true, remove exported logfiles
          */
         private fun exportLogs(sinceDays: Int = 0, clearLogs: Boolean = false): File {
-            val fromDate = LocalDate.now().minusDays(sinceDays.toLong())
+            val fromDate = Clock.System.todayIn(TimeZone.UTC).minus(sinceDays.toLong(), DateTimeUnit.DAY)
             return exportLogs(fromDate, null, clearLogs)
         }
 
