@@ -34,33 +34,17 @@ android {
 }
 
 dependencies {
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlinx.datetime)
     implementation(libs.okhttp)
     implementation(libs.billing)
 }
 
-//project.setProperty("signingInMemoryKey", System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey"))
-//project.setProperty("signingInMemoryKeyId", System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKeyId"))
-//project.setProperty("signingInMemoryKeyPassword", System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKeyPassword"))
-
-//println("signingInMemoryKey: " + project.findOptionalProperty("signingInMemoryKey"))
-//println("signingInMemoryKeyId: " + project.findProperty("signingInMemoryKeyId"))
-//println("signingInMemoryKeyPassword: " + project.findProperty("signingInMemoryKeyPassword"))
-
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
-    coordinates("com.mobilyflow.mobilypurchasesdk", "mobilyflow-android-sdk", "0.0.1")
+    coordinates("com.mobilyflow", "mobilyflow-android-sdk", "0.0.1")
 
     pom {
         name.set("MobilyFlow Android SDK")
