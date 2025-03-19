@@ -34,6 +34,7 @@ import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDK
+import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDKOptions
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.MobilySubscriptionOffer
 import com.mobilyflow.mobilypurchasesdk.Models.PurchaseOptions
@@ -55,6 +56,11 @@ class MainActivity : ComponentActivity() {
             appId = "caecc000-45ce-49b3-b218-46c1d985ae85",
             apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYXBwLXRva2VuIiwic3ViIjoiY2FlY2MwMDAtNDVjZS00OWIzLWIyMTgtNDZjMWQ5ODVhZTg1Iiwic2NvcGUiOjEwLCJpYXQiOjE3MzczNTYyNzIsImV4cCI6MzMyOTQ5NTYyNzJ9.2GDcRmX2dJEfN3S4HANygmOwXqSyGOIsTXVHu5LrLtc",
             environment = MobilyEnvironment.DEVELOPMENT,
+            options = MobilyPurchaseSDKOptions(
+                languages = null,
+                debug = true,
+                apiURL = "https://api-staging.mobilyflow.com/v1/"
+            )
         )
 
         setContent {

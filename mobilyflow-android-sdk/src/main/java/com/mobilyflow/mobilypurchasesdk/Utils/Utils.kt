@@ -1,16 +1,19 @@
 package com.mobilyflow.mobilypurchasesdk.Utils
 
 import android.icu.text.NumberFormat
-import java.text.NumberFormat as LegacyNumberFormat
-import java.util.Currency as LegacyCurrency
 import android.icu.util.Currency
 import android.os.Build
 import androidx.core.os.LocaleListCompat
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.json.JSONArray
 import java.security.MessageDigest
 import java.util.Locale
+import java.text.NumberFormat as LegacyNumberFormat
+import java.util.Currency as LegacyCurrency
 
 abstract class Utils {
     companion object {
@@ -72,7 +75,7 @@ abstract class Utils {
         }
 
         fun parseDate(isoDate: String): LocalDateTime {
-            return LocalDateTime.parse(isoDate, LocalDateTime.Formats.ISO)
+            return Instant.parse(isoDate).toLocalDateTime(TimeZone.UTC)
         }
     }
 }
