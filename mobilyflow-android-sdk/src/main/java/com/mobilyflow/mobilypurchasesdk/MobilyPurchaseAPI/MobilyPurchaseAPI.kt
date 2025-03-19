@@ -8,6 +8,7 @@ import com.mobilyflow.mobilypurchasesdk.Enums.TransferOwnershipStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.WebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
+import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.jsonArrayToStringArray
 import org.json.JSONArray
 import org.json.JSONObject
@@ -35,7 +36,7 @@ class MobilyPurchaseAPI(
         try {
             val data = JSONObject()
                 .put("externalId", externalId)
-                .put("environment", environment.value)
+                .put("environment", environment.toString().lowercase())
 
             response = this.helper.request(
                 ApiRequest("POST", "/apps/me/customers/login/android").setData(data)
@@ -45,6 +46,7 @@ class MobilyPurchaseAPI(
         }
 
         if (!response.success) {
+            Logger.w("[login] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
@@ -64,7 +66,7 @@ class MobilyPurchaseAPI(
         }
 
         val request = ApiRequest("GET", "/apps/me/products")
-        request.addParam("environment", environment.value)
+        request.addParam("environment", environment.toString().lowercase())
         request.addParam("lang", this.lang)
 
         if (identifiers != null) {
@@ -79,6 +81,7 @@ class MobilyPurchaseAPI(
         }
 
         if (!response.success) {
+            Logger.w("[getProducts] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
@@ -101,6 +104,7 @@ class MobilyPurchaseAPI(
         }
 
         if (!response.success) {
+            Logger.w("[getCustomerEntitlements] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
@@ -129,6 +133,7 @@ class MobilyPurchaseAPI(
         }
 
         if (!response.success) {
+            Logger.w("[mapTransactions] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
     }
@@ -171,6 +176,7 @@ class MobilyPurchaseAPI(
             if (errorType != null) {
                 throw MobilyTransferOwnershipException(errorType)
             } else {
+                Logger.w("[transferOwnershipRequest] API Error: ${response.string()}")
                 throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
             }
         }
@@ -194,6 +200,7 @@ class MobilyPurchaseAPI(
             val jsonResponse = response.json()
             return TransferOwnershipStatus.valueOf(jsonResponse.getString("status").uppercase())
         } else {
+            Logger.w("[getTransferRequestStatus] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
     }
@@ -214,6 +221,7 @@ class MobilyPurchaseAPI(
         }
 
         if (!response.success) {
+            Logger.w("[getWebhookStatus] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
@@ -240,6 +248,7 @@ class MobilyPurchaseAPI(
         }
 
         if (!response.success) {
+            Logger.w("[uploadMonitoring] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
     }

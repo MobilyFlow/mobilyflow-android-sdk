@@ -153,6 +153,7 @@ class MobilyPurchaseSDK(
     /* **************************** PRODUCTS ***************************** */
     /* ******************************************************************* */
 
+    // TODO: remove onlyAvailable
     @Throws(MobilyException::class)
     fun getProducts(identifiers: Array<String>?, onlyAvailable: Boolean): List<MobilyProduct> {
         return this.syncer.getProducts(identifiers, onlyAvailable)
@@ -198,7 +199,7 @@ class MobilyPurchaseSDK(
             if (transactionsToClaim.isNotEmpty()) {
                 val requestId = this.API.transferOwnershipRequest(customerId!!, transactionsToClaim)
                 val status = this.waiter.waitTransferOwnershipWebhook(requestId)
-                Logger.d("Request ownership transfer complete with status ${status.value}")
+                Logger.d("Request ownership transfer complete with status ${status.toString().lowercase()}")
                 return status
             } else {
                 return TransferOwnershipStatus.ACKNOWLEDGED
