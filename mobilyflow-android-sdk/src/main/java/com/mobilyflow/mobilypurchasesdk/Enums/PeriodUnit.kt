@@ -1,10 +1,10 @@
 package com.mobilyflow.mobilypurchasesdk.Enums
 
 
-enum class PeriodUnit {
-    WEEK,
-    MONTH,
-    YEAR;
+enum class PeriodUnit(val value: Int) {
+    WEEK(0),
+    MONTH(1),
+    YEAR(2);
 
     companion object {
         fun parseSubscriptionPeriod(isoPeriod: String): Pair<Int, PeriodUnit> {
