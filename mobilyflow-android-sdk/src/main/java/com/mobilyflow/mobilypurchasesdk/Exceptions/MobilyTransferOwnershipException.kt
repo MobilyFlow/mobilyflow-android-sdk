@@ -9,7 +9,7 @@ class MobilyTransferOwnershipException(val type: Type, cause: Throwable? = null)
         TRANSFER_TO_SAME_CUSTOMER,
         ALREADY_PENDING,
 
-        WEBHOOK_NOT_PRECESSED,
+        WEBHOOK_NOT_PROCESSED,
         WEBHOOK_FAILED;
     }
 }

@@ -248,7 +248,7 @@ class MobilyPurchaseSDK(
 
             val purchases = billingClient.launchBillingFlow(
                 activity,
-                MobilyPurchaseSDKHelper.createBillingFlowParams(syncer!!, customerId!!, product, options)
+                MobilyPurchaseSDKHelper.createBillingFlowParams(syncer, customerId!!, product, options)
             )
 
             // Process purchase

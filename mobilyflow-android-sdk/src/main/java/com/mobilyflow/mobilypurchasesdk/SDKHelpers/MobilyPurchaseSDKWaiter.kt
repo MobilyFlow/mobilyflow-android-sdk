@@ -23,7 +23,7 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
                 if (startTime + 60000 < System.currentTimeMillis()) {
                     Logger.e("Webhook still pending after 1 minutes (The user has probably paid without being credited)")
                     diagnostics.sendDiagnostic()
-                    throw MobilyPurchaseException(MobilyPurchaseException.Type.WEBHOOK_NOT_PRECESSED)
+                    throw MobilyPurchaseException(MobilyPurchaseException.Type.WEBHOOK_NOT_PROCESSED)
                 }
 
                 Thread.sleep(Utils.calcWaitWebhookTime(retry))
@@ -50,7 +50,7 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
             if (result == TransferOwnershipStatus.PENDING) {
                 // Exit the wait function after 1 minute
                 if (startTime + 60000 < System.currentTimeMillis()) {
-                    throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_NOT_PRECESSED)
+                    throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_NOT_PROCESSED)
                 }
 
                 Thread.sleep(Utils.calcWaitWebhookTime(retry))
