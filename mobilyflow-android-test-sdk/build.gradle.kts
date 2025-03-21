@@ -30,12 +30,7 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
-        create("release") {
-            storeFile = file("/Users/gtaja/Documents/MobilyFlow/signing/google-upload-key.keystore")
-            storePassword = "Mobily@123"
-            keyAlias = "mobilyflow"
-            keyPassword = "Mobily@123"
-        }
+        create("release") { }
     }
 
     buildTypes {
