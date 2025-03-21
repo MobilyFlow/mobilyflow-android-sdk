@@ -14,5 +14,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+/mobilyflow-android-test-sdk/release
 .env
 .envrc

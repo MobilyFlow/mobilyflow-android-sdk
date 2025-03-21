@@ -324,6 +324,7 @@ fun IAPButton(
             if (offer != null) {
                 Text(offer.android_offerId ?: "-")
             }
+            Text("Status = " + product.status.toString())
         }
     }
 }

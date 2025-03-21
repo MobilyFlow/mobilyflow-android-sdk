@@ -74,9 +74,13 @@ class MobilyPurchaseSDKSyncer(
                 val type = jsonProducts.getJSONObject(i).getString("type")
 
                 if (type == "one_time") {
-                    iapIds.add(sku)
+                    if (!iapIds.contains(sku)) {
+                        iapIds.add(sku)
+                    }
                 } else {
-                    subsIds.add(sku)
+                    if (!subsIds.contains(sku)) {
+                        subsIds.add(sku)
+                    }
                 }
             }
 

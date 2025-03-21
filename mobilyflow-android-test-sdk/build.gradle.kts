@@ -17,7 +17,7 @@ android {
         applicationId = "com.mobilyflow.test_android_sdk"
         minSdk = 23
         targetSdk = 35
-        versionCode = 1
+        versionCode = 3
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -30,6 +30,12 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        create("release") {
+            storeFile = file("/Users/gtaja/Documents/MobilyFlow/signing/google-upload-key.keystore")
+            storePassword = "Mobily@123"
+            keyAlias = "mobilyflow"
+            keyPassword = "Mobily@123"
+        }
     }
 
     buildTypes {
@@ -38,6 +44,7 @@ android {
         }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

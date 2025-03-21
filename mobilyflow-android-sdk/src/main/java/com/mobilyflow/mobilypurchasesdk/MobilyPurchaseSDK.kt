@@ -300,7 +300,6 @@ class MobilyPurchaseSDK(
     private fun finishPurchase(purchase: Purchase, mapTransaction: Boolean) {
         Logger.d("finishPurchase: ${purchase.orderId}")
 
-
         // https://developer.android.com/google/play/billing/integrate#process
         if (purchase.products.size != 1) {
             Logger.d("finishPurchase: should only have one product (actually: ${purchase.products.size})")
