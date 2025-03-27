@@ -44,15 +44,21 @@ class MobilyPurchaseSDK(
 ) {
     private val API =
         MobilyPurchaseAPI(appId, apiKey, environment, getPreferredLanguages(options?.languages), options?.apiURL)
+
+    // TODO: Douple check this code doesn't duplicate if there is multiple SDK instances
     private val billingClient = BillingClientWrapper(context) { billingResult, purchases ->
         // Note: for out-of-app purchase, this function is called only when app is in background (but not when restart)
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && !purchases.isNullOrEmpty()) {
             Executors.newSingleThreadExecutor().execute {
-                this.syncer.ensureSync()
-                for (purchase in purchases) {
-                    finishPurchase(purchase, true)
+                try {
+                    this.syncer.ensureSync()
+                    for (purchase in purchases) {
+                        finishPurchase(purchase, true)
+                    }
+                    this.syncer.syncEntitlements()
+                } catch (e: Exception) {
+                    Logger.e("billingClient out-of-app error", e)
                 }
-                this.syncer.syncEntitlements()
             }
         }
     }
