@@ -75,7 +75,6 @@ class MobilyPurchaseSDK(
     private var lifecycleListener: AppLifecycleProvider.AppLifecycleCallbacks
 
     init {
-        Log.d("MobilyFlow", "Update binary")
         Monitoring.initialize(context, "MobilyFlow", options?.debug == true) { logFile ->
             API.uploadMonitoring(customerId, logFile)
         }
@@ -159,7 +158,6 @@ class MobilyPurchaseSDK(
     /* **************************** PRODUCTS ***************************** */
     /* ******************************************************************* */
 
-    // TODO: remove onlyAvailable
     @Throws(MobilyException::class)
     fun getProducts(identifiers: Array<String>?, onlyAvailable: Boolean): List<MobilyProduct> {
         return this.syncer.getProducts(identifiers, onlyAvailable)
@@ -365,5 +363,13 @@ class MobilyPurchaseSDK(
 
     fun sendDiagnostic() {
         diagnostics.sendDiagnostic()
+    }
+
+    /* *********************************************************** */
+    /* ************************* OTHERS ************************** */
+    /* *********************************************************** */
+
+    fun isForwardingEnable(): Boolean {
+        return this.API.isForwardingEnable(customerId)
     }
 }

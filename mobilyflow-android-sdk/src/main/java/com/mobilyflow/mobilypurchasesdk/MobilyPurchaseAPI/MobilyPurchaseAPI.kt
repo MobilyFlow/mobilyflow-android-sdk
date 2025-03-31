@@ -252,4 +252,28 @@ class MobilyPurchaseAPI(
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
     }
+
+    @Throws(MobilyException::class)
+    fun isForwardingEnable(customerId: String?): Boolean {
+        val request = ApiRequest("GET", "/apps/me/customers/is-forwarding-enable")
+        if (customerId != null) {
+            request.addParam("customerId", customerId)
+        }
+        request.addParam("platform", "android")
+
+        val response: ApiResponse?
+        try {
+            response = this.helper.request(request)
+        } catch (e: Exception) {
+            throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
+        }
+
+        if (!response.success) {
+            Logger.w("[isForwardingEnable] API Error: ${response.string()}")
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+        }
+
+        val jsonResponse = response.json()
+        return jsonResponse.getBoolean("enable")
+    }
 }
