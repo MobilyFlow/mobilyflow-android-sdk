@@ -59,7 +59,8 @@ class MainActivity : ComponentActivity() {
             options = MobilyPurchaseSDKOptions(
                 languages = null,
                 debug = true,
-                apiURL = "https://api-staging.mobilyflow.com/v1/"
+                apiURL = "https://mobilyflow.eu-1.sharedwithexpose.com/v1/"
+                // apiURL = "https://api-staging.mobilyflow.com/v1/"
             )
         )
 
@@ -204,6 +205,7 @@ class MainActivity : ComponentActivity() {
             try {
 //                mobily!!.login("044209a1-8331-4bdc-9a73-8eebbe0acdaa") // gregoire-android (944d6694-1c78-4380-bbce-100634af9428)
                 mobily!!.login("914b9a20-950b-44f7-bd7b-d81d57992294") // gregoire (4d6d544e-2e08-414a-a29f-799b1022a3d1)
+                Log.d("MobilyFlow", "isForwardingEnable: " + (mobily!!.isForwardingEnable()))
 
                 val products = mobily!!.getProducts(null, false)
                 val groups = mobily!!.getSubscriptionGroups(null, false)
@@ -295,7 +297,8 @@ fun IAPButton(
                         "MobilyFlow",
                         "Click ${product.identifier} offer ${offer.android_offerId ?: "null"}"
                     )
-                    sdk.purchaseProduct(activity, product, PurchaseOptions().setOffer(offer))
+                    val status = sdk.purchaseProduct(activity, product, PurchaseOptions().setOffer(offer))
+                    Log.d("MobilyFlow", "Purchase result = $status")
                 }
             } catch (e: MobilyPurchaseException) {
                 Log.e(
