@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
         mobily = MobilyPurchaseSDK(
             this,
             appId = "caecc000-45ce-49b3-b218-46c1d985ae85",
-            apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYXBwLXRva2VuIiwic3ViIjoiY2FlY2MwMDAtNDVjZS00OWIzLWIyMTgtNDZjMWQ5ODVhZTg1Iiwic2NvcGUiOjEwLCJpYXQiOjE3MzczNTYyNzIsImV4cCI6MzMyOTQ5NTYyNzJ9.2GDcRmX2dJEfN3S4HANygmOwXqSyGOIsTXVHu5LrLtc",
+            apiKey = "470954050358b9a147d766bb0ba2ad338ea106b2b239e84218ee3303632bcf61",
             environment = MobilyEnvironment.DEVELOPMENT,
             options = MobilyPurchaseSDKOptions(
                 languages = null,

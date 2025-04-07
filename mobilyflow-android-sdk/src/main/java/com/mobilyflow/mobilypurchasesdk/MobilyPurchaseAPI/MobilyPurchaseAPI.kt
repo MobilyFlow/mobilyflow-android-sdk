@@ -23,7 +23,7 @@ class MobilyPurchaseAPI(
     apiURL: String? = null
 ) {
     val API_URL = apiURL ?: "https://api.mobilyflow.com/v1/"
-    val helper: ApiHelper = ApiHelper(API_URL, mapOf("Authorization" to "Bearer $apiKey"))
+    val helper: ApiHelper = ApiHelper(API_URL, mapOf("Authorization" to "ApiKey $apiKey"))
     val lang = languages.joinToString(",")
 
     /**
@@ -50,9 +50,10 @@ class MobilyPurchaseAPI(
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
+        val jsonResponse = response.json().getJSONObject("data")
         return LoginResponse(
-            response.json().getString("id"),
-            jsonArrayToStringArray(response.json().getJSONArray("platformOriginalTransactionIds")),
+            jsonResponse.getString("id"),
+            jsonArrayToStringArray(jsonResponse.getJSONArray("platformOriginalTransactionIds")),
         )
     }
 
@@ -85,7 +86,7 @@ class MobilyPurchaseAPI(
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
-        return response.jsonArray()
+        return response.json().getJSONArray("data")
     }
 
     /**
@@ -108,7 +109,7 @@ class MobilyPurchaseAPI(
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
-        return response.jsonArray()
+        return response.json().getJSONArray("data")
     }
 
 
@@ -163,7 +164,7 @@ class MobilyPurchaseAPI(
 
         val jsonResponse = response.json()
         if (response.success) {
-            return jsonResponse.getString("id")
+            return jsonResponse.getJSONObject("data").getString("id")
         } else {
             var errorType: MobilyTransferOwnershipException.Type? = try {
                 MobilyTransferOwnershipException.Type.valueOf(
@@ -197,7 +198,7 @@ class MobilyPurchaseAPI(
         }
 
         if (response.success) {
-            val jsonResponse = response.json()
+            val jsonResponse = response.json().getJSONObject("data")
             return TransferOwnershipStatus.valueOf(jsonResponse.getString("status").uppercase())
         } else {
             Logger.w("[getTransferRequestStatus] API Error: ${response.string()}")
@@ -225,7 +226,7 @@ class MobilyPurchaseAPI(
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
-        val jsonResponse = response.json()
+        val jsonResponse = response.json().getJSONObject("data")
         return WebhookStatus.valueOf(jsonResponse.getString("status").uppercase())
     }
 
@@ -273,7 +274,7 @@ class MobilyPurchaseAPI(
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
-        val jsonResponse = response.json()
+        val jsonResponse = response.json().getJSONObject("data")
         return jsonResponse.getBoolean("enable")
     }
 }
