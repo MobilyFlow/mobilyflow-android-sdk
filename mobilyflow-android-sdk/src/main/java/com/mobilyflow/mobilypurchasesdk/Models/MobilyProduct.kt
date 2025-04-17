@@ -12,6 +12,7 @@ class MobilyProduct(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val identifier: String,
+    val externalRef: String,
     val appId: String,
 
     val name: String,
@@ -46,6 +47,7 @@ class MobilyProduct(
                 createdAt = Utils.parseDate(jsonProduct.getString("createdAt")),
                 updatedAt = Utils.parseDate(jsonProduct.getString("updatedAt")),
                 identifier = jsonProduct.getString("identifier"),
+                externalRef = jsonProduct.getString("externalRef"),
                 appId = jsonProduct.getString("appId"),
 
                 name = jsonProduct.getString("name"),

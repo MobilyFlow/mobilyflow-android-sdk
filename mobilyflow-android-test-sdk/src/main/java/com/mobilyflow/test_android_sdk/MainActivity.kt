@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
         mobily = MobilyPurchaseSDK(
             this,
             appId = "caecc000-45ce-49b3-b218-46c1d985ae85",
-            apiKey = "470954050358b9a147d766bb0ba2ad338ea106b2b239e84218ee3303632bcf61",
+            apiKey = "7aa18f9720a5c9731d17f5c54e89bdd218647f71269eed2f6c27c8fa5924da84",
             environment = MobilyEnvironment.DEVELOPMENT,
             options = MobilyPurchaseSDKOptions(
                 languages = null,
@@ -209,6 +209,7 @@ class MainActivity : ComponentActivity() {
 
                 val products = mobily!!.getProducts(null, false)
                 val groups = mobily!!.getSubscriptionGroups(null, false)
+
                 /*for (group in groups) {
                     Log.d("AppForge", "Group ${group.identifier}")
                     for (product in group.products) {
