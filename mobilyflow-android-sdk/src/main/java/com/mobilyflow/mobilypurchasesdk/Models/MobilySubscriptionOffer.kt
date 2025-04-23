@@ -10,6 +10,8 @@ import org.json.JSONObject
 
 class MobilySubscriptionOffer(
     val id: String?, // null for base offer
+    val identifier: String?, // null for base offer
+    val externalRef: String?, // null for base offer
     val name: String,
     val price: Double,
     val currencyCode: String,
@@ -29,6 +31,8 @@ class MobilySubscriptionOffer(
             isBaseOffer: Boolean
         ): MobilySubscriptionOffer {
             var id: String? = null
+            var identifier: String? = null
+            var externalRef: String? = null
             var name = ""
             val price: Double
             val currencyCode: String
@@ -42,6 +46,8 @@ class MobilySubscriptionOffer(
 
             if (!isBaseOffer) {
                 id = jsonOffer.optString("id")
+                identifier = jsonOffer.optString("identifier")
+                externalRef = jsonOffer.optString("externalRef")
                 name = jsonOffer.optString("name")
                 isFreeTrial = jsonOffer.optBoolean("isFreeTrial")
                 extras = jsonOffer.optJSONObject("extras")
@@ -98,6 +104,8 @@ class MobilySubscriptionOffer(
 
             return MobilySubscriptionOffer(
                 id = id,
+                identifier = identifier,
+                externalRef = externalRef,
                 name = name,
                 price = price,
                 currencyCode = currencyCode,

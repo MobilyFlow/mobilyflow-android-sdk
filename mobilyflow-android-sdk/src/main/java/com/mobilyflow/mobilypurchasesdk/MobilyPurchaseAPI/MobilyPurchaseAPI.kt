@@ -27,15 +27,15 @@ class MobilyPurchaseAPI(
     val lang = languages.joinToString(",")
 
     /**
-     * Log user into MobilyFlow with his externalId and return his uuid.
+     * Log user into MobilyFlow with his externalRef and return his uuid.
      * Throws on error.
      */
     @Throws(MobilyException::class)
-    fun login(externalId: String): LoginResponse {
+    fun login(externalRef: String): LoginResponse {
         val response: ApiResponse?
         try {
             val data = JSONObject()
-                .put("externalId", externalId)
+                .put("externalRef", externalRef)
                 .put("environment", environment.toString().lowercase())
 
             response = this.helper.request(

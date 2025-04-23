@@ -73,13 +73,15 @@ class MobilyPurchaseSDKSyncer(
                 val sku = jsonProducts.getJSONObject(i).getString("android_sku")
                 val type = jsonProducts.getJSONObject(i).getString("type")
 
-                if (type == "one_time") {
-                    if (!iapIds.contains(sku)) {
-                        iapIds.add(sku)
-                    }
-                } else {
-                    if (!subsIds.contains(sku)) {
-                        subsIds.add(sku)
+                if (sku.isNotEmpty()) {
+                    if (type == "one_time") {
+                        if (!iapIds.contains(sku)) {
+                            iapIds.add(sku)
+                        }
+                    } else {
+                        if (!subsIds.contains(sku)) {
+                            subsIds.add(sku)
+                        }
                     }
                 }
             }
@@ -108,6 +110,7 @@ class MobilyPurchaseSDKSyncer(
         } catch (e: MobilyException) {
             throw e
         } catch (e: BillingClientException) {
+            Logger.w("BillingClientException: ${e.code} ${e.message}")
             when (e.code) {
                 BillingClient.BillingResponseCode.BILLING_UNAVAILABLE,
                 BillingClient.BillingResponseCode.SERVICE_DISCONNECTED,

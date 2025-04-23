@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ConsumeParams
@@ -114,9 +113,9 @@ class MobilyPurchaseSDK(
     /* ****************************** LOGIN ****************************** */
     /* ******************************************************************* */
 
-    fun login(externalId: String) {
+    fun login(externalRef: String) {
         // 1. Login
-        val loginResponse = this.API.login(externalId)
+        val loginResponse = this.API.login(externalRef)
 
         this.customerId = loginResponse.customerId
         diagnostics.customerId = this.customerId
