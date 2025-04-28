@@ -311,4 +311,8 @@ class BillingClientWrapper(
         Logger.e("onBillingServiceDisconnected")
         this.status = BillingClientStatus.DISCONNECTED
     }
+
+    fun getStatus(): BillingClientStatus {
+        return this.status
+    }
 }

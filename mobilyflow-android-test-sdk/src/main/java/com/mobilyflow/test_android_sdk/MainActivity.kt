@@ -205,12 +205,14 @@ class MainActivity : ComponentActivity() {
             try {
                 val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294"
 //                mobily!!.login("044209a1-8331-4bdc-9a73-8eebbe0acdaa") // gregoire-android (944d6694-1c78-4380-bbce-100634af9428)
+                Log.d("MobilyFlow", "Go login ")
                 val customer = mobily!!.login(externalRef) // gregoire (4d6d544e-2e08-414a-a29f-799b1022a3d1)
                 Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer.isForwardingEnable))
                 Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
 
 //                val products = mobily!!.getProducts(arrayOf("premium-1month", "premium-6month"), false)
                 val groups = mobily!!.getSubscriptionGroups(arrayOf("forge_premium"), false)
+                Log.d("MobilyFlow", "Go products")
                 val products = groups[0].products
 
                 /*for (group in groups) {
@@ -265,7 +267,7 @@ class MainActivity : ComponentActivity() {
                 this.products.postValue(products)
             } catch (e: MobilyException) {
                 this.error.postValue(e.type.toString())
-                Log.e("MobilyFlow", "Error: ", e)
+                Log.e("MobilyFlow", "Error: ${e.type} ${e.message}")
             }
 
 //            forge.playground()
@@ -305,6 +307,11 @@ fun IAPButton(
                     Log.d("MobilyFlow", "Purchase result = $status")
                 }
             } catch (e: MobilyPurchaseException) {
+                Log.e(
+                    "MobilyFlow",
+                    "purchaseProduct error: ${e.type}",
+                )
+            } catch (e: MobilyException) {
                 Log.e(
                     "MobilyFlow",
                     "purchaseProduct error: ${e.type}",

@@ -9,6 +9,7 @@ import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ConsumeParams
 import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientException
+import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientStatus
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
@@ -129,10 +130,11 @@ class MobilyPurchaseSDK(
 
         // 2. Sync
         this.syncer.ensureSync()
-        val purchases = this.billingClient.queryPurchases()
 
         // 3. Manage out-of-app purchase
         try {
+            val purchases = this.billingClient.queryPurchases()
+
             for (it in purchases) {
                 if (!it.purchase.isAcknowledged) {
                     finishPurchase(it.purchase, false)
@@ -308,6 +310,10 @@ class MobilyPurchaseSDK(
         }
 
         try {
+            if (billingClient.getStatus() == BillingClientStatus.UNAVAILABLE) {
+                throw MobilyException(MobilyException.Type.STORE_UNAVAILABLE)
+            }
+
             this.syncer.ensureSync()
             Logger.d("Start purchaseProduct ${product.identifier}")
 
