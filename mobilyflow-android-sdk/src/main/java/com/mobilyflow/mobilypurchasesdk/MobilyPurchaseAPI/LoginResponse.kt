@@ -1,4 +1,11 @@
 package com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI
 
-class LoginResponse(val customerId: String, val platformOriginalTransactionIds: Array<String>) {
-}
+import org.json.JSONArray
+import org.json.JSONObject
+
+class LoginResponse(
+    val customer: JSONObject,
+    val entitlements: JSONArray,
+    val platformOriginalTransactionIds: Array<String>,
+    val isForwardingEnable: Boolean,
+) {}

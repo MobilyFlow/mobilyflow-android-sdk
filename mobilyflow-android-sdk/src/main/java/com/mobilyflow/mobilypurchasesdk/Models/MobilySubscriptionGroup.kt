@@ -1,5 +1,6 @@
 package com.mobilyflow.mobilypurchasesdk.Models
 
+import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import org.json.JSONObject
 
 class MobilySubscriptionGroup(
@@ -8,31 +9,34 @@ class MobilySubscriptionGroup(
     val name: String,
     val description: String,
     val extras: JSONObject?,
-    var products: List<MobilyProduct>?
+    var products: List<MobilyProduct>
 ) {
     companion object {
         internal fun parse(
             jsonGroup: JSONObject,
+            onlyAvailableProducts: Boolean = false
         ): MobilySubscriptionGroup {
-            return MobilySubscriptionGroup(
+            val group = MobilySubscriptionGroup(
                 id = jsonGroup.getString("id"),
                 identifier = jsonGroup.getString("identifier"),
                 name = jsonGroup.optString("name"),
                 description = jsonGroup.optString("description") ?: "",
                 extras = jsonGroup.optJSONObject("extras"),
-                products = null,
+                products = arrayListOf(),
             )
-        }
-    }
 
-    fun clone(): MobilySubscriptionGroup {
-        return MobilySubscriptionGroup(
-            id = this.id,
-            identifier = this.identifier,
-            name = this.name,
-            description = this.description,
-            extras = this.extras,
-            products = null,
-        )
+            if (jsonGroup.has("Products")) {
+                val jsonProducts = jsonGroup.getJSONArray("Products")
+                for (i in 0..<jsonProducts.length()) {
+                    val product = MobilyProduct.parse(jsonProducts.getJSONObject(i))
+
+                    if (!onlyAvailableProducts || product.status === ProductStatus.AVAILABLE) {
+                        (group.products as ArrayList).add(product)
+                    }
+                }
+            }
+
+            return group
+        }
     }
 }

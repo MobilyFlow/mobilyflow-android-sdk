@@ -11,7 +11,7 @@ class MobilySubscriptionProduct(
     val status: ProductStatus,
     val groupLevel: Int,
     val android_basePlanId: String,
-    val subscriptionGroupId: String?,
+    val subscriptionGroupId: String,
     val subscriptionGroup: MobilySubscriptionGroup?,
 ) {
     companion object {
@@ -57,7 +57,7 @@ class MobilySubscriptionProduct(
                 status = baseOffer.status,
                 groupLevel = jsonProduct.getInt("subscriptionGroupLevel"),
                 android_basePlanId = basePlanId,
-                subscriptionGroupId = jsonProduct.optString("subscriptionGroupId"),
+                subscriptionGroupId = jsonProduct.getString("subscriptionGroupId"),
                 subscriptionGroup = subscriptionGroup,
             )
         }

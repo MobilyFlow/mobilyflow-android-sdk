@@ -203,12 +203,15 @@ class MainActivity : ComponentActivity() {
             * */
 
             try {
+                val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294"
 //                mobily!!.login("044209a1-8331-4bdc-9a73-8eebbe0acdaa") // gregoire-android (944d6694-1c78-4380-bbce-100634af9428)
-                mobily!!.login("914b9a20-950b-44f7-bd7b-d81d57992294") // gregoire (4d6d544e-2e08-414a-a29f-799b1022a3d1)
-                Log.d("MobilyFlow", "isForwardingEnable: " + (mobily!!.isForwardingEnable()))
+                val customer = mobily!!.login(externalRef) // gregoire (4d6d544e-2e08-414a-a29f-799b1022a3d1)
+                Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer.isForwardingEnable))
+                Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
 
-                val products = mobily!!.getProducts(null, false)
-                val groups = mobily!!.getSubscriptionGroups(null, false)
+//                val products = mobily!!.getProducts(arrayOf("premium-1month", "premium-6month"), false)
+                val groups = mobily!!.getSubscriptionGroups(arrayOf("forge_premium"), false)
+                val products = groups[0].products
 
                 /*for (group in groups) {
                     Log.d("AppForge", "Group ${group.identifier}")

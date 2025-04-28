@@ -2,6 +2,10 @@ package com.mobilyflow.mobilypurchasesdk.SDKHelpers
 
 import com.android.billingclient.api.BillingClient.ProductType
 import com.android.billingclient.api.ProductDetails
+import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientException
+import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
+import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
+import org.json.JSONArray
 
 abstract class MobilyPurchaseRegistry {
     companion object {
@@ -16,6 +20,40 @@ abstract class MobilyPurchaseRegistry {
             var baseOffer: ProductDetails.SubscriptionOfferDetails?,
             var offers: MutableMap<String, ProductDetails.SubscriptionOfferDetails>?,
         ) {}
+
+        /**
+         * Register products from JSON, the JSON should have "type" and "android_sku"
+         */
+        fun registerAndroidJsonProducts(jsonProducts: JSONArray, billingClient: BillingClientWrapper) {
+            try {
+                val iapIds = arrayListOf<String>()
+                val subsIds = arrayListOf<String>()
+
+                for (i in 0..<jsonProducts.length()) {
+                    val sku = jsonProducts.getJSONObject(i).getString("android_sku")
+                    val type = jsonProducts.getJSONObject(i).getString("type")
+
+                    if (sku.isNotEmpty() && !skuToProduct.containsKey(sku)) {
+                        if (type == "one_time") {
+                            if (!iapIds.contains(sku)) {
+                                iapIds.add(sku)
+                            }
+                        } else {
+                            if (!subsIds.contains(sku)) {
+                                subsIds.add(sku)
+                            }
+                        }
+                    }
+                }
+
+                if (iapIds.size > 0 || subsIds.size > 0) {
+                    val storeProducts = billingClient.getProducts(subsIds, iapIds)
+                    this.registerAndroidProducts(storeProducts)
+                }
+            } catch (e: BillingClientException) {
+                Logger.w("[registerAndroidJsonProducts] BillingClientException ${e.code} ${e.message}")
+            }
+        }
 
         fun registerAndroidProducts(products: List<ProductDetails>) {
             for (product in products) {

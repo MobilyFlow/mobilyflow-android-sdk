@@ -91,7 +91,7 @@ class MobilyPurchaseSDKHelper() {
                     if (entitlement != null) {
                         throw MobilyPurchaseException(MobilyPurchaseException.Type.ALREADY_PURCHASED)
                     } else {
-                        val storeAccountTransaction = syncer.getStoreAccountTransaction(product)
+                        val storeAccountTransaction = syncer.getStoreAccountTransaction(product.android_sku)
 
                         if (storeAccountTransaction != null) {
                             // Another customer is already entitled to this product on the same store account
@@ -100,17 +100,14 @@ class MobilyPurchaseSDKHelper() {
                     }
                 }
             } else {
-                val entitlement = if (product.subscriptionProduct!!.subscriptionGroupId != null) {
-                    syncer.getEntitlementForSubscription(product.subscriptionProduct.subscriptionGroupId!!)
-                } else {
-                    syncer.getEntitlement(product.id)
-                }
+                val entitlement =
+                    syncer.getEntitlementForSubscription(product.subscriptionProduct!!.subscriptionGroupId)
 
                 if (entitlement != null) {
                     if (!entitlement.subscription!!.isManagedByThisStoreAccount) {
                         throw MobilyPurchaseException(MobilyPurchaseException.Type.NOT_MANAGED_BY_THIS_STORE_ACCOUNT)
                     }
-                    
+
                     val currentSku = entitlement.product.android_sku
                     val currentBasePlan =
                         entitlement.product.subscriptionProduct!!.android_basePlanId
@@ -137,11 +134,7 @@ class MobilyPurchaseSDKHelper() {
                             .build()
                     )
                 } else {
-                    val storeAccountTransaction = if (product.subscriptionProduct.subscriptionGroupId != null) {
-                        syncer.getStoreAccountTransactionForSubscription(product.subscriptionProduct.subscriptionGroupId)
-                    } else {
-                        syncer.getStoreAccountTransaction(product)
-                    }
+                    val storeAccountTransaction = syncer.getStoreAccountTransaction(product.android_sku)
 
                     if (storeAccountTransaction != null) {
                         // Another customer is already entitled to this product on the same store account

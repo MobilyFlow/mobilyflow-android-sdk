@@ -4,6 +4,7 @@ import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiHelper
 import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiRequest
 import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiResponse
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
+import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
 import com.mobilyflow.mobilypurchasesdk.Enums.TransferOwnershipStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.WebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
@@ -52,8 +53,33 @@ class MobilyPurchaseAPI(
 
         val jsonResponse = response.json().getJSONObject("data")
         return LoginResponse(
-            jsonResponse.getString("id"),
-            jsonArrayToStringArray(jsonResponse.getJSONArray("platformOriginalTransactionIds")),
+            customer = jsonResponse.getJSONObject("customer"),
+            platformOriginalTransactionIds = jsonArrayToStringArray(jsonResponse.getJSONArray("platformOriginalTransactionIds")),
+            entitlements = jsonResponse.getJSONArray("entitlements"),
+            isForwardingEnable = jsonResponse.getBoolean("isForwardingEnable"),
+        )
+    }
+
+    @Throws(MobilyException::class)
+    fun getMinimalProductForAndroidPurchase(sku: String): MinimalProductForAndroidPurchase {
+        val request = ApiRequest("GET", "/apps/me/products/minimal-product-for-android-purchase/$sku")
+
+        val response: ApiResponse?
+        try {
+            response = this.helper.request(request)
+        } catch (e: Exception) {
+            throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
+        }
+
+        if (!response.success) {
+            Logger.w("[getProducts] API Error: ${response.string()}")
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+        }
+
+        val jsonResponse = response.json().getJSONObject("data")
+        return MinimalProductForAndroidPurchase(
+            type = ProductType.valueOf(jsonResponse.getString("type").uppercase()),
+            isConsumable = jsonResponse.getBoolean("isConsumable")
         )
     }
 
@@ -66,9 +92,43 @@ class MobilyPurchaseAPI(
             return JSONArray()
         }
 
-        val request = ApiRequest("GET", "/apps/me/products")
+        val request = ApiRequest("GET", "/apps/me/products/for-app")
         request.addParam("environment", environment.toString().lowercase())
         request.addParam("lang", this.lang)
+        request.addParam("platform", "android")
+
+        if (identifiers != null) {
+            request.addParam("identifiers", identifiers.joinToString(","))
+        }
+
+        val response: ApiResponse?
+        try {
+            response = this.helper.request(request)
+        } catch (e: Exception) {
+            throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
+        }
+
+        if (!response.success) {
+            Logger.w("[getProducts] API Error: ${response.string()}")
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+        }
+
+        return response.json().getJSONArray("data")
+    }
+
+    /**
+     * Get products in JSONArray format
+     */
+    @Throws(MobilyException::class)
+    fun getSubscriptionGroups(identifiers: Array<String>?): JSONArray {
+        if (identifiers != null && identifiers.isEmpty()) {
+            return JSONArray()
+        }
+
+        val request = ApiRequest("GET", "/apps/me/subscription-groups/for-app")
+        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("lang", this.lang)
+        request.addParam("platform", "android")
 
         if (identifiers != null) {
             request.addParam("identifiers", identifiers.joinToString(","))
@@ -96,6 +156,7 @@ class MobilyPurchaseAPI(
     fun getCustomerEntitlements(customerId: String): JSONArray {
         val request = ApiRequest("GET", "/apps/me/customers/${customerId}/entitlements")
         request.addParam("lang", this.lang)
+        request.addParam("loadProduct", "true")
 
         val response: ApiResponse?
         try {
@@ -255,11 +316,12 @@ class MobilyPurchaseAPI(
     }
 
     @Throws(MobilyException::class)
-    fun isForwardingEnable(customerId: String?): Boolean {
+    fun isForwardingEnable(externalRef: String?): Boolean {
         val request = ApiRequest("GET", "/apps/me/customers/is-forwarding-enable")
-        if (customerId != null) {
-            request.addParam("customerId", customerId)
+        if (externalRef != null) {
+            request.addParam("externalRef", externalRef)
         }
+        request.addParam("environment", environment.toString().lowercase())
         request.addParam("platform", "android")
 
         val response: ApiResponse?
