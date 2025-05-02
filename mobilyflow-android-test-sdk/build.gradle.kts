@@ -1,5 +1,3 @@
-import com.android.build.gradle.internal.scope.publishBuildArtifacts
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,8 +15,8 @@ android {
         applicationId = "com.mobilyflow.test_android_sdk"
         minSdk = 23
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.0"
+        versionCode = 4
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

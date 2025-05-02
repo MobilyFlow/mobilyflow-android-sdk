@@ -10,13 +10,13 @@ import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 
 class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: MobilyPurchaseSDKDiagnostics) {
     @Throws(MobilyPurchaseException::class)
-    fun waitPurchaseWebhook(transactionId: String): WebhookStatus {
+    fun waitPurchaseWebhook(transactionId: String, isDowngrade: Boolean): WebhookStatus {
         var result = WebhookStatus.PENDING
         val startTime = System.currentTimeMillis()
         var retry = 0
 
         while (result == WebhookStatus.PENDING) {
-            result = this.API.getWebhookStatus(transactionId)
+            result = this.API.getWebhookStatus(transactionId, isDowngrade)
 
             if (result == WebhookStatus.PENDING) {
                 // Exit the wait function after 1 minute

@@ -50,12 +50,17 @@ class MobilyPurchaseSDKHelper() {
             return transactionsToClaim.toTypedArray()
         }
 
+        /**
+         * Return a Pair with BillingFlowParams and upgrade status (0: PURCHASE, -1: DOWNGRADE, 1: UPGRADE)
+         */
         fun createBillingFlowParams(
             syncer: MobilyPurchaseSDKSyncer,
             customerId: String,
             product: MobilyProduct,
             options: PurchaseOptions? = null,
-        ): BillingFlowParams {
+        ): Pair<BillingFlowParams, Int> {
+            var upgradeStatus = 0
+
             val androidProduct = MobilyPurchaseRegistry.getAndroidProduct(product.android_sku)
             val androidOffer = if (product.type == ProductType.SUBSCRIPTION) {
                 MobilyPurchaseRegistry.getAndroidOffer(
@@ -108,11 +113,11 @@ class MobilyPurchaseSDKHelper() {
                         throw MobilyPurchaseException(MobilyPurchaseException.Type.NOT_MANAGED_BY_THIS_STORE_ACCOUNT)
                     }
 
-                    val currentSku = entitlement.product.android_sku
-                    val currentBasePlan =
-                        entitlement.product.subscriptionProduct!!.android_basePlanId
+                    val currentRenewProduct = entitlement.subscription.renewProduct ?: entitlement.product
+                    val currentRenewSku = currentRenewProduct.android_sku
+                    val currentRenewBasePlan = currentRenewProduct.subscriptionProduct!!.android_basePlanId
 
-                    if (currentSku == product.android_sku && currentBasePlan == product.subscriptionProduct.android_basePlanId) {
+                    if (currentRenewSku == product.android_sku && currentRenewBasePlan == product.subscriptionProduct.android_basePlanId) {
                         /**
                          * TODO: Allow user to re-enable subscription is case activePurchase.isAutoRenewing
                          *
@@ -123,13 +128,28 @@ class MobilyPurchaseSDKHelper() {
                         throw MobilyPurchaseException(MobilyPurchaseException.Type.ALREADY_PURCHASED)
                     }
 
-                    // TODO: Manage UPGRADE & DOWNGRADE
-                    // We should use DEFERRED for downgrade but it cause error "Requested replacement mode is not supported for this request"
+                    if (entitlement.product.android_sku != product.android_sku && entitlement.product.subscriptionProduct!!.groupLevel > product.subscriptionProduct.groupLevel) {
+                        upgradeStatus = 1
+                    } else {
+                        upgradeStatus = -1
+                    }
+
                     builder.setSubscriptionUpdateParams(
                         BillingFlowParams.SubscriptionUpdateParams.newBuilder()
                             .setOldPurchaseToken(entitlement.subscription.purchaseToken!!)
+                            // https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.SubscriptionUpdateParams.ReplacementMode
                             .setSubscriptionReplacementMode(
-                                BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.CHARGE_FULL_PRICE
+                                if (entitlement.product.android_sku == product.android_sku) {
+                                    // Always DOWNGRADE when same SKU, officially, this credit the subscription directly, but only rebuy at the end of actual period
+                                    // This is the only ReplacementMode that work when SKU is the same
+                                    BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.WITHOUT_PRORATION
+                                } else if (entitlement.product.subscriptionProduct!!.groupLevel > product.subscriptionProduct.groupLevel) {
+                                    // When UPGRADE, Charge immediately, remaining time is prorated and added to the subscription
+                                    BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.WITH_TIME_PRORATION
+                                } else {
+                                    // DOWNGRADE: Charge at next billing date
+                                    BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.DEFERRED
+                                }
                             )
                             .build()
                     )
@@ -143,7 +163,7 @@ class MobilyPurchaseSDKHelper() {
                 }
             }
 
-            return builder.build()
+            return Pair(builder.build(), upgradeStatus)
         }
     }
 }

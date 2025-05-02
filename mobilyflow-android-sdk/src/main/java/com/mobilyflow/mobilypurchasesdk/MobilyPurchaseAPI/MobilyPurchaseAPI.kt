@@ -227,7 +227,7 @@ class MobilyPurchaseAPI(
         if (response.success) {
             return jsonResponse.getJSONObject("data").getString("id")
         } else {
-            var errorType: MobilyTransferOwnershipException.Type? = try {
+            val errorType: MobilyTransferOwnershipException.Type? = try {
                 MobilyTransferOwnershipException.Type.valueOf(
                     jsonResponse.getString("errorCode").uppercase()
                 )
@@ -271,9 +271,12 @@ class MobilyPurchaseAPI(
      * Get webhook status from transactionID
      */
     @Throws(MobilyException::class)
-    fun getWebhookStatus(transactionId: String): WebhookStatus {
+    fun getWebhookStatus(transactionId: String, isDowngrade: Boolean?): WebhookStatus {
         val request = ApiRequest("GET", "/apps/me/events/webhook-status/android")
         request.addParam("platformTxId", transactionId)
+        if (isDowngrade != null) {
+            request.addParam("isDowngrade", isDowngrade.toString())
+        }
 
         val response: ApiResponse?
         try {

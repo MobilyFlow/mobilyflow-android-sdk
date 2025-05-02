@@ -317,10 +317,11 @@ class MobilyPurchaseSDK(
             this.syncer.ensureSync()
             Logger.d("Start purchaseProduct ${product.identifier}")
 
-            val purchases = billingClient.launchBillingFlow(
-                activity,
+            val billingFlowParams =
                 MobilyPurchaseSDKHelper.createBillingFlowParams(syncer, customer!!.id, product, options)
-            )
+            val upgradeStatus = billingFlowParams.second
+
+            val purchases = billingClient.launchBillingFlow(activity, billingFlowParams.first)
 
             // Process purchase
             if (purchases.isEmpty() || purchases.size != 1) {
@@ -331,9 +332,12 @@ class MobilyPurchaseSDK(
             }
 
             finishPurchase(purchases[0], false, product)
-            val status = this.waiter.waitPurchaseWebhook(purchases[0].orderId!!)
-            this.syncer.ensureSync(true)
 
+            val status = this.waiter.waitPurchaseWebhook(
+                if (upgradeStatus < 0) purchases[0].purchaseToken else purchases[0].orderId!!,
+                upgradeStatus < 0
+            )
+            this.syncer.ensureSync(true)
             return status
         } catch (e: BillingClientException) {
             if (e.code == BillingClient.BillingResponseCode.USER_CANCELED) {
