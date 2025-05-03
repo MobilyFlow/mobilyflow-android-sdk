@@ -145,7 +145,7 @@ class MobilyPurchaseSDKHelper() {
                                     BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.WITHOUT_PRORATION
                                 } else if (entitlement.product.subscriptionProduct!!.groupLevel > product.subscriptionProduct.groupLevel) {
                                     // When UPGRADE, Charge immediately, remaining time is prorated and added to the subscription
-                                    BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.WITH_TIME_PRORATION
+                                    BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.CHARGE_FULL_PRICE
                                 } else {
                                     // DOWNGRADE: Charge at next billing date
                                     BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.DEFERRED
