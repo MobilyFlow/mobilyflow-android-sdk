@@ -119,13 +119,20 @@ class MobilyPurchaseSDKHelper() {
 
                     if (currentRenewSku == product.android_sku && currentRenewBasePlan == product.subscriptionProduct.android_basePlanId) {
                         /**
-                         * TODO: Allow user to re-enable subscription is case activePurchase.isAutoRenewing
+                         * TODO: Allow user to re-enable subscription is case activePurchase.isAutoRenewing is false
                          *
                          * Actually restarting the billingFlow for the same subscription cause the old one to be
                          * refund and a new one is restarted, so we disable this feature.
                          * The best way is to redirect user to "Manage Subscription" in the play store.
                          */
-                        throw MobilyPurchaseException(MobilyPurchaseException.Type.ALREADY_PURCHASED)
+                        if (
+                            entitlement.product.android_sku == product.android_sku &&
+                            entitlement.product.subscriptionProduct!!.android_basePlanId == product.subscriptionProduct.android_basePlanId
+                        ) {
+                            throw MobilyPurchaseException(MobilyPurchaseException.Type.ALREADY_PURCHASED)
+                        } else {
+                            throw MobilyPurchaseException(MobilyPurchaseException.Type.RENEW_ALREADY_ON_THIS_PLAN)
+                        }
                     }
 
                     if (entitlement.product.android_sku != product.android_sku && entitlement.product.subscriptionProduct!!.groupLevel > product.subscriptionProduct.groupLevel) {
