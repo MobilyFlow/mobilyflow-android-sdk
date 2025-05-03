@@ -297,8 +297,8 @@ fun IAPButton(
             try {
                 if (offer == null) {
                     Log.d("MobilyFlow", "Click ${product.identifier}")
-                    sdk.purchaseProduct(activity, product)
-                    Log.d("MobilyFlow", "Done")
+                    val status = sdk.purchaseProduct(activity, product)
+                    Log.d("MobilyFlow", "Purchase result = $status")
                 } else {
                     Log.d(
                         "MobilyFlow",

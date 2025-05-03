@@ -72,7 +72,6 @@ class MobilyPurchaseSDKSyncer(
         }
 
         val entitlementsJson = overrideJsonEntitlements ?: this.API.getCustomerEntitlements(customerId!!)
-
         val entitlements = mutableListOf<MobilyCustomerEntitlement>()
 
         for (i in 0..<entitlementsJson.length()) {
