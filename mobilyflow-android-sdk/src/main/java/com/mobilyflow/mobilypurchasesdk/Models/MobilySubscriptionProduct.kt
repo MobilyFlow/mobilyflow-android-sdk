@@ -12,14 +12,12 @@ class MobilySubscriptionProduct(
     val groupLevel: Int,
     val android_basePlanId: String,
     val subscriptionGroupId: String,
-    val subscriptionGroup: MobilySubscriptionGroup?,
 ) {
     companion object {
         internal fun parse(jsonProduct: JSONObject): MobilySubscriptionProduct {
             val baseOffer: MobilySubscriptionOffer
             var freeTrial: MobilySubscriptionOffer? = null
             val promotionalOffers = mutableListOf<MobilySubscriptionOffer>()
-            var subscriptionGroup: MobilySubscriptionGroup? = null
 
             val sku = jsonProduct.getString("android_sku")
             val basePlanId = jsonProduct.getString("android_basePlanId")
@@ -45,11 +43,6 @@ class MobilySubscriptionProduct(
                 }
             }
 
-            val subscriptionGroupJson = jsonProduct.optJSONObject("SubscriptionGroup")
-            if (subscriptionGroupJson != null) {
-                subscriptionGroup = MobilySubscriptionGroup.parse(subscriptionGroupJson)
-            }
-
             return MobilySubscriptionProduct(
                 baseOffer = baseOffer,
                 freeTrial = freeTrial,
@@ -58,7 +51,6 @@ class MobilySubscriptionProduct(
                 groupLevel = jsonProduct.getInt("subscriptionGroupLevel"),
                 android_basePlanId = basePlanId,
                 subscriptionGroupId = jsonProduct.getString("subscriptionGroupId"),
-                subscriptionGroup = subscriptionGroup,
             )
         }
     }

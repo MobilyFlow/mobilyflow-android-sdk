@@ -27,6 +27,7 @@ class MobilySubscriptionGroup(
 
             if (jsonGroup.has("Products")) {
                 val jsonProducts = jsonGroup.getJSONArray("Products")
+
                 for (i in 0..<jsonProducts.length()) {
                     val product = MobilyProduct.parse(jsonProducts.getJSONObject(i))
 

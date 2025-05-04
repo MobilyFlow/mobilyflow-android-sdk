@@ -44,8 +44,12 @@ abstract class Utils {
             return (delay * 1000).toLong() // Convert to milliseconds
         }
 
-        fun jsonArrayToStringArray(array: JSONArray): Array<String> {
-            return Array(array.length()) { index -> array.getString(index) }
+        fun jsonArrayToStringArray(array: JSONArray?): Array<String> {
+            return if (array == null) {
+                arrayOf()
+            } else {
+                Array(array.length()) { index -> array.getString(index) }
+            }
         }
 
         fun sha256(message: String): String {
