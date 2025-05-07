@@ -57,7 +57,7 @@ class MainActivity : ComponentActivity() {
             apiKey = "7aa18f9720a5c9731d17f5c54e89bdd218647f71269eed2f6c27c8fa5924da84",
             environment = MobilyEnvironment.DEVELOPMENT,
             options = MobilyPurchaseSDKOptions(
-                languages = null,
+                locales = null,
                 debug = true,
                 apiURL = "https://mobilyflow.eu-1.sharedwithexpose.com/v1/"
                 // apiURL = "https://api-staging.mobilyflow.com/v1/"

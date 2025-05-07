@@ -58,24 +58,19 @@ abstract class Utils {
             return digest.fold("") { str, it -> str + "%02x".format(it) }
         }
 
-        fun getPreferredLanguages(languages: Array<String>?): Array<String> {
-            val usedLanguages = mutableListOf<String>()
+        fun getPreferredLocales(locales: Array<String>?): Array<String> {
+            if (locales == null) {
+                val usedLocale = mutableListOf<String>()
+                val systemLocales = LocaleListCompat.getDefault()
 
-            if (languages == null) {
-                val systemLanguages = LocaleListCompat.getDefault()
-
-                for (i in 0..<systemLanguages.size()) {
-                    val splitted = systemLanguages.get(i)!!.toLanguageTag().split('-')
-                    usedLanguages.add(splitted[0])
+                for (i in 0..<systemLocales.size()) {
+                    val locale = systemLocales.get(i)!!.toLanguageTag()
+                    usedLocale.add(locale)
                 }
+                return usedLocale.toTypedArray()
             } else {
-                for (lang in languages) {
-                    val splitted = lang.split('-')
-                    usedLanguages.add(splitted[0])
-                }
+                return locales
             }
-
-            return usedLanguages.toTypedArray()
         }
 
         fun parseDate(isoDate: String): LocalDateTime {

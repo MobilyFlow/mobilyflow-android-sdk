@@ -35,7 +35,7 @@ import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKDiagnostics
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKHelper
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKSyncer
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKWaiter
-import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.getPreferredLanguages
+import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.getPreferredLocales
 import org.json.JSONArray
 import java.util.concurrent.Executors
 
@@ -48,7 +48,7 @@ class MobilyPurchaseSDK(
     options: MobilyPurchaseSDKOptions? = null,
 ) {
     private val API =
-        MobilyPurchaseAPI(appId, apiKey, environment, getPreferredLanguages(options?.languages), options?.apiURL)
+        MobilyPurchaseAPI(appId, apiKey, environment, getPreferredLocales(options?.locales), options?.apiURL)
 
     // TODO: Douple check this code doesn't duplicate if there is multiple SDK instances
     private val billingClient = BillingClientWrapper(context) { billingResult, purchases ->

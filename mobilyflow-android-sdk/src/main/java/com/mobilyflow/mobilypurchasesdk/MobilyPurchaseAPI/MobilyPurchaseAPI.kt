@@ -20,12 +20,12 @@ class MobilyPurchaseAPI(
     val appId: String,
     private val apiKey: String,
     val environment: MobilyEnvironment,
-    languages: Array<String>,
+    locales: Array<String>,
     apiURL: String? = null
 ) {
     val API_URL = apiURL ?: "https://api.mobilyflow.com/v1/"
     val helper: ApiHelper = ApiHelper(API_URL, mapOf("Authorization" to "ApiKey $apiKey"))
-    val lang = languages.joinToString(",")
+    val locale = locales.joinToString(",")
 
     /**
      * Log user into MobilyFlow with his externalRef and return his uuid.
@@ -94,7 +94,7 @@ class MobilyPurchaseAPI(
 
         val request = ApiRequest("GET", "/apps/me/products/for-app")
         request.addParam("environment", environment.toString().lowercase())
-        request.addParam("lang", this.lang)
+        request.addParam("locale", this.locale)
         request.addParam("platform", "android")
 
         if (identifiers != null) {
@@ -127,7 +127,7 @@ class MobilyPurchaseAPI(
 
         val request = ApiRequest("GET", "/apps/me/subscription-groups/for-app")
         request.addParam("environment", environment.toString().lowercase())
-        request.addParam("lang", this.lang)
+        request.addParam("locale", this.locale)
         request.addParam("platform", "android")
 
         if (identifiers != null) {
@@ -155,7 +155,7 @@ class MobilyPurchaseAPI(
     @Throws(MobilyException::class)
     fun getCustomerEntitlements(customerId: String): JSONArray {
         val request = ApiRequest("GET", "/apps/me/customers/${customerId}/entitlements")
-        request.addParam("lang", this.lang)
+        request.addParam("locale", this.locale)
         request.addParam("loadProduct", "true")
 
         val response: ApiResponse?
