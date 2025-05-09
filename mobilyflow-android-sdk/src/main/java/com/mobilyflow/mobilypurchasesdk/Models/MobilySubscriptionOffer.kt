@@ -16,9 +16,10 @@ class MobilySubscriptionOffer(
     val price: Double,
     val currencyCode: String,
     val priceFormatted: String,
-    val isFreeTrial: Boolean,
-    val periodCount: Int,
-    val periodUnit: PeriodUnit,
+    val type: String,
+    val periodCount: Int, // free_trial only
+    val periodUnit: PeriodUnit, // free_trial only
+    val countBillingCycle: Int, // recurring only
     val android_offerId: String?, // null for base offer
     val extras: JSONObject?,
     val status: ProductStatus,
@@ -37,9 +38,10 @@ class MobilySubscriptionOffer(
             val price: Double
             val currencyCode: String
             val priceFormatted: String
-            var isFreeTrial = false
+            var type = "recurring"
             val periodCount: Int
             val periodUnit: PeriodUnit
+            val countBillingCycle: Int
             var android_offerId: String? = null
             var extras: JSONObject? = null
             var status: ProductStatus = ProductStatus.UNAVAILABLE
@@ -49,7 +51,7 @@ class MobilySubscriptionOffer(
                 identifier = jsonOffer.optString("identifier")
                 externalRef = jsonOffer.optString("externalRef")
                 name = jsonOffer.optString("name")
-                isFreeTrial = jsonOffer.optBoolean("isFreeTrial")
+                type = jsonOffer.getString("type")
                 extras = jsonOffer.optJSONObject("extras")
                 android_offerId = jsonOffer.optString("android_offerId")
             }
@@ -64,7 +66,7 @@ class MobilySubscriptionOffer(
                     Logger.w("Offer $sku/$basePlanId/${android_offerId ?: "null"} is incompatible with MobilyFlow (bad pricingPhases length ${countPhases})")
                     status = ProductStatus.INVALID
                 }
-                if (isFreeTrial && androidOffer.pricingPhases.pricingPhaseList[0].priceAmountMicros > 0) {
+                if (type == "free_trial" && androidOffer.pricingPhases.pricingPhaseList[0].priceAmountMicros > 0) {
                     Logger.w("Offer $sku/$basePlanId/${android_offerId ?: "null"} should be a free trial")
                     status = ProductStatus.INVALID
                 }
@@ -84,11 +86,19 @@ class MobilySubscriptionOffer(
                 priceFormatted = Utils.formatPrice(price, currencyCode)
 
                 // If isBaseOffer, jsonOffer is the jsonProduct
-                val periodPrefix = if (isBaseOffer) "subscription" else "offer"
-                periodCount = jsonOffer.getInt(periodPrefix + "PeriodCount")
-                periodUnit = PeriodUnit.valueOf(
-                    jsonOffer.getString(periodPrefix + "PeriodUnit").uppercase()
-                )
+                if (isBaseOffer) {
+                    periodCount = jsonOffer.getInt("subscriptionPeriodCount")
+                    periodUnit = PeriodUnit.valueOf(jsonOffer.getString("subscriptionPeriodUnit").uppercase())
+                    countBillingCycle = 0
+                } else if (type == "free_trial") {
+                    periodCount = jsonOffer.getInt("offerPeriodCount")
+                    periodUnit = PeriodUnit.valueOf(jsonOffer.getString("offerPeriodUnit").uppercase())
+                    countBillingCycle = 0
+                } else {
+                    periodCount = 0
+                    periodUnit = PeriodUnit.WEEK
+                    countBillingCycle = jsonOffer.getInt("offerCountBillingCycle")
+                }
             } else {
                 val phase = androidOffer.pricingPhases.pricingPhaseList[0]
 
@@ -100,6 +110,7 @@ class MobilySubscriptionOffer(
                 val periodParsed = PeriodUnit.parseSubscriptionPeriod(phase.billingPeriod)
                 periodCount = periodParsed.first
                 periodUnit = periodParsed.second
+                countBillingCycle = phase.billingCycleCount
             }
 
             return MobilySubscriptionOffer(
@@ -110,9 +121,10 @@ class MobilySubscriptionOffer(
                 price = price,
                 currencyCode = currencyCode,
                 priceFormatted = priceFormatted,
-                isFreeTrial = isFreeTrial,
+                type = type,
                 periodCount = periodCount,
                 periodUnit = periodUnit,
+                countBillingCycle = countBillingCycle,
                 android_offerId = android_offerId,
                 extras = extras,
                 status = status,

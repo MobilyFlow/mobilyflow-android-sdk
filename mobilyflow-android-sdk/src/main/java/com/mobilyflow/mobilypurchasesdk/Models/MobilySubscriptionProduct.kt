@@ -31,7 +31,7 @@ class MobilySubscriptionProduct(
 
                     val offer = MobilySubscriptionOffer.parse(sku, basePlanId, jsonOffer, false)
 
-                    if (offer.isFreeTrial) {
+                    if (offer.type == "free_trial") {
                         if (freeTrial != null) {
                             Logger.w("Offer $sku/$basePlanId is incompatible with MobilyFlow (too many free trials)")
                             continue
