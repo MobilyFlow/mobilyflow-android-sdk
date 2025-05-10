@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
                                         if (p.type == ProductType.SUBSCRIPTION && p.subscriptionProduct!!.promotionalOffers.isNotEmpty()) {
                                             Column(
                                                 modifier = Modifier.padding(
-                                                    horizontal = 10.dp,
+                                                    horizontal = 20.dp,
                                                     vertical = 0.dp
                                                 ),
                                                 verticalArrangement = Arrangement.spacedBy(30.dp),
@@ -329,17 +329,16 @@ fun IAPButton(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(product.name)
             Text(product.description)
+            Text(product.identifier)
             Text(
                 offer?.priceFormatted ?: product.oneTimeProduct?.priceFormatted
                 ?: product.subscriptionProduct?.baseOffer?.priceFormatted ?: "-"
             )
-            if (product.subscriptionProduct != null) {
-                Text(product.subscriptionProduct!!.android_basePlanId)
-            }
             if (offer != null) {
                 Text(offer.android_offerId ?: "-")
+                Text("${offer.periodCount} ${offer.periodUnit} - ${offer.countBillingCycle}/cycles")
             }
-            Text("Status = " + product.status.toString())
+            Text("Status = " + (offer?.status ?: product.status).toString())
         }
     }
 }

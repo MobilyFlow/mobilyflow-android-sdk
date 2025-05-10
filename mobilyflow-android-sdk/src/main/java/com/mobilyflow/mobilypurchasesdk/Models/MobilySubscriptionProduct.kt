@@ -23,13 +23,13 @@ class MobilySubscriptionProduct(
             val basePlanId = jsonProduct.getString("android_basePlanId")
 
             val jsonOffers = jsonProduct.optJSONArray("Offers")
-            baseOffer = MobilySubscriptionOffer.parse(sku, basePlanId, jsonProduct, true)
+            baseOffer = MobilySubscriptionOffer.parse(sku, basePlanId, jsonProduct, null)
 
             if (jsonOffers != null) {
                 for (i in 0..<jsonOffers.length()) {
                     val jsonOffer = jsonOffers.getJSONObject(i)
 
-                    val offer = MobilySubscriptionOffer.parse(sku, basePlanId, jsonOffer, false)
+                    val offer = MobilySubscriptionOffer.parse(sku, basePlanId, jsonProduct, jsonOffer)
 
                     if (offer.type == "free_trial") {
                         if (freeTrial != null) {

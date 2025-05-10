@@ -28,8 +28,8 @@ class MobilySubscriptionOffer(
         internal fun parse(
             sku: String,
             basePlanId: String,
-            jsonOffer: JSONObject,
-            isBaseOffer: Boolean
+            jsonBase: JSONObject,
+            jsonOffer: JSONObject?,
         ): MobilySubscriptionOffer {
             var id: String? = null
             var identifier: String? = null
@@ -46,7 +46,7 @@ class MobilySubscriptionOffer(
             var extras: JSONObject? = null
             var status: ProductStatus = ProductStatus.UNAVAILABLE
 
-            if (!isBaseOffer) {
+            if (jsonOffer != null) {
                 id = jsonOffer.optString("id")
                 identifier = jsonOffer.optString("identifier")
                 externalRef = jsonOffer.optString("externalRef")
@@ -62,7 +62,7 @@ class MobilySubscriptionOffer(
 
             if (androidOffer != null) {
                 val countPhases = androidOffer.pricingPhases.pricingPhaseList.count()
-                if ((isBaseOffer && countPhases != 1) || (countPhases <= 0 || countPhases > 2)) {
+                if ((jsonOffer == null && countPhases != 1) || (countPhases <= 0 || countPhases > 2)) {
                     Logger.w("Offer $sku/$basePlanId/${android_offerId ?: "null"} is incompatible with MobilyFlow (bad pricingPhases length ${countPhases})")
                     status = ProductStatus.INVALID
                 }
@@ -81,23 +81,33 @@ class MobilySubscriptionOffer(
 
             // 2. Populate
             if (androidOffer == null || status == ProductStatus.INVALID) {
-                price = jsonOffer.optDouble("defaultPrice", 0.0)
-                currencyCode = jsonOffer.optString("defaultCurrencyCode", "")
-                priceFormatted = Utils.formatPrice(price, currencyCode)
 
-                // If isBaseOffer, jsonOffer is the jsonProduct
-                if (isBaseOffer) {
-                    periodCount = jsonOffer.getInt("subscriptionPeriodCount")
-                    periodUnit = PeriodUnit.valueOf(jsonOffer.getString("subscriptionPeriodUnit").uppercase())
-                    countBillingCycle = 0
-                } else if (type == "free_trial") {
-                    periodCount = jsonOffer.getInt("offerPeriodCount")
-                    periodUnit = PeriodUnit.valueOf(jsonOffer.getString("offerPeriodUnit").uppercase())
+                if (jsonOffer == null) {
+                    // Base Offer but unavailable
+                    price = jsonBase.optDouble("defaultPrice", 0.0)
+                    currencyCode = jsonBase.optString("defaultCurrencyCode", "")
+                    priceFormatted = Utils.formatPrice(price, currencyCode)
+
+                    periodCount = jsonBase.getInt("subscriptionPeriodCount")
+                    periodUnit = PeriodUnit.valueOf(jsonBase.getString("subscriptionPeriodUnit").uppercase())
                     countBillingCycle = 0
                 } else {
-                    periodCount = 0
-                    periodUnit = PeriodUnit.WEEK
-                    countBillingCycle = jsonOffer.getInt("offerCountBillingCycle")
+                    // Promotional offer but unavailable
+                    price = jsonOffer.optDouble("defaultPrice", 0.0)
+                    currencyCode = jsonOffer.optString("defaultCurrencyCode", "")
+                    priceFormatted = Utils.formatPrice(price, currencyCode)
+
+                    if (type == "free_trial") {
+                        periodCount = jsonOffer.getInt("offerPeriodCount")
+                        periodUnit = PeriodUnit.valueOf(jsonOffer.getString("offerPeriodUnit").uppercase())
+                        countBillingCycle = 1
+                    } else {
+                        countBillingCycle = jsonOffer.getInt("offerCountBillingCycle")
+
+                        // Inherit from baseOffer
+                        periodCount = jsonBase.getInt("subscriptionPeriodCount")
+                        periodUnit = PeriodUnit.valueOf(jsonBase.getString("subscriptionPeriodUnit").uppercase())
+                    }
                 }
             } else {
                 val phase = androidOffer.pricingPhases.pricingPhaseList[0]
