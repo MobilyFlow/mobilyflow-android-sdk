@@ -193,7 +193,6 @@ class BillingClientWrapper(
     }
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
-        Logger.d("onPurchasesUpdated: $billingResult")
         if (this.billingFlowResult != null) {
             Logger.d("onPurchasesUpdated: $billingResult -> Managed by wrapper internally")
             this.billingFlowResult!!.set(billingResult, purchases)

@@ -203,7 +203,7 @@ class MainActivity : ComponentActivity() {
             * */
 
             try {
-                // val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294" // gregoire
+//                val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294" // gregoire
                 val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
 //                mobily!!.login("044209a1-8331-4bdc-9a73-8eebbe0acdaa") // gregoire-android (944d6694-1c78-4380-bbce-100634af9428)
                 Log.d("MobilyFlow", "Go login ")

@@ -55,15 +55,12 @@ class MobilyPurchaseSDK(
         // Note: for out-of-app purchase, this function is called only when app is in background (but not when restart)
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && !purchases.isNullOrEmpty()) {
             Executors.newSingleThreadExecutor().execute {
-                if (customer != null) {
-                    try {
-                        for (purchase in purchases) {
-                            finishPurchase(purchase, true)
-                        }
-                        this.syncer.ensureSync(true)
-                    } catch (e: Exception) {
-                        Logger.e("billingClient out-of-app error", e)
+                try {
+                    for (purchase in purchases) {
+                        finishPurchase(purchase, true)
                     }
+                } catch (e: Exception) {
+                    Logger.e("billingClient out-of-app error", e)
                 }
             }
         }
@@ -331,21 +328,22 @@ class MobilyPurchaseSDK(
                 throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
             }
 
-            finishPurchase(purchases[0], false, product)
 
             val status = this.waiter.waitPurchaseWebhook(
                 if (upgradeStatus < 0) purchases[0].purchaseToken else purchases[0].orderId!!,
                 upgradeStatus < 0
             )
-            this.syncer.ensureSync(true)
+
+            finishPurchase(purchases[0], false, product)
             return status
         } catch (e: BillingClientException) {
             if (e.code == BillingClient.BillingResponseCode.USER_CANCELED) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.USER_CANCELED)
             } else if (e.code == BillingClient.BillingResponseCode.NETWORK_ERROR) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.NETWORK_UNAVAILABLE)
+            } else if (e.code == BillingClient.BillingResponseCode.BILLING_UNAVAILABLE) {
+                throw MobilyPurchaseException(MobilyPurchaseException.Type.BILLING_ISSUE)
             } else if (
-                e.code == BillingClient.BillingResponseCode.BILLING_UNAVAILABLE ||
                 e.code == BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE ||
                 e.code == BillingClient.BillingResponseCode.SERVICE_DISCONNECTED
             ) {
@@ -434,6 +432,13 @@ class MobilyPurchaseSDK(
                 )
             } catch (e: Exception) {
                 Logger.e("Map transaction error", e)
+            }
+        }
+
+        if (this.customer != null) {
+            runCatching {
+                // TODO: In case we receive update from BillingClientWrapper updates, we have no guarantee that webhook is successful
+                syncer.ensureSync(true)
             }
         }
     }

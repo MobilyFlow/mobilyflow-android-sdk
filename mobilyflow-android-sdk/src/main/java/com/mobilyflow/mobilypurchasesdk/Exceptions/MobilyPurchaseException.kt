@@ -7,6 +7,7 @@ class MobilyPurchaseException(val type: Type, cause: Throwable? = null) : Except
 
         PRODUCT_UNAVAILABLE,
         NETWORK_UNAVAILABLE,
+        BILLING_ISSUE,
 
         WEBHOOK_NOT_PROCESSED,
         WEBHOOK_FAILED,
