@@ -9,7 +9,7 @@ class MobilyCustomer(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val externalRef: String?,
-    val isForwardingEnable: Boolean,
+    var isForwardingEnable: Boolean,
 ) {
     companion object {
         internal fun parse(

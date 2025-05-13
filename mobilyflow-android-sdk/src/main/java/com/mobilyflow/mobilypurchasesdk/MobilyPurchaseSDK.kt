@@ -123,36 +123,39 @@ class MobilyPurchaseSDK(
 
         this.customer = MobilyCustomer.parse(loginResponse.customer, loginResponse.isForwardingEnable)
         diagnostics.customerId = this.customer?.id
-        this.syncer.login(customer?.id, loginResponse.entitlements)
+        this.syncer.login(customer, loginResponse.entitlements)
 
         // 2. Sync
         this.syncer.ensureSync()
 
         // 3. Manage out-of-app purchase
-        try {
-            val purchases = this.billingClient.queryPurchases()
+        val executor = Executors.newSingleThreadExecutor()
+        executor.execute {
+            try {
+                val purchases = this.billingClient.queryPurchases()
 
-            for (it in purchases) {
-                if (!it.purchase.isAcknowledged) {
-                    finishPurchase(it.purchase, false)
+                for (it in purchases) {
+                    if (!it.purchase.isAcknowledged) {
+                        finishPurchase(it.purchase, false, null)
+                    }
                 }
-            }
 
-            // 4. Map transaction that are not known by the server
-            val transactionsToMap = MobilyPurchaseSDKHelper.getTransactionsToMap(
-                loginResponse.platformOriginalTransactionIds,
-                purchases
-            )
+                // 4. Map transaction that are not known by the server
+                val transactionsToMap = MobilyPurchaseSDKHelper.getTransactionsToMap(
+                    loginResponse.platformOriginalTransactionIds,
+                    purchases
+                )
 
-            if (transactionsToMap.isNotEmpty()) {
-                try {
-                    this.API.mapTransactions(this.customer!!.id, transactionsToMap)
-                } catch (e: Exception) {
-                    Logger.e("Map transactions error", e)
+                if (transactionsToMap.isNotEmpty()) {
+                    try {
+                        this.API.mapTransactions(this.customer!!.id, transactionsToMap)
+                    } catch (e: Exception) {
+                        Logger.e("Map transactions error", e)
+                    }
                 }
+            } catch (e: BillingClientException) {
+                Logger.e("[Login] BillingClientException: ${e.code} (${e.message})")
             }
-        } catch (e: BillingClientException) {
-            Logger.e("[Login] BillingClientException: ${e.code} (${e.message})")
         }
 
         return customer!!
@@ -297,6 +300,8 @@ class MobilyPurchaseSDK(
     ): WebhookStatus {
         if (this.customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
+        } else if (this.customer!!.isForwardingEnable) {
+            throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
         }
 
         synchronized(this) {
@@ -344,14 +349,13 @@ class MobilyPurchaseSDK(
                 Logger.e("purchaseProduct unknown error", e)
                 this.sendDiagnostic()
 
-                throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+                throw MobilyPurchaseException(MobilyPurchaseException.Type.FAILED)
             }
         } catch (e: MobilyException) {
             if (e.type == MobilyException.Type.UNKNOWN_ERROR) {
                 Logger.e("purchaseProduct unknown error", e)
                 this.sendDiagnostic()
             }
-
             throw e
         } finally {
             this.isPurchasing = false
@@ -434,7 +438,9 @@ class MobilyPurchaseSDK(
 
         if (this.customer != null) {
             runCatching {
-                status = this.waiter.waitPurchaseWebhook(purchase)
+                if (!this.customer!!.isForwardingEnable) {
+                    status = this.waiter.waitPurchaseWebhook(purchase)
+                }
                 syncer.ensureSync(true)
             }
         }
@@ -455,5 +461,9 @@ class MobilyPurchaseSDK(
 
     fun isForwardingEnable(externalRef: String): Boolean {
         return this.API.isForwardingEnable(externalRef)
+    }
+
+    fun getCustomer(): MobilyCustomer? {
+        return this.customer
     }
 }

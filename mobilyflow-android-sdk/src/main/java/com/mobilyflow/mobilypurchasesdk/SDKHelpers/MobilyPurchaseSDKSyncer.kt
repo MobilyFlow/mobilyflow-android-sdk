@@ -9,6 +9,7 @@ import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrappe
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
+import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomerEntitlement
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import org.json.JSONArray
@@ -17,7 +18,7 @@ class MobilyPurchaseSDKSyncer(
     val API: MobilyPurchaseAPI,
     val billingClient: BillingClientWrapper,
 ) {
-    private var customerId: String? = null
+    private var customer: MobilyCustomer? = null
 
     var entitlements: List<MobilyCustomerEntitlement>? = null
     var storeAccountTransactions: List<BillingClientWrapper.PurchaseWithType>? = null
@@ -25,13 +26,13 @@ class MobilyPurchaseSDKSyncer(
     private var lastSyncTime: Long? = null
     private val CACHE_DURATION_MS: Long = 3600 * 1000
 
-    fun login(customerId: String?, jsonEntitlements: JSONArray?) {
+    fun login(customer: MobilyCustomer?, jsonEntitlements: JSONArray?) {
         synchronized(this) {
-            this.customerId = customerId
+            this.customer = customer
             this.entitlements = null
             this.lastSyncTime = null
 
-            if (customerId != null && jsonEntitlements != null) {
+            if (customer != null && jsonEntitlements != null) {
                 _syncEntitlements(jsonEntitlements)
                 lastSyncTime = System.currentTimeMillis()
             }
@@ -52,8 +53,15 @@ class MobilyPurchaseSDKSyncer(
                 (lastSyncTime!! + CACHE_DURATION_MS) < System.currentTimeMillis()
             ) {
                 Logger.d("Run sync")
-                _syncEntitlements()
-                lastSyncTime = System.currentTimeMillis()
+                if (customer != null) {
+                    if (customer!!.isForwardingEnable) {
+                        val isForwardingEnable = this.API.isForwardingEnable(customer!!.externalRef)
+                        customer!!.isForwardingEnable = isForwardingEnable
+                    }
+
+                    _syncEntitlements()
+                    lastSyncTime = System.currentTimeMillis()
+                }
                 Log.d("MobilyFlow", "End Sync")
             }
         }
@@ -61,17 +69,13 @@ class MobilyPurchaseSDKSyncer(
 
     @Throws(MobilyException::class)
     private fun _syncEntitlements(overrideJsonEntitlements: JSONArray? = null) {
-        if (customerId == null) {
-            return
-        }
-
         try {
             this.storeAccountTransactions = this.billingClient.queryPurchases()
         } catch (e: BillingClientException) {
             Logger.e("[Syncer] BillingClientException: ${e.code} (${e.message})")
         }
 
-        val entitlementsJson = overrideJsonEntitlements ?: this.API.getCustomerEntitlements(customerId!!)
+        val entitlementsJson = overrideJsonEntitlements ?: this.API.getCustomerEntitlements(customer!!.id)
         val entitlements = mutableListOf<MobilyCustomerEntitlement>()
 
         for (i in 0..<entitlementsJson.length()) {
@@ -84,7 +88,7 @@ class MobilyPurchaseSDKSyncer(
 
     @Throws(MobilyException::class)
     fun getEntitlementForSubscription(subscriptionGroupId: String): MobilyCustomerEntitlement? {
-        if (customerId == null) {
+        if (customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
         }
 
@@ -97,7 +101,7 @@ class MobilyPurchaseSDKSyncer(
     }
 
     fun getEntitlement(productId: String): MobilyCustomerEntitlement? {
-        if (customerId == null) {
+        if (customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
         }
 
@@ -110,7 +114,7 @@ class MobilyPurchaseSDKSyncer(
     }
 
     fun getEntitlements(productIds: Array<String>): List<MobilyCustomerEntitlement> {
-        if (customerId == null) {
+        if (customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
         }
 
