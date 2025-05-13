@@ -1,5 +1,6 @@
 package com.mobilyflow.mobilypurchasesdk.SDKHelpers
 
+import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.Enums.TransferOwnershipStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.WebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
@@ -10,13 +11,13 @@ import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 
 class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: MobilyPurchaseSDKDiagnostics) {
     @Throws(MobilyPurchaseException::class)
-    fun waitPurchaseWebhook(transactionId: String, isDowngrade: Boolean): WebhookStatus {
+    fun waitPurchaseWebhook(purchase: Purchase): WebhookStatus {
         var result = WebhookStatus.PENDING
         val startTime = System.currentTimeMillis()
         var retry = 0
 
         while (result == WebhookStatus.PENDING) {
-            result = this.API.getWebhookStatus(transactionId, isDowngrade)
+            result = this.API.getWebhookStatus(purchase.purchaseToken, purchase.orderId!!)
 
             if (result == WebhookStatus.PENDING) {
                 // Exit the wait function after 1 minute

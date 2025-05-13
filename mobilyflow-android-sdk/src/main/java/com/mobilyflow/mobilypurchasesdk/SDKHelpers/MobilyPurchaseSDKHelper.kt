@@ -58,9 +58,7 @@ class MobilyPurchaseSDKHelper() {
             customerId: String,
             product: MobilyProduct,
             options: PurchaseOptions? = null,
-        ): Pair<BillingFlowParams, Int> {
-            var upgradeStatus = 0
-
+        ): BillingFlowParams {
             val androidProduct = MobilyPurchaseRegistry.getAndroidProduct(product.android_sku)
             val androidOffer = if (product.type == ProductType.SUBSCRIPTION) {
                 MobilyPurchaseRegistry.getAndroidOffer(
@@ -135,12 +133,6 @@ class MobilyPurchaseSDKHelper() {
                         }
                     }
 
-                    if (entitlement.product.android_sku != product.android_sku && entitlement.product.subscriptionProduct!!.groupLevel > product.subscriptionProduct.groupLevel) {
-                        upgradeStatus = 1
-                    } else {
-                        upgradeStatus = -1
-                    }
-
                     builder.setSubscriptionUpdateParams(
                         BillingFlowParams.SubscriptionUpdateParams.newBuilder()
                             .setOldPurchaseToken(entitlement.subscription.purchaseToken!!)
@@ -170,7 +162,7 @@ class MobilyPurchaseSDKHelper() {
                 }
             }
 
-            return Pair(builder.build(), upgradeStatus)
+            return builder.build()
         }
     }
 }

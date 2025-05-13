@@ -316,9 +316,8 @@ class MobilyPurchaseSDK(
 
             val billingFlowParams =
                 MobilyPurchaseSDKHelper.createBillingFlowParams(syncer, customer!!.id, product, options)
-            val upgradeStatus = billingFlowParams.second
 
-            val purchases = billingClient.launchBillingFlow(activity, billingFlowParams.first)
+            val purchases = billingClient.launchBillingFlow(activity, billingFlowParams)
 
             // Process purchase
             if (purchases.isEmpty() || purchases.size != 1) {
@@ -328,14 +327,7 @@ class MobilyPurchaseSDK(
                 throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
             }
 
-
-            val status = this.waiter.waitPurchaseWebhook(
-                if (upgradeStatus < 0) purchases[0].purchaseToken else purchases[0].orderId!!,
-                upgradeStatus < 0
-            )
-
-            finishPurchase(purchases[0], false, product)
-            return status
+            return finishPurchase(purchases[0], false, product)
         } catch (e: BillingClientException) {
             if (e.code == BillingClient.BillingResponseCode.USER_CANCELED) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.USER_CANCELED)
@@ -370,18 +362,23 @@ class MobilyPurchaseSDK(
     /* ****************** UPDATE TRANSACTION LISTENERS ******************* */
     /* ******************************************************************* */
 
-    private fun finishPurchase(purchase: Purchase, mapTransaction: Boolean, product: MobilyProduct? = null) {
+    private fun finishPurchase(
+        purchase: Purchase,
+        mapTransaction: Boolean,
+        product: MobilyProduct? = null
+    ): WebhookStatus {
         Logger.d("finishPurchase: ${purchase.orderId}")
+        var status = WebhookStatus.ERROR
 
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED || purchase.isAcknowledged) {
-            return
+            return status
         }
 
         // https://developer.android.com/google/play/billing/integrate#process
         if (purchase.products.size != 1) {
             Logger.d("finishPurchase: should only have one product (actually: ${purchase.products.size})")
             this.sendDiagnostic()
-            return
+            return status
         }
 
 
@@ -398,7 +395,7 @@ class MobilyPurchaseSDK(
                 minimalProduct = API.getMinimalProductForAndroidPurchase(androidSku)
             } catch (e: Exception) {
                 Logger.e("Can't get minimal product for sku $androidSku, we can't finish transaction")
-                return
+                return status
             }
         }
 
@@ -437,10 +434,11 @@ class MobilyPurchaseSDK(
 
         if (this.customer != null) {
             runCatching {
-                // TODO: In case we receive update from BillingClientWrapper updates, we have no guarantee that webhook is successful
+                status = this.waiter.waitPurchaseWebhook(purchase)
                 syncer.ensureSync(true)
             }
         }
+        return status
     }
 
     /* *********************************************************** */
