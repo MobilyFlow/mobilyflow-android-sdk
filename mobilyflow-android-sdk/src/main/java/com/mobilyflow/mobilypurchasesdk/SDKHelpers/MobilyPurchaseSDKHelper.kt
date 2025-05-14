@@ -50,9 +50,6 @@ class MobilyPurchaseSDKHelper() {
             return transactionsToClaim.toTypedArray()
         }
 
-        /**
-         * Return a Pair with BillingFlowParams and upgrade status (0: PURCHASE, -1: DOWNGRADE, 1: UPGRADE)
-         */
         fun createBillingFlowParams(
             syncer: MobilyPurchaseSDKSyncer,
             customerId: String,

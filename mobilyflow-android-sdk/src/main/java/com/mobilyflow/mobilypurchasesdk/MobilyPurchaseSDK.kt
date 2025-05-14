@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ConsumeParams
@@ -84,13 +85,16 @@ class MobilyPurchaseSDK(
 
         lifecycleListener = object : AppLifecycleProvider.AppLifecycleCallbacks() {
             override fun onActivityPaused(activity: Activity) {
+                Log.d("MobilyFlow", "onActivityPaused")
                 lastAppPauseTime = System.currentTimeMillis()
             }
 
             override fun onActivityResumed(activity: Activity) {
                 Executors.newSingleThreadExecutor().execute {
                     // When activity resume, force sync after 2 minutes
+                    Log.d("MobilyFlow", "onActivityResumed")
                     if (lastAppPauseTime != null && (lastAppPauseTime!! + 120 * 1000) < System.currentTimeMillis()) {
+                        Log.d("MobilyFlow", "onActivityResumed -> Force Sync")
                         syncer.ensureSync(true)
                     }
                 }
@@ -300,8 +304,6 @@ class MobilyPurchaseSDK(
     ): WebhookStatus {
         if (this.customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
-        } else if (this.customer!!.isForwardingEnable) {
-            throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
         }
 
         synchronized(this) {
@@ -311,12 +313,17 @@ class MobilyPurchaseSDK(
             this.isPurchasing = true
         }
 
+        this.syncer.ensureSync()
+
+        if (this.customer!!.isForwardingEnable) {
+            throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
+        }
+
         try {
             if (billingClient.getStatus() == BillingClientStatus.UNAVAILABLE) {
                 throw MobilyException(MobilyException.Type.STORE_UNAVAILABLE)
             }
 
-            this.syncer.ensureSync()
             Logger.d("Start purchaseProduct ${product.identifier}")
 
             val billingFlowParams =

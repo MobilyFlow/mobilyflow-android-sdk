@@ -204,11 +204,11 @@ class MainActivity : ComponentActivity() {
 
             try {
 //                val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294" // gregoire
-//                val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
-                val externalRef = "random-user"
+                val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
+//                val externalRef = "random-user"
 
                 Log.d("MobilyFlow", "Go login ")
-                val customer = mobily!!.login(externalRef) // gregoire (4d6d544e-2e08-414a-a29f-799b1022a3d1)
+                val customer = mobily!!.login(externalRef)
                 Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer.isForwardingEnable))
                 Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
 

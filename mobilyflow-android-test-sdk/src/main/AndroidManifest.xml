@@ -10,6 +10,13 @@
         android:supportsRtl="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/Theme.MobilyflowAndroidSDK">
+
+        <provider
+            android:name="com.mobilyflow.mobilypurchasesdk.Monitoring.AppLifecycleProvider"
+            android:authorities="com.mobilyflow.mobilypurchasesdk.Monitoring.AppLifecycleProvider"
+            android:exported="false"
+            android:enabled="true" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
