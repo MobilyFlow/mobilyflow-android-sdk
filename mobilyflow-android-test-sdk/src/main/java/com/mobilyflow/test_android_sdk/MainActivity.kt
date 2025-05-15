@@ -28,6 +28,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.MutableLiveData
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClientStateListener
+import com.android.billingclient.api.BillingFlowParams
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.PendingPurchasesParams
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchasesUpdatedListener
+import com.android.billingclient.api.QueryProductDetailsParams
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
@@ -35,6 +43,7 @@ import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDK
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDKOptions
+import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.MobilySubscriptionOffer
 import com.mobilyflow.mobilypurchasesdk.Models.PurchaseOptions
@@ -46,6 +55,8 @@ class MainActivity : ComponentActivity() {
 
     private var products = MutableLiveData<List<MobilyProduct>?>()
     private var error = MutableLiveData<String?>()
+
+    private var customer: MobilyCustomer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -171,6 +182,16 @@ class MainActivity : ComponentActivity() {
                                 }) {
                                     Text(text = "Transfer Ownership")
                                 }
+                                Button(onClick = {
+                                    PurchaseProductHelper(this@MainActivity, "unregistered_item", customer!!.id)
+                                }) {
+                                    Text(text = "Buy unregistered product")
+                                }
+                                Button(onClick = {
+                                    PurchaseProductHelper(this@MainActivity, "unregistered_subscription", customer!!.id)
+                                }) {
+                                    Text(text = "Buy unregistered subscription")
+                                }
                             }
                         }
                     }
@@ -203,13 +224,13 @@ class MainActivity : ComponentActivity() {
             * */
 
             try {
-//                val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294" // gregoire
-                val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
+                val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294" // gregoire
+//                val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
 //                val externalRef = "random-user"
 
                 Log.d("MobilyFlow", "Go login ")
-                val customer = mobily!!.login(externalRef)
-                Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer.isForwardingEnable))
+                customer = mobily!!.login(externalRef)
+                Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer!!.isForwardingEnable))
                 Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
 
                 val products = mobily!!.getProducts(null, false)
@@ -283,6 +304,62 @@ class MainActivity : ComponentActivity() {
                 * */
             }
         }
+    }
+}
+
+class PurchaseProductHelper(val activity: Activity, val sku: String, val customerId: String) :
+    BillingClientStateListener, PurchasesUpdatedListener {
+    val client: BillingClient
+
+    init {
+        client = BillingClient.newBuilder(activity)
+            .setListener(this)
+            .enablePendingPurchases(
+                PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
+            )
+            .build()
+        client.startConnection(this)
+    }
+
+    override fun onBillingServiceDisconnected() {
+        Log.d("MobilyFlow", "onBillingServiceDisconnected")
+    }
+
+    override fun onBillingSetupFinished(result: BillingResult) {
+        Log.d("MobilyFlow", "onBillingSetupFinished ${result.responseCode} ${result.debugMessage}")
+        val products = arrayListOf<QueryProductDetailsParams.Product>()
+
+        val builder = QueryProductDetailsParams.Product.newBuilder()
+        builder.setProductId(this.sku)
+        builder.setProductType(BillingClient.ProductType.SUBS)
+        products.add(builder.build())
+
+        val request = QueryProductDetailsParams.newBuilder().setProductList(products).build()
+
+        this.client.queryProductDetailsAsync(request) { billingResult, productDetails ->
+            if (productDetails.size == 0) {
+                Log.e("MobilyFlow", "Product not found")
+            } else {
+                Log.d("MobilyFlow", "${productDetails[0].productId} ${productDetails[0].productType}")
+                val productDetailBuilder =
+                    BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(productDetails[0])
+
+                if (productDetails[0].productType == "subs") {
+                    productDetailBuilder.setOfferToken(productDetails[0].subscriptionOfferDetails!![0]!!.offerToken)
+                }
+
+                val builder =
+                    BillingFlowParams.newBuilder().setProductDetailsParamsList(listOf(productDetailBuilder.build()))
+
+                builder.setObfuscatedAccountId(customerId)
+
+                client.launchBillingFlow(activity, builder.build())
+            }
+        }
+    }
+
+    override fun onPurchasesUpdated(p0: BillingResult, p1: MutableList<Purchase>?) {
+
     }
 }
 

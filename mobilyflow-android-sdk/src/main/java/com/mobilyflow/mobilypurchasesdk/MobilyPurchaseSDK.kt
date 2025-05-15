@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ConsumeParams
@@ -85,17 +84,19 @@ class MobilyPurchaseSDK(
 
         lifecycleListener = object : AppLifecycleProvider.AppLifecycleCallbacks() {
             override fun onActivityPaused(activity: Activity) {
-                Log.d("MobilyFlow", "onActivityPaused")
+                Logger.d("onActivityPaused")
                 lastAppPauseTime = System.currentTimeMillis()
             }
 
             override fun onActivityResumed(activity: Activity) {
                 Executors.newSingleThreadExecutor().execute {
                     // When activity resume, force sync after 2 minutes
-                    Log.d("MobilyFlow", "onActivityResumed")
+                    Logger.d("onActivityResumed")
                     if (lastAppPauseTime != null && (lastAppPauseTime!! + 120 * 1000) < System.currentTimeMillis()) {
-                        Log.d("MobilyFlow", "onActivityResumed -> Force Sync")
-                        syncer.ensureSync(true)
+                        Logger.d("onActivityResumed -> RESUME")
+                        runCatching {
+                            syncer.ensureSync(true)
+                        }
                     }
                 }
             }
