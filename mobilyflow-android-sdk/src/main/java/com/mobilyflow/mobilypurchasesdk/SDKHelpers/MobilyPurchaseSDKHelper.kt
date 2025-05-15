@@ -2,6 +2,7 @@ package com.mobilyflow.mobilypurchasesdk.SDKHelpers
 
 import com.android.billingclient.api.BillingFlowParams
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
+import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MapTransactionItem
@@ -61,7 +62,10 @@ class MobilyPurchaseSDKHelper() {
                 MobilyPurchaseRegistry.getAndroidOffer(
                     product.android_sku,
                     product.subscriptionProduct!!.android_basePlanId,
-                    options?.offer?.android_offerId
+                    if (options?.offer == null && product.subscriptionProduct.freeTrial?.status == ProductStatus.AVAILABLE)
+                        product.subscriptionProduct.freeTrial.android_offerId
+                    else
+                        options?.offer?.android_offerId
                 )
             } else {
                 null

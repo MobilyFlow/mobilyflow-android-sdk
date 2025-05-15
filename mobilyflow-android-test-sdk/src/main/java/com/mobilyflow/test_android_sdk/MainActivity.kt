@@ -183,14 +183,29 @@ class MainActivity : ComponentActivity() {
                                     Text(text = "Transfer Ownership")
                                 }
                                 Button(onClick = {
-                                    PurchaseProductHelper(this@MainActivity, "unregistered_item", customer!!.id)
+                                    PurchaseProductHelper(this@MainActivity, customer!!.id, "unregistered_item")
                                 }) {
                                     Text(text = "Buy unregistered product")
                                 }
                                 Button(onClick = {
-                                    PurchaseProductHelper(this@MainActivity, "unregistered_subscription", customer!!.id)
+                                    PurchaseProductHelper(
+                                        this@MainActivity,
+                                        customer!!.id,
+                                        "unregistered_subscription",
+                                        "unregistered-subscription-1week"
+                                    )
                                 }) {
                                     Text(text = "Buy unregistered subscription")
+                                }
+                                Button(onClick = {
+                                    PurchaseProductHelper(
+                                        this@MainActivity,
+                                        customer!!.id,
+                                        "premium_test_sub",
+                                        "premium-1month"
+                                    )
+                                }) {
+                                    Text(text = "Outside Buy premium-1-month")
                                 }
                             }
                         }
@@ -224,8 +239,8 @@ class MainActivity : ComponentActivity() {
             * */
 
             try {
-                val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294" // gregoire
-//                val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
+//                val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294" // gregoire
+                val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
 //                val externalRef = "random-user"
 
                 Log.d("MobilyFlow", "Go login ")
@@ -307,7 +322,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-class PurchaseProductHelper(val activity: Activity, val sku: String, val customerId: String) :
+class PurchaseProductHelper(
+    val activity: Activity,
+    val customerId: String,
+    val sku: String,
+    val basePlanId: String? = null
+) :
     BillingClientStateListener, PurchasesUpdatedListener {
     val client: BillingClient
 
@@ -329,10 +349,10 @@ class PurchaseProductHelper(val activity: Activity, val sku: String, val custome
         Log.d("MobilyFlow", "onBillingSetupFinished ${result.responseCode} ${result.debugMessage}")
         val products = arrayListOf<QueryProductDetailsParams.Product>()
 
-        val builder = QueryProductDetailsParams.Product.newBuilder()
-        builder.setProductId(this.sku)
-        builder.setProductType(BillingClient.ProductType.SUBS)
-        products.add(builder.build())
+        val queryBuilder = QueryProductDetailsParams.Product.newBuilder()
+        queryBuilder.setProductId(this.sku)
+        queryBuilder.setProductType(BillingClient.ProductType.SUBS)
+        products.add(queryBuilder.build())
 
         val request = QueryProductDetailsParams.newBuilder().setProductList(products).build()
 
@@ -340,12 +360,19 @@ class PurchaseProductHelper(val activity: Activity, val sku: String, val custome
             if (productDetails.size == 0) {
                 Log.e("MobilyFlow", "Product not found")
             } else {
+
                 Log.d("MobilyFlow", "${productDetails[0].productId} ${productDetails[0].productType}")
                 val productDetailBuilder =
                     BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(productDetails[0])
 
                 if (productDetails[0].productType == "subs") {
-                    productDetailBuilder.setOfferToken(productDetails[0].subscriptionOfferDetails!![0]!!.offerToken)
+                    val basePlan = productDetails[0].subscriptionOfferDetails!!.find { x -> x.basePlanId == basePlanId }
+                    if (basePlan == null) {
+                        Log.e("MobilyFlow", "Base plan not found")
+                        return@queryProductDetailsAsync
+                    } else {
+                        productDetailBuilder.setOfferToken(basePlan.offerToken)
+                    }
                 }
 
                 val builder =
