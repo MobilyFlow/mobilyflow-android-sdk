@@ -316,11 +316,11 @@ class MobilyPurchaseSDK(
 
         this.syncer.ensureSync()
 
-        if (this.customer!!.isForwardingEnable) {
-            throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
-        }
-
         try {
+            if (this.customer!!.isForwardingEnable) {
+                throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
+            }
+            
             if (billingClient.getStatus() == BillingClientStatus.UNAVAILABLE) {
                 throw MobilyException(MobilyException.Type.STORE_UNAVAILABLE)
             }

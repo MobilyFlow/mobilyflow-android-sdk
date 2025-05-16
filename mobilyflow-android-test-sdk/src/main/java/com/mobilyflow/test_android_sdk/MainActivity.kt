@@ -241,7 +241,7 @@ class MainActivity : ComponentActivity() {
             try {
 //                val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294" // gregoire
                 val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
-//                val externalRef = "random-user"
+//                val externalRef = "random-user-android"
 
                 Log.d("MobilyFlow", "Go login ")
                 customer = mobily!!.login(externalRef)
@@ -351,7 +351,7 @@ class PurchaseProductHelper(
 
         val queryBuilder = QueryProductDetailsParams.Product.newBuilder()
         queryBuilder.setProductId(this.sku)
-        queryBuilder.setProductType(BillingClient.ProductType.SUBS)
+        queryBuilder.setProductType(if (basePlanId != null) BillingClient.ProductType.SUBS else BillingClient.ProductType.INAPP)
         products.add(queryBuilder.build())
 
         val request = QueryProductDetailsParams.newBuilder().setProductList(products).build()
