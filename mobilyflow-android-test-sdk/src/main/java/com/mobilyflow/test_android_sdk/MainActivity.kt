@@ -28,10 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.MutableLiveData
+import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.ConsumeParams
 import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
@@ -47,6 +49,7 @@ import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.MobilySubscriptionOffer
 import com.mobilyflow.mobilypurchasesdk.Models.PurchaseOptions
+import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.test_android_sdk.ui.theme.MobilyflowAndroidSDKTheme
 import java.util.concurrent.Executors
 
@@ -366,7 +369,8 @@ class PurchaseProductHelper(
                     BillingFlowParams.ProductDetailsParams.newBuilder().setProductDetails(productDetails[0])
 
                 if (productDetails[0].productType == "subs") {
-                    val basePlan = productDetails[0].subscriptionOfferDetails!!.find { x -> x.basePlanId == basePlanId }
+                    val basePlan =
+                        productDetails[0].subscriptionOfferDetails!!.find { x -> x.basePlanId == basePlanId && x.offerId == null }
                     if (basePlan == null) {
                         Log.e("MobilyFlow", "Base plan not found")
                         return@queryProductDetailsAsync
@@ -385,8 +389,28 @@ class PurchaseProductHelper(
         }
     }
 
-    override fun onPurchasesUpdated(p0: BillingResult, p1: MutableList<Purchase>?) {
-
+    override fun onPurchasesUpdated(result: BillingResult, purchases: MutableList<Purchase>?) {
+        if (purchases != null) {
+            for (purchase in purchases) {
+                if (basePlanId != null) {
+                    client.acknowledgePurchase(
+                        AcknowledgePurchaseParams.newBuilder()
+                            .setPurchaseToken(purchase.purchaseToken)
+                            .build()
+                    ) { billingResult ->
+                        Logger.d("finishPurchase: acknowledgePurchase result: ${billingResult.responseCode}/${billingResult.debugMessage}")
+                    }
+                } else {
+                    client.consumeAsync(
+                        ConsumeParams.newBuilder()
+                            .setPurchaseToken(purchase.purchaseToken)
+                            .build()
+                    ) { billingResult, purchaseToken ->
+                        Logger.d("finishPurchase: consumeAsync result: ${billingResult.responseCode}/${billingResult.debugMessage}, purchaseToken: $purchaseToken")
+                    }
+                }
+            }
+        }
     }
 }
 
