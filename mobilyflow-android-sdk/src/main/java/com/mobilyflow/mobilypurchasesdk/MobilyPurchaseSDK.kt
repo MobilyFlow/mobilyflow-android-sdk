@@ -95,7 +95,7 @@ class MobilyPurchaseSDK(
                     // When activity resume, force sync after 2 minutes
                     Logger.d("onActivityResumed")
                     if (lastAppPauseTime != null && (lastAppPauseTime!! + 120 * 1000) < System.currentTimeMillis()) {
-                        Logger.d("onActivityResumed -> RESUME")
+                        Logger.d("onActivityResumed -> FORCE SYNC")
                         runCatching {
                             syncer.ensureSync(true)
                         }
