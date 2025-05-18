@@ -77,6 +77,8 @@ class MobilyPurchaseSDK(
     private var lastAppPauseTime: Long? = null
     private var lifecycleListener: AppLifecycleProvider.AppLifecycleCallbacks
 
+    private val productsCaches = mutableMapOf<String, MobilyProduct>()
+
     init {
         Monitoring.initialize(context, "MobilyFlow", options?.debug == true) { logFile ->
             API.uploadMonitoring(customer?.id, logFile)
@@ -187,6 +189,8 @@ class MobilyPurchaseSDK(
                 val jsonProduct = jsonProducts.getJSONObject(i)
 
                 val mobilyProduct = MobilyProduct.parse(jsonProduct)
+                productsCaches[mobilyProduct.id] = mobilyProduct
+
                 if (!onlyAvailable || mobilyProduct.status == ProductStatus.AVAILABLE) {
                     mobilyProducts.add(mobilyProduct)
                 }
@@ -226,6 +230,11 @@ class MobilyPurchaseSDK(
                 val jsonGroup = jsonGroups.getJSONObject(i)
 
                 val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, onlyAvailable)
+
+                for (product in mobilyGroup.products) {
+                    productsCaches[product.id] = product
+                }
+
                 if (!onlyAvailable || mobilyGroup.products.isNotEmpty()) {
                     mobilyGroups.add(mobilyGroup)
                 }
@@ -237,6 +246,10 @@ class MobilyPurchaseSDK(
         } catch (e: Exception) {
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR, e)
         }
+    }
+
+    fun getProductFromCacheWithId(id: String): MobilyProduct? {
+        return productsCaches[id]
     }
 
     /* ******************************************************************* */
@@ -320,7 +333,7 @@ class MobilyPurchaseSDK(
             if (this.customer!!.isForwardingEnable) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
             }
-            
+
             if (billingClient.getStatus() == BillingClientStatus.UNAVAILABLE) {
                 throw MobilyException(MobilyException.Type.STORE_UNAVAILABLE)
             }
