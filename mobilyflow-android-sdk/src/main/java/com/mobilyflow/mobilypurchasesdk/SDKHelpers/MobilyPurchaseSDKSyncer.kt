@@ -113,7 +113,7 @@ class MobilyPurchaseSDKSyncer(
         return null
     }
 
-    fun getEntitlements(productIds: Array<String>): List<MobilyCustomerEntitlement> {
+    fun getEntitlements(productIds: Array<String>?): List<MobilyCustomerEntitlement> {
         if (customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
         }
@@ -121,7 +121,7 @@ class MobilyPurchaseSDKSyncer(
         val result = mutableListOf<MobilyCustomerEntitlement>()
 
         for (entitlement in this.entitlements!!) {
-            if (productIds.contains(entitlement.product.id)) {
+            if (productIds == null || productIds.contains(entitlement.product.id)) {
                 result.add(entitlement)
             }
         }
