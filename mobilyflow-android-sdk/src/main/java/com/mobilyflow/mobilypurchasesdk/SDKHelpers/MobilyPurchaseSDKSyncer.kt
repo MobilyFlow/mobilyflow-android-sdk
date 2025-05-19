@@ -47,6 +47,11 @@ class MobilyPurchaseSDKSyncer(
 
         // Synchronise ensure a new call to ensureSync with wait the old one to finish
         synchronized(this) {
+            if (customer != null && customer!!.isForwardingEnable) {
+                val isForwardingEnable = this.API.isForwardingEnable(customer!!.externalRef)
+                customer!!.isForwardingEnable = isForwardingEnable
+            }
+
             if (
                 force ||
                 lastSyncTime == null ||
@@ -54,11 +59,6 @@ class MobilyPurchaseSDKSyncer(
             ) {
                 Logger.d("Run sync")
                 if (customer != null) {
-                    if (customer!!.isForwardingEnable) {
-                        val isForwardingEnable = this.API.isForwardingEnable(customer!!.externalRef)
-                        customer!!.isForwardingEnable = isForwardingEnable
-                    }
-
                     _syncEntitlements()
                     lastSyncTime = System.currentTimeMillis()
                 }
