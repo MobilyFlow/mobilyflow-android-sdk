@@ -267,7 +267,7 @@ class MobilyPurchaseSDK(
     }
 
     @Throws(MobilyException::class)
-    fun getEntitlements(productIds: Array<String>): List<MobilyCustomerEntitlement> {
+    fun getEntitlements(productIds: Array<String>?): List<MobilyCustomerEntitlement> {
         return this.syncer.getEntitlements(productIds)
     }
 
