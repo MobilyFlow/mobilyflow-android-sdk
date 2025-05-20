@@ -55,7 +55,7 @@ class MobilyCustomerEntitlement(
 
                 subscription = SubscriptionEntitlement(
                     startDate = Utils.parseDate(jsonEntity.getString("startDate")),
-                    expirationDate = Utils.parseDate(jsonEntity.getString("expirationDate")),
+                    endDate = Utils.parseDate(jsonEntity.getString("endDate")),
                     autoRenewEnable = autoRenewEnable,
                     platform = Platform.valueOf(jsonEntity.getString("platform").uppercase()),
                     isManagedByThisStoreAccount = storeAccountTx != null,
@@ -78,7 +78,7 @@ class MobilyCustomerEntitlement(
 
     class SubscriptionEntitlement(
         val startDate: LocalDateTime,
-        val expirationDate: LocalDateTime,
+        val endDate: LocalDateTime,
         val autoRenewEnable: Boolean,
         val platform: Platform,
         val isManagedByThisStoreAccount: Boolean,
