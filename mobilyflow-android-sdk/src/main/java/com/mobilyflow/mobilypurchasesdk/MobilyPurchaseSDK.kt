@@ -287,11 +287,15 @@ class MobilyPurchaseSDK(
                 Logger.d("Request ownership transfer complete with status ${status.toString().lowercase()}")
                 return status
             } else {
-                return TransferOwnershipStatus.ACKNOWLEDGED
+                throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.NOTHING_TO_TRANSFER)
             }
         } catch (e: BillingClientException) {
             Logger.e("[TransferOwnership] BillingClientException: ${e.code} (${e.message})")
             throw MobilyException(MobilyException.Type.STORE_UNAVAILABLE)
+        } catch (e: MobilyTransferOwnershipException) {
+            throw e
+        } catch (e: MobilyException) {
+            throw e
         }
     }
 

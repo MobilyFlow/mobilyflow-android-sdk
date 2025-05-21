@@ -59,10 +59,6 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
             }
         }
 
-        if (result == TransferOwnershipStatus.ERROR) {
-            throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_FAILED)
-        }
-
         return result
     }
 }

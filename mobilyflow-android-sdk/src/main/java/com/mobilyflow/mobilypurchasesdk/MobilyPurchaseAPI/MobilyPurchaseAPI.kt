@@ -247,7 +247,7 @@ class MobilyPurchaseAPI(
     /**
      * Get transfer ownership request status from requestId
      */
-    @Throws(MobilyException::class)
+    @Throws(MobilyException::class, MobilyTransferOwnershipException::class)
     fun getTransferRequestStatus(requestId: String): TransferOwnershipStatus {
         val request = ApiRequest("GET", "/apps/me/customers/transfer-ownership/${requestId}/status")
 
@@ -260,6 +260,10 @@ class MobilyPurchaseAPI(
 
         if (response.success) {
             val jsonResponse = response.json().getJSONObject("data")
+            val statusStr = jsonResponse.getString("status").uppercase()
+            if (statusStr == "ERROR") {
+                throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_FAILED)
+            }
             return TransferOwnershipStatus.valueOf(jsonResponse.getString("status").uppercase())
         } else {
             Logger.w("[getTransferRequestStatus] API Error: ${response.string()}")
