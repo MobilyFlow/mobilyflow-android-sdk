@@ -271,6 +271,36 @@ class MobilyPurchaseSDK(
         return this.syncer.getEntitlements(productIds)
     }
 
+    @Throws(MobilyException::class)
+    fun getExternalEntitlements(): List<MobilyCustomerEntitlement> {
+        if (customer == null) {
+            throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
+        }
+
+        try {
+            val purchases = this.billingClient.queryPurchases()
+            val transactionsToClaim = MobilyPurchaseSDKHelper.getAllPurchaseTokens(purchases)
+            val entitlements = mutableListOf<MobilyCustomerEntitlement>()
+
+            if (transactionsToClaim.isNotEmpty()) {
+                val entitlementsJson = this.API.getCustomerExternalEntitlements(customer!!.id, transactionsToClaim)
+
+                for (i in 0..<entitlementsJson.length()) {
+                    val jsonEntitlement = entitlementsJson.getJSONObject(i)
+                    entitlements.add(MobilyCustomerEntitlement.parse(jsonEntitlement, purchases))
+                }
+            }
+            return entitlements
+        } catch (e: BillingClientException) {
+            Logger.e("[TransferOwnership] BillingClientException: ${e.code} (${e.message})")
+            throw MobilyException(MobilyException.Type.STORE_UNAVAILABLE)
+        } catch (e: MobilyTransferOwnershipException) {
+            throw e
+        } catch (e: MobilyException) {
+            throw e
+        }
+    }
+
     @Throws(MobilyException::class, MobilyTransferOwnershipException::class)
     fun requestTransferOwnership(): TransferOwnershipStatus {
         if (customer == null) {

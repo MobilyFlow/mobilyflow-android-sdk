@@ -173,6 +173,39 @@ class MobilyPurchaseAPI(
         return response.json().getJSONArray("data")
     }
 
+    /**
+     * Get external entitlements
+     */
+    @Throws(MobilyException::class)
+    fun getCustomerExternalEntitlements(customerId: String, transactions: Array<String>): JSONArray {
+        val jsonTransactions = JSONArray()
+        for (tx in transactions) {
+            jsonTransactions.put(tx)
+        }
+
+        val data = JSONObject()
+            .put("locale", this.locale)
+            .put("transactions", jsonTransactions)
+            .put("platform", "android")
+            .put("loadProduct", true)
+
+        val request = ApiRequest("POST", "/apps/me/customers/${customerId}/external-entitlements").setData(data)
+
+        val response: ApiResponse?
+        try {
+            response = this.helper.request(request)
+        } catch (e: Exception) {
+            throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
+        }
+
+        if (!response.success) {
+            Logger.w("[getCustomerEntitlements] API Error: ${response.string()}")
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+        }
+
+        return response.json().getJSONArray("data")
+    }
+
 
     @Throws(MobilyException::class)
     fun mapTransactions(customerId: String, transactions: Array<MapTransactionItem>) {

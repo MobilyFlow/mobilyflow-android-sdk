@@ -19,6 +19,7 @@ class MobilyCustomerEntitlement(
     val platformOriginalTransactionId: String?,
     val item: ItemEntitlement?,
     val subscription: SubscriptionEntitlement?,
+    val customerId: String,
 ) {
     companion object {
         internal fun parse(
@@ -32,6 +33,7 @@ class MobilyCustomerEntitlement(
 
             var item: ItemEntitlement? = null
             var subscription: SubscriptionEntitlement? = null
+            val customerId = jsonEntity.getString("customerId")
 
             if (type == ProductType.ONE_TIME) {
                 item = ItemEntitlement(jsonEntity.getInt("quantity"))
@@ -70,6 +72,7 @@ class MobilyCustomerEntitlement(
                 platformOriginalTransactionId = platformOriginalTransactionId,
                 item = item,
                 subscription = subscription,
+                customerId = customerId,
             )
         }
     }

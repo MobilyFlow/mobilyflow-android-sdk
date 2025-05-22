@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
             options = MobilyPurchaseSDKOptions(
                 locales = null,
                 debug = true,
-                // apiURL = "https://mobilyflow.eu-1.sharedwithexpose.com/v1/"
+                apiURL = "https://mobilyflow.eu-1.sharedwithexpose.com/v1/"
                 // apiURL = "https://api-staging.mobilyflow.com/v1/"
             )
         )
@@ -252,6 +252,13 @@ class MainActivity : ComponentActivity() {
                 Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
 
                 val products = mobily!!.getProducts(null, false)
+
+                Log.d("MobilyFlow", "External Entitlements: ")
+                val entitlements = mobily!!.getExternalEntitlements()
+                for (entitlement in entitlements) {
+                    Log.d("MobilyFlow", "    ${entitlement.product.identifier} / ${entitlement.customerId}")
+                }
+                Log.d("MobilyFlow", "==================")
 //                val groups = mobily!!.getSubscriptionGroups(arrayOf("forge_premium"), false)
 //                Log.d("MobilyFlow", "Go products")
 //                val products = groups[0].products
