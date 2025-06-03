@@ -442,7 +442,6 @@ class MobilyPurchaseSDK(
 
 
         val androidSku = purchase.products[0]
-
         val minimalProduct: MinimalProductForAndroidPurchase
         if (product != null && product.android_sku == androidSku) {
             minimalProduct = MinimalProductForAndroidPurchase(
