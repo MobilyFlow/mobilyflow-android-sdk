@@ -495,8 +495,8 @@ class MobilyPurchaseSDK(
                 if (!this.customer!!.isForwardingEnable) {
                     status = this.waiter.waitPurchaseWebhook(purchase)
                 }
-                syncer.ensureSync(true)
             }
+            syncer.ensureSync(true)
         }
         return status
     }
