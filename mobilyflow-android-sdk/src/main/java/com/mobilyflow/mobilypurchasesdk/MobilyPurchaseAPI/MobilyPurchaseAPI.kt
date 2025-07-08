@@ -249,7 +249,7 @@ class MobilyPurchaseAPI(
             response = this.helper.request(
                 ApiRequest(
                     "POST",
-                    "/apps/me/customers/transfer-ownership/request/android"
+                    "/apps/me/customer-transfer-ownerships/request/android"
                 ).setData(data)
             )
         } catch (e: Exception) {
@@ -282,7 +282,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class, MobilyTransferOwnershipException::class)
     fun getTransferRequestStatus(requestId: String): TransferOwnershipStatus {
-        val request = ApiRequest("GET", "/apps/me/customers/transfer-ownership/${requestId}/status")
+        val request = ApiRequest("GET", "/apps/me/customer-transfer-ownerships/${requestId}/status")
 
         val response: ApiResponse?
         try {
