@@ -520,4 +520,8 @@ class MobilyPurchaseSDK(
     fun getCustomer(): MobilyCustomer? {
         return this.customer
     }
+
+    fun getSDKVersion(): String {
+        return MOBILYFLOW_SDK_VERSION
+    }
 }

@@ -9,6 +9,7 @@ import com.mobilyflow.mobilypurchasesdk.Enums.TransferOwnershipStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.WebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
+import com.mobilyflow.mobilypurchasesdk.MOBILYFLOW_SDK_VERSION
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.jsonArrayToStringArray
 import org.json.JSONArray
@@ -24,8 +25,15 @@ class MobilyPurchaseAPI(
     apiURL: String? = null
 ) {
     val API_URL = apiURL ?: "https://api.mobilyflow.com/v1/"
-    val helper: ApiHelper = ApiHelper(API_URL, mapOf("Authorization" to "ApiKey $apiKey"))
     val locale = locales.joinToString(",")
+
+    val helper: ApiHelper = ApiHelper(
+        API_URL, mapOf(
+            "Authorization" to "ApiKey $apiKey",
+            "platform" to "android",
+            "sdk_version" to MOBILYFLOW_SDK_VERSION
+        )
+    )
 
     /**
      * Log user into MobilyFlow with his externalRef and return his uuid.
