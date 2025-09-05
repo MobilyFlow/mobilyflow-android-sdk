@@ -12,6 +12,7 @@ import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomerEntitlement
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
+import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import org.json.JSONArray
 
 class MobilyPurchaseSDKSyncer(
@@ -33,7 +34,7 @@ class MobilyPurchaseSDKSyncer(
             this.lastSyncTime = null
 
             if (customer != null && jsonEntitlements != null) {
-                _syncEntitlements(jsonEntitlements)
+                _syncEntitlements(StorePrice.getMostRelevantRegion(), jsonEntitlements)
                 lastSyncTime = System.currentTimeMillis()
             }
         }
@@ -59,7 +60,7 @@ class MobilyPurchaseSDKSyncer(
             ) {
                 Logger.d("Run sync")
                 if (customer != null) {
-                    _syncEntitlements()
+                    _syncEntitlements(StorePrice.getMostRelevantRegion())
                     lastSyncTime = System.currentTimeMillis()
                 }
                 Log.d("MobilyFlow", "End Sync")
@@ -68,7 +69,7 @@ class MobilyPurchaseSDKSyncer(
     }
 
     @Throws(MobilyException::class)
-    private fun _syncEntitlements(overrideJsonEntitlements: JSONArray? = null) {
+    private fun _syncEntitlements(currentRegion: String?, overrideJsonEntitlements: JSONArray? = null) {
         try {
             this.storeAccountTransactions = this.billingClient.queryPurchases()
         } catch (e: BillingClientException) {
@@ -80,7 +81,13 @@ class MobilyPurchaseSDKSyncer(
 
         for (i in 0..<entitlementsJson.length()) {
             val jsonEntitlement = entitlementsJson.getJSONObject(i)
-            entitlements.add(MobilyCustomerEntitlement.parse(jsonEntitlement, this.storeAccountTransactions))
+            entitlements.add(
+                MobilyCustomerEntitlement.parse(
+                    jsonEntitlement,
+                    this.storeAccountTransactions,
+                    currentRegion
+                )
+            )
         }
 
         this.entitlements = entitlements

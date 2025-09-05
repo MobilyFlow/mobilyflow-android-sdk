@@ -29,7 +29,7 @@ class MobilyProduct(
     val subscriptionProduct: MobilySubscriptionProduct?,
 ) {
     companion object {
-        internal fun parse(jsonProduct: JSONObject): MobilyProduct {
+        internal fun parse(jsonProduct: JSONObject, currentRegion: String?): MobilyProduct {
             val type = ProductType.valueOf(jsonProduct.getString("type").uppercase())
             val status: ProductStatus
             var oneTimeProduct: MobilyOneTimeProduct? = null
@@ -37,10 +37,10 @@ class MobilyProduct(
 
 
             if (type == ProductType.ONE_TIME) {
-                oneTimeProduct = MobilyOneTimeProduct.parse(jsonProduct)
+                oneTimeProduct = MobilyOneTimeProduct.parse(jsonProduct, currentRegion)
                 status = oneTimeProduct.status
             } else {
-                subscriptionProduct = MobilySubscriptionProduct.parse(jsonProduct)
+                subscriptionProduct = MobilySubscriptionProduct.parse(jsonProduct, currentRegion)
                 status = subscriptionProduct.status
             }
 

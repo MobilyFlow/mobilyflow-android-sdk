@@ -2,6 +2,7 @@ package com.mobilyflow.mobilypurchasesdk.Models
 
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseRegistry
+import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import org.json.JSONObject
 
@@ -14,7 +15,7 @@ class MobilyOneTimeProduct(
     val status: ProductStatus,
 ) {
     companion object {
-        internal fun parse(jsonProduct: JSONObject): MobilyOneTimeProduct {
+        internal fun parse(jsonProduct: JSONObject, currentRegion: String?): MobilyOneTimeProduct {
             val price: Double
             val currencyCode: String
             val priceFormatted: String
@@ -26,8 +27,11 @@ class MobilyOneTimeProduct(
             if (androidProduct?.oneTimePurchaseOfferDetails == null) {
                 status =
                     if (androidProduct == null) ProductStatus.UNAVAILABLE else ProductStatus.INVALID
-                price = jsonProduct.optDouble("defaultPrice", 0.0)
-                currencyCode = jsonProduct.optString("defaultCurrencyCode", "")
+
+                val storePrice = StorePrice.getDefaultPrice(jsonProduct.getJSONArray("StorePrices"), currentRegion)
+                price = if (storePrice == null) 0.0 else (storePrice.priceMillis / 1000.0)
+                currencyCode = storePrice?.currency ?: ""
+
                 priceFormatted = Utils.formatPrice(price, currencyCode)
             } else {
                 status = ProductStatus.AVAILABLE

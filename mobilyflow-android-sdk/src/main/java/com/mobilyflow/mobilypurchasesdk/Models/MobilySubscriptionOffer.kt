@@ -5,6 +5,7 @@ import com.mobilyflow.mobilypurchasesdk.Enums.PeriodUnit
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseRegistry
+import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import com.mobilyflow.mobilypurchasesdk.Utils.TranslationUtils
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import org.json.JSONObject
@@ -32,6 +33,7 @@ class MobilySubscriptionOffer(
             basePlanId: String,
             jsonBase: JSONObject,
             jsonOffer: JSONObject?,
+            currentRegion: String?
         ): MobilySubscriptionOffer {
             var id: String? = null
             var identifier: String? = null
@@ -88,8 +90,10 @@ class MobilySubscriptionOffer(
 
                 if (jsonOffer == null) {
                     // Base Offer but unavailable
-                    price = jsonBase.optDouble("defaultPrice", 0.0)
-                    currencyCode = jsonBase.optString("defaultCurrencyCode", "")
+                    val storePrice = StorePrice.getDefaultPrice(jsonBase.getJSONArray("StorePrices"), currentRegion)
+                    price = if (storePrice == null) 0.0 else (storePrice.priceMillis / 1000.0)
+                    currencyCode = storePrice?.currency ?: ""
+
                     priceFormatted = Utils.formatPrice(price, currencyCode)
 
                     periodCount = jsonBase.getInt("subscriptionPeriodCount")
@@ -97,8 +101,10 @@ class MobilySubscriptionOffer(
                     countBillingCycle = 0
                 } else {
                     // Promotional offer but unavailable
-                    price = jsonOffer.optDouble("defaultPrice", 0.0)
-                    currencyCode = jsonOffer.optString("defaultCurrencyCode", "")
+                    val storePrice = StorePrice.getDefaultPrice(jsonOffer.getJSONArray("StorePrices"), currentRegion)
+                    price = if (storePrice == null) 0.0 else (storePrice.priceMillis / 1000.0)
+                    currencyCode = storePrice?.currency ?: ""
+
                     priceFormatted = Utils.formatPrice(price, currencyCode)
 
                     if (type == "free_trial") {
