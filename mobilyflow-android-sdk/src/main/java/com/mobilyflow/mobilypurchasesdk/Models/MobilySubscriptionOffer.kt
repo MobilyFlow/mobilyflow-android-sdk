@@ -5,6 +5,7 @@ import com.mobilyflow.mobilypurchasesdk.Enums.PeriodUnit
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseRegistry
+import com.mobilyflow.mobilypurchasesdk.Utils.TranslationUtils
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import org.json.JSONObject
 
@@ -12,6 +13,7 @@ class MobilySubscriptionOffer(
     val id: String?, // null for base offer
     val identifier: String?, // null for base offer
     val externalRef: String?, // null for base offer
+    val referenceName: String?,
     val name: String,
     val price: Double,
     val currencyCode: String,
@@ -34,6 +36,7 @@ class MobilySubscriptionOffer(
             var id: String? = null
             var identifier: String? = null
             var externalRef: String? = null
+            var referenceName: String? = null
             var name = ""
             val price: Double
             val currencyCode: String
@@ -50,7 +53,8 @@ class MobilySubscriptionOffer(
                 id = jsonOffer.optString("id")
                 identifier = jsonOffer.optString("identifier")
                 externalRef = jsonOffer.optString("externalRef")
-                name = jsonOffer.optString("name")
+                referenceName = jsonOffer.optString("referenceName")
+                name = TranslationUtils.getTranslationValue(jsonOffer.getJSONArray("_translations"), "name")!!
                 type = jsonOffer.getString("type")
                 extras = jsonOffer.optJSONObject("extras")
                 android_offerId = jsonOffer.optString("android_offerId")
@@ -127,6 +131,7 @@ class MobilySubscriptionOffer(
                 id = id,
                 identifier = identifier,
                 externalRef = externalRef,
+                referenceName = referenceName,
                 name = name,
                 price = price,
                 currencyCode = currencyCode,

@@ -292,7 +292,7 @@ class MobilyPurchaseSDK(
             }
             return entitlements
         } catch (e: BillingClientException) {
-            Logger.e("[TransferOwnership] BillingClientException: ${e.code} (${e.message})")
+            Logger.e("[getExternalEntitlements] BillingClientException: ${e.code} (${e.message})")
             throw MobilyException(MobilyException.Type.STORE_UNAVAILABLE)
         } catch (e: MobilyTransferOwnershipException) {
             throw e
