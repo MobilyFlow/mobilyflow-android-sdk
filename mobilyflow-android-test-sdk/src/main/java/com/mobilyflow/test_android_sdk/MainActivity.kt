@@ -73,8 +73,8 @@ class MainActivity : ComponentActivity() {
             options = MobilyPurchaseSDKOptions(
                 locales = null,
                 debug = true,
-                apiURL = "https://mobilyflow.eu-1.sharedwithexpose.com/v1/"
-//                apiURL = "https://api-staging.mobilyflow.com/v1/"
+//                apiURL = "https://mobilyflow.eu-1.sharedwithexpose.com/v1/"
+                apiURL = "https://api-staging.mobilyflow.com/v1/"
             )
         )
 
@@ -245,8 +245,8 @@ class MainActivity : ComponentActivity() {
 //                val externalRef = "914b9a20-950b-44f7-bd7b-d81d57992294" // gregoire
 //                val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
 //                val externalRef = "random-user-android"
-                val externalRef = "android-user"
-//                val externalRef = "gregoire-android"
+//                val externalRef = "android-user"
+                val externalRef = "gregoire-android"
 
                 Log.d("MobilyFlow", "Go login ")
                 customer = mobily!!.login(externalRef)

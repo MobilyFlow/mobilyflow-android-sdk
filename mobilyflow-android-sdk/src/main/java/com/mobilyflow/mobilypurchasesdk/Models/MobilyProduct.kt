@@ -2,6 +2,7 @@ package com.mobilyflow.mobilypurchasesdk.Models
 
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Utils.TranslationUtils
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import kotlinx.datetime.LocalDateTime
 import org.json.JSONObject
@@ -15,6 +16,7 @@ class MobilyProduct(
     val externalRef: String,
     val appId: String,
 
+    val referenceName: String,
     val name: String,
     val description: String,
 
@@ -27,7 +29,7 @@ class MobilyProduct(
     val subscriptionProduct: MobilySubscriptionProduct?,
 ) {
     companion object {
-        internal fun parse(jsonProduct: JSONObject): MobilyProduct {
+        internal fun parse(jsonProduct: JSONObject, currentRegion: String?): MobilyProduct {
             val type = ProductType.valueOf(jsonProduct.getString("type").uppercase())
             val status: ProductStatus
             var oneTimeProduct: MobilyOneTimeProduct? = null
@@ -35,10 +37,10 @@ class MobilyProduct(
 
 
             if (type == ProductType.ONE_TIME) {
-                oneTimeProduct = MobilyOneTimeProduct.parse(jsonProduct)
+                oneTimeProduct = MobilyOneTimeProduct.parse(jsonProduct, currentRegion)
                 status = oneTimeProduct.status
             } else {
-                subscriptionProduct = MobilySubscriptionProduct.parse(jsonProduct)
+                subscriptionProduct = MobilySubscriptionProduct.parse(jsonProduct, currentRegion)
                 status = subscriptionProduct.status
             }
 
@@ -50,8 +52,12 @@ class MobilyProduct(
                 externalRef = jsonProduct.getString("externalRef"),
                 appId = jsonProduct.getString("appId"),
 
-                name = jsonProduct.getString("name"),
-                description = jsonProduct.getString("description"),
+                referenceName = jsonProduct.getString("referenceName"),
+                name = TranslationUtils.getTranslationValue(jsonProduct.getJSONArray("_translations"), "name")!!,
+                description = TranslationUtils.getTranslationValue(
+                    jsonProduct.getJSONArray("_translations"),
+                    "description"
+                )!!,
 
                 android_sku = jsonProduct.getString("android_sku"),
                 type = type,

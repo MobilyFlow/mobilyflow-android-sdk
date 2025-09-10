@@ -5,6 +5,8 @@ import com.mobilyflow.mobilypurchasesdk.Enums.PeriodUnit
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseRegistry
+import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
+import com.mobilyflow.mobilypurchasesdk.Utils.TranslationUtils
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import org.json.JSONObject
 
@@ -12,6 +14,7 @@ class MobilySubscriptionOffer(
     val id: String?, // null for base offer
     val identifier: String?, // null for base offer
     val externalRef: String?, // null for base offer
+    val referenceName: String?,
     val name: String,
     val price: Double,
     val currencyCode: String,
@@ -30,10 +33,12 @@ class MobilySubscriptionOffer(
             basePlanId: String,
             jsonBase: JSONObject,
             jsonOffer: JSONObject?,
+            currentRegion: String?
         ): MobilySubscriptionOffer {
             var id: String? = null
             var identifier: String? = null
             var externalRef: String? = null
+            var referenceName: String? = null
             var name = ""
             val price: Double
             val currencyCode: String
@@ -50,7 +55,8 @@ class MobilySubscriptionOffer(
                 id = jsonOffer.optString("id")
                 identifier = jsonOffer.optString("identifier")
                 externalRef = jsonOffer.optString("externalRef")
-                name = jsonOffer.optString("name")
+                referenceName = jsonOffer.optString("referenceName")
+                name = TranslationUtils.getTranslationValue(jsonOffer.getJSONArray("_translations"), "name")!!
                 type = jsonOffer.getString("type")
                 extras = jsonOffer.optJSONObject("extras")
                 android_offerId = jsonOffer.optString("android_offerId")
@@ -84,8 +90,10 @@ class MobilySubscriptionOffer(
 
                 if (jsonOffer == null) {
                     // Base Offer but unavailable
-                    price = jsonBase.optDouble("defaultPrice", 0.0)
-                    currencyCode = jsonBase.optString("defaultCurrencyCode", "")
+                    val storePrice = StorePrice.getDefaultPrice(jsonBase.getJSONArray("StorePrices"), currentRegion)
+                    price = if (storePrice == null) 0.0 else (storePrice.priceMillis / 1000.0)
+                    currencyCode = storePrice?.currency ?: ""
+
                     priceFormatted = Utils.formatPrice(price, currencyCode)
 
                     periodCount = jsonBase.getInt("subscriptionPeriodCount")
@@ -93,8 +101,10 @@ class MobilySubscriptionOffer(
                     countBillingCycle = 0
                 } else {
                     // Promotional offer but unavailable
-                    price = jsonOffer.optDouble("defaultPrice", 0.0)
-                    currencyCode = jsonOffer.optString("defaultCurrencyCode", "")
+                    val storePrice = StorePrice.getDefaultPrice(jsonOffer.getJSONArray("StorePrices"), currentRegion)
+                    price = if (storePrice == null) 0.0 else (storePrice.priceMillis / 1000.0)
+                    currencyCode = storePrice?.currency ?: ""
+
                     priceFormatted = Utils.formatPrice(price, currencyCode)
 
                     if (type == "free_trial") {
@@ -127,6 +137,7 @@ class MobilySubscriptionOffer(
                 id = id,
                 identifier = identifier,
                 externalRef = externalRef,
+                referenceName = referenceName,
                 name = name,
                 price = price,
                 currencyCode = currencyCode,

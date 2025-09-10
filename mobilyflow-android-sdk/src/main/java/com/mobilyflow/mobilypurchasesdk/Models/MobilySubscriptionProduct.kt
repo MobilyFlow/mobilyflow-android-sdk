@@ -14,7 +14,7 @@ class MobilySubscriptionProduct(
     val subscriptionGroupId: String,
 ) {
     companion object {
-        internal fun parse(jsonProduct: JSONObject): MobilySubscriptionProduct {
+        internal fun parse(jsonProduct: JSONObject, currentRegion: String?): MobilySubscriptionProduct {
             val baseOffer: MobilySubscriptionOffer
             var freeTrial: MobilySubscriptionOffer? = null
             val promotionalOffers = mutableListOf<MobilySubscriptionOffer>()
@@ -23,13 +23,13 @@ class MobilySubscriptionProduct(
             val basePlanId = jsonProduct.getString("android_basePlanId")
 
             val jsonOffers = jsonProduct.optJSONArray("Offers")
-            baseOffer = MobilySubscriptionOffer.parse(sku, basePlanId, jsonProduct, null)
+            baseOffer = MobilySubscriptionOffer.parse(sku, basePlanId, jsonProduct, null, currentRegion)
 
             if (jsonOffers != null) {
                 for (i in 0..<jsonOffers.length()) {
                     val jsonOffer = jsonOffers.getJSONObject(i)
 
-                    val offer = MobilySubscriptionOffer.parse(sku, basePlanId, jsonProduct, jsonOffer)
+                    val offer = MobilySubscriptionOffer.parse(sku, basePlanId, jsonProduct, jsonOffer, currentRegion)
 
                     if (offer.type == "free_trial") {
                         if (freeTrial != null) {

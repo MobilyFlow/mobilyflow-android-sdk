@@ -35,6 +35,7 @@ import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKDiagnostics
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKHelper
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKSyncer
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKWaiter
+import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.getPreferredLocales
 import org.json.JSONArray
 import java.util.concurrent.Executors
@@ -183,12 +184,13 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(jsonProducts, this.billingClient)
 
             // 3. Parse to MobilyProduct
+            val currentRegion = StorePrice.getMostRelevantRegion()
             val mobilyProducts = arrayListOf<MobilyProduct>()
 
             for (i in 0..<jsonProducts.length()) {
                 val jsonProduct = jsonProducts.getJSONObject(i)
 
-                val mobilyProduct = MobilyProduct.parse(jsonProduct)
+                val mobilyProduct = MobilyProduct.parse(jsonProduct, currentRegion)
                 productsCaches[mobilyProduct.id] = mobilyProduct
 
                 if (!onlyAvailable || mobilyProduct.status == ProductStatus.AVAILABLE) {
@@ -224,12 +226,13 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(allJsonProducts, this.billingClient)
 
             // 3. Parse to MobilySubscriptionGroup
+            val currentRegion = StorePrice.getMostRelevantRegion()
             val mobilyGroups = arrayListOf<MobilySubscriptionGroup>()
 
             for (i in 0..<jsonGroups.length()) {
                 val jsonGroup = jsonGroups.getJSONObject(i)
 
-                val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, onlyAvailable)
+                val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, currentRegion, onlyAvailable)
 
                 for (product in mobilyGroup.products) {
                     productsCaches[product.id] = product
@@ -284,15 +287,16 @@ class MobilyPurchaseSDK(
 
             if (transactionsToClaim.isNotEmpty()) {
                 val entitlementsJson = this.API.getCustomerExternalEntitlements(customer!!.id, transactionsToClaim)
+                val currentRegion = StorePrice.getMostRelevantRegion()
 
                 for (i in 0..<entitlementsJson.length()) {
                     val jsonEntitlement = entitlementsJson.getJSONObject(i)
-                    entitlements.add(MobilyCustomerEntitlement.parse(jsonEntitlement, purchases))
+                    entitlements.add(MobilyCustomerEntitlement.parse(jsonEntitlement, purchases, currentRegion))
                 }
             }
             return entitlements
         } catch (e: BillingClientException) {
-            Logger.e("[TransferOwnership] BillingClientException: ${e.code} (${e.message})")
+            Logger.e("[getExternalEntitlements] BillingClientException: ${e.code} (${e.message})")
             throw MobilyException(MobilyException.Type.STORE_UNAVAILABLE)
         } catch (e: MobilyTransferOwnershipException) {
             throw e
