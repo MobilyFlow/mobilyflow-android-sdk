@@ -223,25 +223,24 @@ class BillingClientWrapper(
             this.queryPurchaseResult?.waitResult()
         }
 
-        this.queryPurchaseResult = BillingRequestResult()
+        var purchases: List<Purchase>
+        synchronized(this) {
+            this.queryPurchaseResult = BillingRequestResult()
 
-        this._client.queryPurchasesAsync(
-            QueryPurchasesParams.newBuilder().setProductType(type).build(),
-            this
-        )
-        this.queryPurchaseResult!!.waitResult()
+            this._client.queryPurchasesAsync(
+                QueryPurchasesParams.newBuilder().setProductType(type).build(),
+                this
+            )
+            this.queryPurchaseResult!!.waitResult()
 
-        val result = this.queryPurchaseResult!!.billingResult()
-        if (result.responseCode != BillingClient.BillingResponseCode.OK) {
-            throw BillingClientException(result.responseCode, result.debugMessage)
+            val result = this.queryPurchaseResult!!.billingResult()
+            if (result.responseCode != BillingClient.BillingResponseCode.OK) {
+                throw BillingClientException(result.responseCode, result.debugMessage)
+            }
+
+            purchases = this.queryPurchaseResult!!.dataOptional() ?: arrayListOf()
+            this.queryPurchaseResult = null
         }
-
-        var purchases = this.queryPurchaseResult!!.dataOptional()
-        if (purchases == null) {
-            purchases = arrayListOf()
-        }
-
-        this.queryPurchaseResult = null
 
         return purchases
     }
