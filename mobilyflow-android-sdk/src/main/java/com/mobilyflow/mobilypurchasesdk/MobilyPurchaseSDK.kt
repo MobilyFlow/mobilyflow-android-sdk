@@ -35,6 +35,7 @@ import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKDiagnostics
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKHelper
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKSyncer
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKWaiter
+import com.mobilyflow.mobilypurchasesdk.Utils.DeviceInfo
 import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.getPreferredLocales
 import org.json.JSONArray
@@ -110,6 +111,16 @@ class MobilyPurchaseSDK(
             }
         }
         AppLifecycleProvider.registerListener(lifecycleListener)
+
+        // Log device info
+        Logger.d("[Device Info] OS = Android ${DeviceInfo.getOSVersion()}")
+        Logger.d("[Device Info] deviceModel = ${DeviceInfo.getDeviceModelName()}")
+        Logger.d("[Device Info] appPackage = ${DeviceInfo.getAppPackage(context)}")
+        Logger.d(
+            "[Device Info] appVersion = ${DeviceInfo.getAppVersionName(context)} (${
+                DeviceInfo.getAppVersionCode(context)
+            })"
+        )
     }
 
     fun close() {
