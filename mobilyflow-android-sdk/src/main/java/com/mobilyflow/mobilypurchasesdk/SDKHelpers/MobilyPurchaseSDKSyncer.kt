@@ -40,6 +40,14 @@ class MobilyPurchaseSDKSyncer(
         }
     }
 
+    fun logout() {
+        synchronized(this) {
+            this.customer = null
+            this.entitlements = null
+            this.lastSyncTime = null
+        }
+    }
+
     @Throws(MobilyException::class)
     fun ensureSync(force: Boolean = false) {
         if (Looper.myLooper() == Looper.getMainLooper()) {

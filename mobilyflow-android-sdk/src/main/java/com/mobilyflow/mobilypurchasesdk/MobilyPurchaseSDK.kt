@@ -180,6 +180,11 @@ class MobilyPurchaseSDK(
         return customer!!
     }
 
+    fun logout() {
+        this.customer = null
+        diagnostics.customerId = null
+        this.syncer.logout()
+    }
 
     /* ******************************************************************* */
     /* **************************** PRODUCTS ***************************** */
@@ -494,18 +499,18 @@ class MobilyPurchaseSDK(
             }
         }
 
-        if (mapTransaction && this.customer != null) {
-            try {
-                this.API.mapTransactions(
-                    this.customer!!.id,
-                    arrayOf(MapTransactionItem(androidSku, purchase.purchaseToken, minimalProduct.type))
-                )
-            } catch (e: Exception) {
-                Logger.e("Map transaction error", e)
-            }
-        }
-
         if (this.customer != null) {
+            if (mapTransaction) {
+                try {
+                    this.API.mapTransactions(
+                        this.customer!!.id,
+                        arrayOf(MapTransactionItem(androidSku, purchase.purchaseToken, minimalProduct.type))
+                    )
+                } catch (e: Exception) {
+                    Logger.e("Map transaction error", e)
+                }
+            }
+
             runCatching {
                 if (!this.customer!!.isForwardingEnable) {
                     status = this.waiter.waitPurchaseWebhook(purchase)

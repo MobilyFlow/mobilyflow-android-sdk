@@ -73,8 +73,8 @@ class MainActivity : ComponentActivity() {
             options = MobilyPurchaseSDKOptions(
                 locales = null,
                 debug = true,
-                apiURL = "https://mobilyflow.eu-1.sharedwithexpose.com/v1/"
-//                apiURL = "https://api-staging.mobilyflow.com/v1/"
+//                apiURL = "https://mobilyflow.eu-1.sharedwithexpose.com/v1/"
+                apiURL = "https://api-staging.mobilyflow.com/v1/"
             )
         )
 
