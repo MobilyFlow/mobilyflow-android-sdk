@@ -54,6 +54,7 @@ class MobilyCustomerEntitlement(
                     autoRenewEnable = storeAccountTx.isAutoRenewing
                 }
 
+                val productOfferJson = jsonEntity.optJSONObject("ProductOffer")
                 val renewProductJson = jsonEntity.optJSONObject("RenewProduct")
                 val renewProductOfferJson = jsonEntity.optJSONObject("RenewProductOffer")
 
@@ -79,6 +80,13 @@ class MobilyCustomerEntitlement(
                     renewPriceMillis = jsonEntity.getInt("renewPriceMillis"),
                     platform = Platform.valueOf(jsonEntity.getString("platform").uppercase()),
                     isManagedByThisStoreAccount = storeAccountTx != null,
+                    offer = if (productOfferJson != null) MobilySubscriptionOffer.parse(
+                        sku = product.android_sku,
+                        basePlanId = product.subscriptionProduct!!.android_basePlanId,
+                        jsonBase = jsonEntity.getJSONObject("Product"),
+                        jsonOffer = productOfferJson,
+                        currentRegion = currentRegion
+                    ) else null,
                     renewProduct = if (renewProductJson != null) MobilyProduct.parse(
                         renewProductJson,
                         currentRegion
@@ -125,6 +133,7 @@ class MobilyCustomerEntitlement(
         val renewPriceMillis: Int,
         val platform: Platform,
         val isManagedByThisStoreAccount: Boolean,
+        val offer: MobilySubscriptionOffer?,
         val renewProduct: MobilyProduct?,
         val renewProductOffer: MobilySubscriptionOffer?,
         val purchaseToken: String?,
