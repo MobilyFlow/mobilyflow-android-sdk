@@ -52,28 +52,12 @@ class MobilyPurchaseSDK(
     private val API =
         MobilyPurchaseAPI(appId, apiKey, environment, getPreferredLocales(options?.locales), options?.apiURL)
 
-    // TODO: Douple check this code doesn't duplicate if there is multiple SDK instances
-    private val billingClient = BillingClientWrapper(context) { billingResult, purchases ->
-        // Note: for out-of-app purchase, this function is called only when app is in background (but not when restart)
-        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && !purchases.isNullOrEmpty()) {
-            Executors.newSingleThreadExecutor().execute {
-                try {
-                    for (purchase in purchases) {
-                        finishPurchase(purchase, true)
-                    }
-                } catch (e: Exception) {
-                    Logger.e("billingClient out-of-app error", e)
-                }
-            }
-        }
-    }
+    private val billingClient: BillingClientWrapper
+    private val diagnostics: MobilyPurchaseSDKDiagnostics
+    private val waiter: MobilyPurchaseSDKWaiter
+    private val syncer: MobilyPurchaseSDKSyncer
 
     private var customer: MobilyCustomer? = null
-
-    private val diagnostics: MobilyPurchaseSDKDiagnostics = MobilyPurchaseSDKDiagnostics(billingClient, null)
-    private val waiter: MobilyPurchaseSDKWaiter = MobilyPurchaseSDKWaiter(API, diagnostics)
-    private val syncer: MobilyPurchaseSDKSyncer = MobilyPurchaseSDKSyncer(API, billingClient)
-
     private var isPurchasing = false
 
     private var lastAppPauseTime: Long? = null
@@ -85,6 +69,26 @@ class MobilyPurchaseSDK(
         Monitoring.initialize(context, "MobilyFlow", options?.debug == true) { logFile ->
             API.uploadMonitoring(customer?.id, logFile)
         }
+
+        // TODO: Double check this code doesn't duplicate if there is multiple SDK instances
+        this.billingClient = BillingClientWrapper(context) { billingResult, purchases ->
+            // Note: for out-of-app purchase, this function is called only when app is in background (but not when restart)
+            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && !purchases.isNullOrEmpty()) {
+                Executors.newSingleThreadExecutor().execute {
+                    try {
+                        for (purchase in purchases) {
+                            finishPurchase(purchase, true)
+                        }
+                    } catch (e: Exception) {
+                        Logger.e("billingClient out-of-app error", e)
+                    }
+                }
+            }
+        }
+
+        diagnostics = MobilyPurchaseSDKDiagnostics(billingClient, null)
+        waiter = MobilyPurchaseSDKWaiter(API, diagnostics)
+        syncer = MobilyPurchaseSDKSyncer(API, billingClient)
 
         lifecycleListener = object : AppLifecycleProvider.AppLifecycleCallbacks() {
             override fun onActivityPaused(activity: Activity) {
