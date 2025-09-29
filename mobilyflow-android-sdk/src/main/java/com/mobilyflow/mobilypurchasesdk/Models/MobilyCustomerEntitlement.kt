@@ -67,7 +67,7 @@ class MobilyCustomerEntitlement(
                     isExpiredOrRevoked = jsonEntity.getBoolean("isExpiredOrRevoked"),
                     isPaused = jsonEntity.getBoolean("isPaused"),
                     hasPauseScheduled = jsonEntity.getBoolean("hasPauseScheduled"),
-                    resumeDate = if (jsonEntity.isNull("endDate")) null else Utils.parseDate(jsonEntity.getString("endDate")),
+                    resumeDate = if (jsonEntity.isNull("resumeDate")) null else Utils.parseDate(jsonEntity.getString("resumeDate")),
                     offerExpiryDate = if (jsonEntity.isNull("offerExpiryDate")) null else Utils.parseDate(
                         jsonEntity.getString(
                             "offerExpiryDate"
