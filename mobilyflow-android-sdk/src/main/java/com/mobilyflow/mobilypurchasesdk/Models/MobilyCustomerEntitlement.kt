@@ -55,16 +55,40 @@ class MobilyCustomerEntitlement(
                 }
 
                 val renewProductJson = jsonEntity.optJSONObject("RenewProduct")
+                val renewProductOfferJson = jsonEntity.optJSONObject("RenewProductOffer")
 
                 subscription = SubscriptionEntitlement(
                     startDate = Utils.parseDate(jsonEntity.getString("startDate")),
                     endDate = Utils.parseDate(jsonEntity.getString("endDate")),
                     autoRenewEnable = autoRenewEnable,
+                    isInGracePeriod = jsonEntity.getBoolean("isInGracePeriod"),
+                    isInBillingIssue = jsonEntity.getBoolean("isInBillingIssue"),
+                    isExpiredOrRevoked = jsonEntity.getBoolean("isExpiredOrRevoked"),
+                    isPaused = jsonEntity.getBoolean("isPaused"),
+                    hasPauseScheduled = jsonEntity.getBoolean("hasPauseScheduled"),
+                    resumeDate = if (jsonEntity.isNull("endDate")) null else Utils.parseDate(jsonEntity.getString("endDate")),
+                    offerExpiryDate = if (jsonEntity.isNull("offerExpiryDate")) null else Utils.parseDate(
+                        jsonEntity.getString(
+                            "offerExpiryDate"
+                        )
+                    ),
+                    offerRemainingCycle = jsonEntity.getInt("offerRemainingCycle"),
+                    currency = jsonEntity.getString("currency"),
+                    lastPriceMillis = jsonEntity.getInt("lastPriceMillis"),
+                    regularPriceMillis = jsonEntity.getInt("regularPriceMillis"),
+                    renewPriceMillis = jsonEntity.getInt("renewPriceMillis"),
                     platform = Platform.valueOf(jsonEntity.getString("platform").uppercase()),
                     isManagedByThisStoreAccount = storeAccountTx != null,
                     renewProduct = if (renewProductJson != null) MobilyProduct.parse(
                         renewProductJson,
                         currentRegion
+                    ) else null,
+                    renewProductOffer = if (renewProductJson != null && renewProductOfferJson != null) MobilySubscriptionOffer.parse(
+                        sku = renewProductJson.getString("android_sku"),
+                        basePlanId = renewProductJson.getString("android_basePlanId"),
+                        jsonBase = renewProductJson,
+                        jsonOffer = renewProductOfferJson,
+                        currentRegion = currentRegion
                     ) else null,
                     purchaseToken = storeAccountTx?.purchaseToken,
                 )
@@ -87,9 +111,22 @@ class MobilyCustomerEntitlement(
         val startDate: LocalDateTime,
         val endDate: LocalDateTime,
         val autoRenewEnable: Boolean,
+        val isInGracePeriod: Boolean,
+        val isInBillingIssue: Boolean,
+        val isExpiredOrRevoked: Boolean,
+        val isPaused: Boolean,
+        val hasPauseScheduled: Boolean,
+        val resumeDate: LocalDateTime?,
+        val offerExpiryDate: LocalDateTime?,
+        val offerRemainingCycle: Int,
+        val currency: String,
+        val lastPriceMillis: Int,
+        val regularPriceMillis: Int,
+        val renewPriceMillis: Int,
         val platform: Platform,
         val isManagedByThisStoreAccount: Boolean,
         val renewProduct: MobilyProduct?,
+        val renewProductOffer: MobilySubscriptionOffer?,
         val purchaseToken: String?,
     ) {}
 }

@@ -250,6 +250,7 @@ class MainActivity : ComponentActivity() {
 
                 Log.d("MobilyFlow", "Go login ")
                 customer = mobily!!.login(externalRef)
+                Log.d("MobilyFlow", "Login on customer ${customer!!.id}")
                 Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer!!.isForwardingEnable))
                 Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
 

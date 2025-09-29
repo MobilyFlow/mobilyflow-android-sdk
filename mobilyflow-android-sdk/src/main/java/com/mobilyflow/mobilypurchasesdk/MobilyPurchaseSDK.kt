@@ -71,6 +71,7 @@ class MobilyPurchaseSDK(
         }
 
         // TODO: Double check this code doesn't duplicate if there is multiple SDK instances
+        // We may use a singleton instead ?
         this.billingClient = BillingClientWrapper(context) { billingResult, purchases ->
             // Note: for out-of-app purchase, this function is called only when app is in background (but not when restart)
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && !purchases.isNullOrEmpty()) {
