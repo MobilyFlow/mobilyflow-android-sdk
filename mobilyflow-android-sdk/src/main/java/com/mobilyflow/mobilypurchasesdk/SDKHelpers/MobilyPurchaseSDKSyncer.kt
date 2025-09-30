@@ -34,8 +34,7 @@ class MobilyPurchaseSDKSyncer(
             this.lastSyncTime = null
 
             if (customer != null && jsonEntitlements != null) {
-                _syncEntitlements(StorePrice.getMostRelevantRegion(), jsonEntitlements)
-                lastSyncTime = System.currentTimeMillis()
+                this.ensureSync(true)
             }
         }
     }
@@ -57,6 +56,8 @@ class MobilyPurchaseSDKSyncer(
         // Synchronise ensure a new call to ensureSync with wait the old one to finish
         synchronized(this) {
             if (customer != null && customer!!.isForwardingEnable) {
+                // If a customer is flag as forwarded, we double check if it's still the case (so if we disable forwarding
+                // on the backoffice, it's take effect instantly)
                 val isForwardingEnable = this.API.isForwardingEnable(customer!!.externalRef)
                 customer!!.isForwardingEnable = isForwardingEnable
             }
@@ -66,12 +67,13 @@ class MobilyPurchaseSDKSyncer(
                 lastSyncTime == null ||
                 (lastSyncTime!! + CACHE_DURATION_MS) < System.currentTimeMillis()
             ) {
-                Logger.d("Run sync")
+                Logger.d("Run Sync expected...")
                 if (customer != null) {
+                    Logger.d("Run Sync for customer ${customer!!.id} (externalRef: ${customer!!.externalRef})")
                     _syncEntitlements(StorePrice.getMostRelevantRegion())
                     lastSyncTime = System.currentTimeMillis()
+                    Logger.d("End Sync")
                 }
-                Log.d("MobilyFlow", "End Sync")
             }
         }
     }
