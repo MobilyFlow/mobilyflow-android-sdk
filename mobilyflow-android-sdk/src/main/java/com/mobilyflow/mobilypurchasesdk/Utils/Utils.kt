@@ -17,11 +17,12 @@ import java.util.Currency as LegacyCurrency
 
 abstract class Utils {
     companion object {
-        fun microToDouble(micros: Long): Double {
-            return micros.toDouble() / 1000000
+        fun microToMillis(micros: Long): Int {
+            return (micros / 1000L).toInt()
         }
 
-        fun formatPrice(price: Double, currencyCode: String): String {
+        fun formatPrice(priceMillis: Int, currencyCode: String): String {
+            val price = priceMillis / 1000.0
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val formatter = NumberFormat.getCurrencyInstance()
@@ -33,7 +34,7 @@ abstract class Utils {
                     return formatter.format(price)
                 }
             } catch (e: IllegalArgumentException) {
-                Logger.e("formatPrice fail for args $price $currencyCode -> fallback")
+                Logger.e("formatPrice fail for args $priceMillis $currencyCode -> fallback")
                 return String.format(Locale.getDefault(), "%.2f %s", price, currencyCode)
             }
         }

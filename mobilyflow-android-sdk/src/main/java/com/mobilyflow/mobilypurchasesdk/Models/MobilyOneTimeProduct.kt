@@ -7,7 +7,7 @@ import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import org.json.JSONObject
 
 class MobilyOneTimeProduct(
-    val price: Double,
+    val priceMillis: Int,
     val currencyCode: String,
     val priceFormatted: String,
     val isConsumable: Boolean,
@@ -16,7 +16,7 @@ class MobilyOneTimeProduct(
 ) {
     companion object {
         internal fun parse(jsonProduct: JSONObject, currentRegion: String?): MobilyOneTimeProduct {
-            val price: Double
+            val priceMillis: Int
             val currencyCode: String
             val priceFormatted: String
             val status: ProductStatus
@@ -29,21 +29,20 @@ class MobilyOneTimeProduct(
                     if (androidProduct == null) ProductStatus.UNAVAILABLE else ProductStatus.INVALID
 
                 val storePrice = StorePrice.getDefaultPrice(jsonProduct.getJSONArray("StorePrices"), currentRegion)
-                price = if (storePrice == null) 0.0 else (storePrice.priceMillis / 1000.0)
+                priceMillis = storePrice?.priceMillis ?: 0
                 currencyCode = storePrice?.currency ?: ""
 
-                priceFormatted = Utils.formatPrice(price, currencyCode)
+                priceFormatted = Utils.formatPrice(priceMillis, currencyCode)
             } else {
                 status = ProductStatus.AVAILABLE
 
-                price =
-                    Utils.microToDouble(androidProduct.oneTimePurchaseOfferDetails!!.priceAmountMicros)
+                priceMillis = Utils.microToMillis(androidProduct.oneTimePurchaseOfferDetails!!.priceAmountMicros)
                 currencyCode = androidProduct.oneTimePurchaseOfferDetails!!.priceCurrencyCode
                 priceFormatted = androidProduct.oneTimePurchaseOfferDetails!!.formattedPrice
             }
 
             return MobilyOneTimeProduct(
-                price = price,
+                priceMillis = priceMillis,
                 currencyCode = currencyCode,
                 priceFormatted = priceFormatted,
                 isConsumable = jsonProduct.getBoolean("isConsumable"),

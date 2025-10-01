@@ -16,7 +16,7 @@ class MobilySubscriptionOffer(
     val externalRef: String?, // null for base offer
     val referenceName: String?,
     val name: String,
-    val price: Double,
+    val priceMillis: Int,
     val currencyCode: String,
     val priceFormatted: String,
     val type: String,
@@ -40,7 +40,7 @@ class MobilySubscriptionOffer(
             var externalRef: String? = null
             var referenceName: String? = null
             var name = ""
-            val price: Double
+            val priceMillis: Int
             val currencyCode: String
             val priceFormatted: String
             var type = "recurring"
@@ -91,10 +91,10 @@ class MobilySubscriptionOffer(
                 if (jsonOffer == null) {
                     // Base Offer but unavailable
                     val storePrice = StorePrice.getDefaultPrice(jsonBase.getJSONArray("StorePrices"), currentRegion)
-                    price = if (storePrice == null) 0.0 else (storePrice.priceMillis / 1000.0)
+                    priceMillis = storePrice?.priceMillis ?: 0
                     currencyCode = storePrice?.currency ?: ""
 
-                    priceFormatted = Utils.formatPrice(price, currencyCode)
+                    priceFormatted = Utils.formatPrice(priceMillis, currencyCode)
 
                     periodCount = jsonBase.getInt("subscriptionPeriodCount")
                     periodUnit = PeriodUnit.valueOf(jsonBase.getString("subscriptionPeriodUnit").uppercase())
@@ -102,10 +102,10 @@ class MobilySubscriptionOffer(
                 } else {
                     // Promotional offer but unavailable
                     val storePrice = StorePrice.getDefaultPrice(jsonOffer.getJSONArray("StorePrices"), currentRegion)
-                    price = if (storePrice == null) 0.0 else (storePrice.priceMillis / 1000.0)
+                    priceMillis = storePrice?.priceMillis ?: 0
                     currencyCode = storePrice?.currency ?: ""
 
-                    priceFormatted = Utils.formatPrice(price, currencyCode)
+                    priceFormatted = Utils.formatPrice(priceMillis, currencyCode)
 
                     if (type == "free_trial") {
                         periodCount = jsonOffer.getInt("offerPeriodCount")
@@ -123,7 +123,7 @@ class MobilySubscriptionOffer(
                 val phase = androidOffer.pricingPhases.pricingPhaseList[0]
 
                 status = ProductStatus.AVAILABLE
-                price = Utils.microToDouble(phase.priceAmountMicros)
+                priceMillis = Utils.microToMillis(phase.priceAmountMicros)
                 currencyCode = phase.priceCurrencyCode
                 priceFormatted = phase.formattedPrice
 
@@ -139,7 +139,7 @@ class MobilySubscriptionOffer(
                 externalRef = externalRef,
                 referenceName = referenceName,
                 name = name,
-                price = price,
+                priceMillis = priceMillis,
                 currencyCode = currencyCode,
                 priceFormatted = priceFormatted,
                 type = type,
