@@ -2,7 +2,6 @@ package com.mobilyflow.mobilypurchasesdk.SDKHelpers
 
 import android.os.Looper
 import android.os.NetworkOnMainThreadException
-import android.util.Log
 import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientException
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
