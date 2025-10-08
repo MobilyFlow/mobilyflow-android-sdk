@@ -1,7 +1,7 @@
 [versions]
 agp = "8.8.1"
-billing = "7.1.1"
-kotlin = "1.9.24"
+billing = "8.0.0"
+kotlin = "2.1.0"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -14,7 +14,7 @@ activityCompose = "1.10.0"
 composeBom = "2025.02.00"
 okhttp = "4.12.0"
 kotlinxCollectionsImmutable = "0.3.5"
-billingKtx = "7.1.1"
+billingKtx = "8.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,4 +44,4 @@ billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", versi
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

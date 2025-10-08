@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ConsumeParams
@@ -198,31 +199,45 @@ class MobilyPurchaseSDK(
     @Throws(MobilyException::class)
     fun getProducts(identifiers: Array<String>?, onlyAvailable: Boolean): List<MobilyProduct> {
         try {
+            Log.d("MobilyFlow", "[getProduct] 111")
+
             // 1. Get product from Mobily API
             val jsonProducts = this.API.getProducts(identifiers)
+            Log.d("MobilyFlow", "[getProduct] 222")
 
             // 2. Get product from Play Store
             MobilyPurchaseRegistry.registerAndroidJsonProducts(jsonProducts, this.billingClient)
+            Log.d("MobilyFlow", "[getProduct] 333")
 
             // 3. Parse to MobilyProduct
             val currentRegion = StorePrice.getMostRelevantRegion()
+            Log.d("MobilyFlow", "[getProduct] 444")
             val mobilyProducts = arrayListOf<MobilyProduct>()
+            Log.d("MobilyFlow", "[getProduct] 555")
 
             for (i in 0..<jsonProducts.length()) {
+                Log.d("MobilyFlow", "[getProduct] 666")
                 val jsonProduct = jsonProducts.getJSONObject(i)
+                Log.d("MobilyFlow", "[getProduct] 777")
 
                 val mobilyProduct = MobilyProduct.parse(jsonProduct, currentRegion)
+                Log.d("MobilyFlow", "[getProduct] 888")
                 productsCaches[mobilyProduct.id] = mobilyProduct
+                Log.d("MobilyFlow", "[getProduct] 999")
 
                 if (!onlyAvailable || mobilyProduct.status == ProductStatus.AVAILABLE) {
+                    Log.d("MobilyFlow", "[getProduct] 10 10")
                     mobilyProducts.add(mobilyProduct)
                 }
+                Log.d("MobilyFlow", "[getProduct] 11 11")
             }
 
             return mobilyProducts
         } catch (e: MobilyException) {
+            Log.d("MobilyFlow", "[getProduct] catch MobilyException")
             throw e
         } catch (e: Exception) {
+            Log.d("MobilyFlow", "[getProduct] catch Exception")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR, e)
         }
     }

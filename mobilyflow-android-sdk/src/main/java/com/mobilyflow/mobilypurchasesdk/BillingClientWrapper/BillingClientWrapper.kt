@@ -99,7 +99,7 @@ class BillingClientWrapper(
         val request = QueryProductDetailsParams.newBuilder().setProductList(products).build()
 
         this._client.queryProductDetailsAsync(request) { billingResult, productDetails ->
-            result.set(billingResult, productDetails)
+            result.set(billingResult, productDetails.productDetailsList)
         }
 
         result.waitResult()

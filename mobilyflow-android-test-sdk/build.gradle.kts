@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
@@ -50,6 +51,18 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+
+    flavorDimensions += "target"
+    productFlavors {
+        create("mobilyflow") {
+            dimension = "target"
+            applicationId = "com.mobilyflow.test_android_sdk"
+        }
+        create("nouslib") {
+            dimension = "target"
+            applicationId = "com.mobilyflow.NousLibTest"
+        }
     }
 }
 
