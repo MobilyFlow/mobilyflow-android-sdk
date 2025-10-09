@@ -13,6 +13,7 @@ class MobilyOneTimeProduct(
     val isConsumable: Boolean,
     val isMultiQuantity: Boolean,
     val status: ProductStatus,
+    // TODO: add android_purchaseOptionId (from android_basePlanId field)
 ) {
     companion object {
         internal fun parse(jsonProduct: JSONObject, currentRegion: String?): MobilyOneTimeProduct {
