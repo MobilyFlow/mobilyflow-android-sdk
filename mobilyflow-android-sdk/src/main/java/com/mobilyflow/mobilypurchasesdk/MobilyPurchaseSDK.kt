@@ -426,7 +426,7 @@ class MobilyPurchaseSDK(
             ) {
                 throw MobilyException(MobilyException.Type.STORE_UNAVAILABLE)
             } else {
-                Logger.e("purchaseProduct unknown error", e)
+                Logger.e("purchaseProduct unmanaged BillingClient Error (code : ${e.code})", e)
                 this.sendDiagnostic()
 
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.FAILED)

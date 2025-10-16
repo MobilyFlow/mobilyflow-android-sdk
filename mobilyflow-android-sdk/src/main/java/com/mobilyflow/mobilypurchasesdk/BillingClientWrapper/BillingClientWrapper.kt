@@ -44,7 +44,7 @@ class BillingClientWrapper(
             .setListener(this)
             .enablePendingPurchases(
                 PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
-            )
+            ).enableAutoServiceReconnection()
             .build()
         _client.startConnection(this)
     }
@@ -59,6 +59,13 @@ class BillingClientWrapper(
             if (this.status == BillingClientStatus.INITIALIZING) {
                 this.wait()
             } else if (this.status != BillingClientStatus.AVAILABLE) {
+                if (_client.isReady) {
+                    // Client already ready, probably means enableAutoServiceReconnection have done the job
+                    Logger.d("[BillingClient] ensureInitialization with status ${this.status} while client is ready -> Skip")
+                    this.status == BillingClientStatus.AVAILABLE
+                    return
+                }
+
                 // Retry connection
                 _client.startConnection(this)
                 this.syncConfig()
@@ -194,10 +201,10 @@ class BillingClientWrapper(
 
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
         if (this.billingFlowResult != null) {
-            Logger.d("onPurchasesUpdated: $billingResult -> Managed by wrapper internally")
+            Logger.d("[BillingClient] onPurchasesUpdated: $billingResult -> Managed by wrapper internally")
             this.billingFlowResult!!.set(billingResult, purchases)
         } else {
-            Logger.d("onPurchasesUpdated: $billingResult -> Send to global listener")
+            Logger.d("[BillingClient] onPurchasesUpdated: $billingResult -> Send to global listener")
             this.purchasesUpdatedListener.onPurchasesUpdated(billingResult, purchases)
         }
     }
@@ -288,6 +295,7 @@ class BillingClientWrapper(
                 // The BillingClient is ready. You can query purchases here.
                 this.status = BillingClientStatus.AVAILABLE
                 this.notifyAll()
+                Logger.d("[BillingClient] onBillingSetupFinished with success")
             } else {
                 this.status = BillingClientStatus.UNAVAILABLE
                 this.notifyAll()
@@ -298,7 +306,7 @@ class BillingClientWrapper(
                 //  - Unsupported country
                 //  - Google Play is unable to charge the user’s payment method
 
-                Logger.e("onBillingSetupFinished: Error: ${billingResult.responseCode}/${billingResult.debugMessage}")
+                Logger.e("[BillingClient] onBillingSetupFinished: Error: ${billingResult.responseCode}/${billingResult.debugMessage}")
             }
         }
     }
@@ -306,7 +314,7 @@ class BillingClientWrapper(
     override fun onBillingServiceDisconnected() {
         // Set the connection as disconnected, never call startConnection again, it will be done
         // automatically, either by the OS or by calling ensureInitialization on the next function call
-        Logger.e("onBillingServiceDisconnected")
+        Logger.e("[BillingClient] onBillingServiceDisconnected")
         this.status = BillingClientStatus.DISCONNECTED
     }
 

@@ -16,6 +16,8 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
         val startTime = System.currentTimeMillis()
         var retry = 0
 
+        Logger.d("Wait webhook for ${purchase.orderId} (purchaseToken: ${purchase.purchaseToken})")
+
         while (result == WebhookStatus.PENDING) {
             result = this.API.getWebhookStatus(purchase.purchaseToken, purchase.orderId!!)
 
@@ -31,6 +33,8 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
                 retry++
             }
         }
+
+        Logger.d("Webhook wait completed (${result})")
 
         if (result == WebhookStatus.ERROR) {
             throw MobilyPurchaseException(MobilyPurchaseException.Type.WEBHOOK_FAILED)

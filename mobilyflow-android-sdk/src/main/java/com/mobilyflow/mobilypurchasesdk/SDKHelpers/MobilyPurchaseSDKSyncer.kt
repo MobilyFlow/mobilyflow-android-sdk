@@ -71,8 +71,10 @@ class MobilyPurchaseSDKSyncer(
                     Logger.d("Run Sync for customer ${customer!!.id} (externalRef: ${customer!!.externalRef})")
                     _syncEntitlements(StorePrice.getMostRelevantRegion())
                     lastSyncTime = System.currentTimeMillis()
-                    Logger.d("End Sync")
+                } else {
+                    Logger.d(" -> Sync skipped (no customer)")
                 }
+                Logger.d("End Sync")
             }
         }
     }
