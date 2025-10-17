@@ -8,4 +8,5 @@ class LoginResponse(
     val entitlements: JSONArray,
     val platformOriginalTransactionIds: Array<String>,
     val isForwardingEnable: Boolean,
+    val haveMonitoringRequests: Boolean,
 ) {}

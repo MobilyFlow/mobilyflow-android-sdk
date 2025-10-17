@@ -9,15 +9,16 @@ import java.util.concurrent.Executors
 
 
 class MobilyPurchaseSDKDiagnostics(val billingClient: BillingClientWrapper, var customerId: String?) {
-    fun sendDiagnostic() {
+    fun sendDiagnostic(sinceDays: Int = 1) {
         Executors.newSingleThreadExecutor().execute {
             // 1. Write maximum info we can get
             runCatching {
                 val packageName = billingClient.context.packageName
                 val pInfo: PackageInfo = billingClient.context.packageManager.getPackageInfo(packageName, 0)
                 val versionName = pInfo.versionName
-                val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pInfo.longVersionCode else pInfo.versionCode
-                
+                val versionCode =
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pInfo.longVersionCode else pInfo.versionCode
+
                 Logger.d("App $packageName version $versionName ($versionCode)")
             }
             runCatching {
@@ -36,7 +37,7 @@ class MobilyPurchaseSDKDiagnostics(val billingClient: BillingClientWrapper, var 
 
             // 2. Send diagnostics
             runCatching {
-                Monitoring.exportDiagnostic(1)
+                Monitoring.exportDiagnostic(sinceDays)
             }
         }
     }

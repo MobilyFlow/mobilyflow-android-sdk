@@ -142,19 +142,18 @@ class MobilyPurchaseSDK(
     /* ******************************************************************* */
 
     fun login(externalRef: String): MobilyCustomer {
-        // 1. Login
+        // 1. Logout previous user
+        this.logout();
+
+        // 2. Login
         val loginResponse = this.API.login(externalRef)
 
         this.customer = MobilyCustomer.parse(loginResponse.customer, loginResponse.isForwardingEnable)
         diagnostics.customerId = this.customer?.id
         this.syncer.login(customer, loginResponse.entitlements)
 
-        // 2. Sync
-        this.syncer.ensureSync()
-
-        // 3. Manage out-of-app purchase
-        val executor = Executors.newSingleThreadExecutor()
-        executor.execute {
+        // 3. Map transaction that are not known by the server & Manage out-of-app purchase
+        Executors.newSingleThreadExecutor().execute {
             try {
                 val purchases = this.billingClient.queryPurchases()
 
@@ -164,7 +163,6 @@ class MobilyPurchaseSDK(
                     }
                 }
 
-                // 4. Map transaction that are not known by the server
                 val transactionsToMap = MobilyPurchaseSDKHelper.getTransactionsToMap(
                     loginResponse.platformOriginalTransactionIds,
                     purchases
@@ -179,6 +177,15 @@ class MobilyPurchaseSDK(
                 }
             } catch (e: BillingClientException) {
                 Logger.e("[Login] BillingClientException: ${e.code} (${e.message})")
+            }
+        }
+
+        // 4. Send monitoring if requested
+        if (loginResponse.haveMonitoringRequests) {
+            Executors.newSingleThreadExecutor().execute {
+                // When monitoring is requested, send 10 days
+                Logger.d("Send monitoring as requested by the server")
+                this.sendDiagnostic(10)
             }
         }
 
@@ -530,8 +537,8 @@ class MobilyPurchaseSDK(
     /* *********************** DIAGNOSTICS *********************** */
     /* *********************************************************** */
 
-    fun sendDiagnostic() {
-        diagnostics.sendDiagnostic()
+    fun sendDiagnostic(sinceDays: Int = 1) {
+        diagnostics.sendDiagnostic(sinceDays)
     }
 
     /* *********************************************************** */

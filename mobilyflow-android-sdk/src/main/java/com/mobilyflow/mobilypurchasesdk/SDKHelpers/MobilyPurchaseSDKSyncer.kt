@@ -33,8 +33,10 @@ class MobilyPurchaseSDKSyncer(
             this.lastSyncTime = null
 
             if (customer != null && jsonEntitlements != null) {
-                this.ensureSync(true)
+                this._syncEntitlements(StorePrice.getMostRelevantRegion(), jsonEntitlements)
             }
+
+            this.lastSyncTime = System.currentTimeMillis()
         }
     }
 
