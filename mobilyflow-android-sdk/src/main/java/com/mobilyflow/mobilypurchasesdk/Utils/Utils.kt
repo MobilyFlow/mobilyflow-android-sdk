@@ -10,6 +10,10 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.json.JSONArray
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 import java.util.Locale
 import java.text.NumberFormat as LegacyNumberFormat
@@ -26,11 +30,15 @@ abstract class Utils {
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     val formatter = NumberFormat.getCurrencyInstance()
-                    formatter.currency = Currency.getInstance(currencyCode)
+                    if (currencyCode.isNotEmpty()) {
+                        formatter.currency = Currency.getInstance(currencyCode)
+                    }
                     return formatter.format(price)
                 } else {
                     val formatter = LegacyNumberFormat.getCurrencyInstance()
-                    formatter.currency = LegacyCurrency.getInstance(currencyCode)
+                    if (currencyCode.isNotEmpty()) {
+                        formatter.currency = LegacyCurrency.getInstance(currencyCode)
+                    }
                     return formatter.format(price)
                 }
             } catch (e: IllegalArgumentException) {
@@ -76,6 +84,31 @@ abstract class Utils {
 
         fun parseDate(isoDate: String): LocalDateTime {
             return Instant.parse(isoDate).toLocalDateTime(TimeZone.UTC)
+        }
+
+        fun moveFile(sourceFile: File, targetFile: File) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Files.move(
+                    Paths.get(sourceFile.toURI()),
+                    Paths.get(targetFile.toURI()),
+                    StandardCopyOption.REPLACE_EXISTING
+                )
+            } else {
+                // 1. Remove targetFile if exists
+                if (targetFile.exists()) {
+                    targetFile.delete();
+                }
+
+                // 2. Copy content
+                sourceFile.inputStream().use { input ->
+                    targetFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+
+                // 3. Delete the source
+                sourceFile.delete()
+            }
         }
     }
 }

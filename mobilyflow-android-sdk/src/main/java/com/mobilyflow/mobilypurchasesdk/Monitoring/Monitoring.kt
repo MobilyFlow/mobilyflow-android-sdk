@@ -2,6 +2,7 @@ package com.mobilyflow.mobilypurchasesdk.Monitoring
 
 import android.app.Activity
 import android.content.Context
+import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
@@ -14,6 +15,8 @@ import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -32,6 +35,33 @@ abstract class Monitoring {
             this.baseDir = context.filesDir
             this.slug = Logger.slugify(tag)
             Logger.initialize(this.baseDir!!, tag, allowLogging)
+
+            // TODO: This should be removed and is here for retro-compatibility
+
+            try {
+                val baseLogFolder = Logger.getLogFolder(null)
+                val rawLogFolder = Logger.getLogFolder(LogFolderType.RAW_LOGS)
+
+                val listFiles = baseLogFolder.listFiles()
+                for (oldFile in listFiles) {
+                    if (oldFile.isFile && oldFile.name.endsWith(".log")) {
+                        val newFile = File(rawLogFolder, oldFile.name)
+
+                        if (newFile.exists()) {
+                            // New file already exists, remove the old one
+                            Logger.d("Remove old log file ${oldFile.path}")
+                            newFile.delete()
+                        } else {
+                            Logger.d("Move old log file ${oldFile.path} to ${newFile.path}")
+                            Utils.moveFile(oldFile, newFile)
+                        }
+                    }
+                }
+            } catch (error: Exception) {
+                Logger.e("Can't move log to new structure", error)
+            }
+
+            // ----------------------------------------------------------------
 
             lifecycleListener = object : AppLifecycleProvider.AppLifecycleCallbacks() {
                 override fun onActivityResumed(activity: Activity) {
@@ -84,17 +114,18 @@ abstract class Monitoring {
             val buffer = ByteArray(8192)
             var bytesRead: Int
 
-            val exportFolder = File(baseDir, "mobilyflow/exported-logs")
-            if (!exportFolder.exists()) {
-                exportFolder.mkdirs()
-            }
-            val targetFile = File(exportFolder, "${System.currentTimeMillis()}.log")
+            val rawLogFolder = Logger.getLogFolder(LogFolderType.RAW_LOGS)
+            val processingLogFolder = Logger.getLogFolder(LogFolderType.PROCESSING_LOGS)
+            val exportLogFolder = Logger.getLogFolder(LogFolderType.EXPORT_LOGS)
 
-            FileOutputStream(targetFile, false).use { fos ->
+            val processingFile = File(processingLogFolder, "${System.currentTimeMillis()}.log")
+            val exportFile = File(exportLogFolder, "${System.currentTimeMillis()}.log")
+
+            FileOutputStream(processingFile, false).use { fos ->
                 BufferedOutputStream(fos).use { writer ->
                     while (from.toEpochDays() <= to.toEpochDays()) { // Is before or equal
 
-                        val logFile = File(baseDir, "mobilyflow/logs/" + Logger.getLogFileName(slug!!, from))
+                        val logFile = File(rawLogFolder, Logger.getLogFileName(slug!!, from))
                         if (logFile.exists() && logFile.isFile) {
                             val copyAction = {
                                 FileInputStream(logFile).use { fis ->
@@ -137,7 +168,10 @@ abstract class Monitoring {
                 }
             }
 
-            return targetFile
+            // Move file from processing to export folder
+            Utils.moveFile(processingFile, exportFile)
+
+            return exportFile
         }
 
         /**
@@ -184,7 +218,7 @@ abstract class Monitoring {
 
             stopSendTask()
             sendTask = Executors.newSingleThreadScheduledExecutor().scheduleWithFixedDelay({
-                val exportFolder = File(context.filesDir, "mobilyflow/exported-logs")
+                val exportFolder = Logger.getLogFolder(LogFolderType.EXPORT_LOGS)
                 if (exportFolder.exists()) {
                     exportFolder.listFiles { file ->
                         file.isFile && file.name.endsWith(".log")
