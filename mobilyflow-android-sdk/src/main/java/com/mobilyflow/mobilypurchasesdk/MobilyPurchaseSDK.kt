@@ -185,7 +185,7 @@ class MobilyPurchaseSDK(
             Executors.newSingleThreadExecutor().execute {
                 // When monitoring is requested, send 10 days
                 Logger.d("Send monitoring as requested by the server")
-                this.sendDiagnostic(10)
+                this.diagnostics.sendDiagnostic(10)
             }
         }
 
@@ -537,8 +537,8 @@ class MobilyPurchaseSDK(
     /* *********************** DIAGNOSTICS *********************** */
     /* *********************************************************** */
 
-    fun sendDiagnostic(sinceDays: Int = 1) {
-        diagnostics.sendDiagnostic(sinceDays)
+    fun sendDiagnostic() {
+        diagnostics.sendDiagnostic()
     }
 
     /* *********************************************************** */

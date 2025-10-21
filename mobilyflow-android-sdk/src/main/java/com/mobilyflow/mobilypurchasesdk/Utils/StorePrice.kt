@@ -24,31 +24,34 @@ class StorePrice(
             )
         }
 
-        fun getDefaultPrice(storePrices: JSONArray, currentRegion: String?): StorePrice? {
-            // 1. Try getting currentRegion price
-            for (i in 0..<storePrices.length()) {
-                val price = storePrices.getJSONObject(i)
-                val platform = price.optString("platform")
-                if (price.getString("regionCode") == currentRegion && (platform.isEmpty() || platform == "android")) {
-                    return parse(price)
-                }
-            }
+        fun getDefaultPrice(storePrices: JSONArray?, currentRegion: String?): StorePrice? {
+            if (storePrices != null) {
+                // 1. Try getting currentRegion price
 
-            // 2. Try getting price flagged "isDefault"
-            for (i in 0..<storePrices.length()) {
-                val price = storePrices.getJSONObject(i)
-                val platform = price.optString("platform")
-                if (price.optBoolean("isDefault") && (platform.isEmpty() || platform == "android")) {
-                    return parse(price)
+                for (i in 0..<storePrices.length()) {
+                    val price = storePrices.getJSONObject(i)
+                    val platform = price.optString("platform")
+                    if (price.getString("regionCode") == currentRegion && (platform.isEmpty() || platform == "android")) {
+                        return parse(price)
+                    }
                 }
-            }
 
-            // 3. Try getting first price that match Android platform
-            for (i in 0..<storePrices.length()) {
-                val price = storePrices.getJSONObject(i)
-                val platform = price.optString("platform")
-                if (platform.isEmpty() || platform == "android") {
-                    return parse(price)
+                // 2. Try getting price flagged "isDefault"
+                for (i in 0..<storePrices.length()) {
+                    val price = storePrices.getJSONObject(i)
+                    val platform = price.optString("platform")
+                    if (price.optBoolean("isDefault") && (platform.isEmpty() || platform == "android")) {
+                        return parse(price)
+                    }
+                }
+
+                // 3. Try getting first price that match Android platform
+                for (i in 0..<storePrices.length()) {
+                    val price = storePrices.getJSONObject(i)
+                    val platform = price.optString("platform")
+                    if (platform.isEmpty() || platform == "android") {
+                        return parse(price)
+                    }
                 }
             }
 

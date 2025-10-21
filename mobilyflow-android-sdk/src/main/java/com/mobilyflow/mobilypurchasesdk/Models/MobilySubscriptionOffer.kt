@@ -90,7 +90,7 @@ class MobilySubscriptionOffer(
 
                 if (jsonOffer == null) {
                     // Base Offer but unavailable
-                    val storePrice = StorePrice.getDefaultPrice(jsonBase.getJSONArray("StorePrices"), currentRegion)
+                    val storePrice = StorePrice.getDefaultPrice(jsonBase.optJSONArray("StorePrices"), currentRegion)
                     priceMillis = storePrice?.priceMillis ?: 0
                     currencyCode = storePrice?.currency ?: ""
 
@@ -101,7 +101,7 @@ class MobilySubscriptionOffer(
                     countBillingCycle = 0
                 } else {
                     // Promotional offer but unavailable
-                    val storePrice = StorePrice.getDefaultPrice(jsonOffer.getJSONArray("StorePrices"), currentRegion)
+                    val storePrice = StorePrice.getDefaultPrice(jsonOffer.optJSONArray("StorePrices"), currentRegion)
                     priceMillis = storePrice?.priceMillis ?: 0
                     currencyCode = storePrice?.currency ?: ""
 

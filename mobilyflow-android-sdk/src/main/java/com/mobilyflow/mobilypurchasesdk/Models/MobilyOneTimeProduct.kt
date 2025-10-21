@@ -30,7 +30,7 @@ class MobilyOneTimeProduct(
                 status =
                     if (androidProduct == null) ProductStatus.UNAVAILABLE else ProductStatus.INVALID
 
-                val storePrice = StorePrice.getDefaultPrice(jsonProduct.getJSONArray("StorePrices"), currentRegion)
+                val storePrice = StorePrice.getDefaultPrice(jsonProduct.optJSONArray("StorePrices"), currentRegion)
                 priceMillis = storePrice?.priceMillis ?: 0
                 currencyCode = storePrice?.currency ?: ""
 
