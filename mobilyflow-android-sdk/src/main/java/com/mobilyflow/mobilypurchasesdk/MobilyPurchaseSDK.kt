@@ -279,6 +279,36 @@ class MobilyPurchaseSDK(
         }
     }
 
+    @Throws(MobilyException::class)
+    fun getSubscriptionGroupById(id: String): MobilySubscriptionGroup {
+        try {
+            // 1. Get product from Mobily API
+            val jsonGroup = this.API.getSubscriptionGroupById(id)
+
+            // 2. Get product from Play Store
+            val allJsonProducts = JSONArray()
+            val jsonProducts = jsonGroup.getJSONArray("Products")
+            for (j in 0..<jsonProducts.length()) {
+                allJsonProducts.put(jsonProducts.getJSONObject(j))
+            }
+            MobilyPurchaseRegistry.registerAndroidJsonProducts(allJsonProducts, this.billingClient)
+
+            // 3. Parse to MobilySubscriptionGroup
+            val currentRegion = StorePrice.getMostRelevantRegion()
+            val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, currentRegion, false)
+
+            for (product in mobilyGroup.products) {
+                productsCaches[product.id] = product
+            }
+
+            return mobilyGroup
+        } catch (e: MobilyException) {
+            throw e
+        } catch (e: Exception) {
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR, e)
+        }
+    }
+
     fun getProductFromCacheWithId(id: String): MobilyProduct? {
         return productsCaches[id]
     }

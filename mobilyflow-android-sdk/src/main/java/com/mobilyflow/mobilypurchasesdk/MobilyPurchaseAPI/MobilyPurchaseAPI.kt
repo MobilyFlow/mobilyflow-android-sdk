@@ -126,7 +126,7 @@ class MobilyPurchaseAPI(
     }
 
     /**
-     * Get products in JSONArray format
+     * Get SubscriptionGroup in JSONArray format
      */
     @Throws(MobilyException::class)
     fun getSubscriptionGroups(identifiers: Array<String>?): JSONArray {
@@ -151,11 +151,36 @@ class MobilyPurchaseAPI(
         }
 
         if (!response.success) {
-            Logger.w("[getProducts] API Error: ${response.string()}")
+            Logger.w("[getSubscriptionGroups] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
         return response.json().getJSONArray("data")
+    }
+
+    /**
+     * Get SubscriptionGroup in JSONObject format
+     */
+    @Throws(MobilyException::class)
+    fun getSubscriptionGroupById(id: String): JSONObject {
+        val request = ApiRequest("GET", "/apps/me/subscription-groups/for-app/${id}")
+        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("locale", this.locale)
+        request.addParam("platform", "android")
+
+        val response: ApiResponse?
+        try {
+            response = this.helper.request(request)
+        } catch (e: Exception) {
+            throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
+        }
+
+        if (!response.success) {
+            Logger.w("[getSubscriptionGroupById] API Error: ${response.string()}")
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+        }
+
+        return response.json().getJSONObject("data")
     }
 
     /**
