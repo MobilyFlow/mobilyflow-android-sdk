@@ -112,21 +112,22 @@ class MobilyPurchaseSDKHelper() {
                         throw MobilyPurchaseException(MobilyPurchaseException.Type.NOT_MANAGED_BY_THIS_STORE_ACCOUNT)
                     }
 
-                    val currentRenewProduct = entitlement.subscription.renewProduct ?: entitlement.product
-                    val currentRenewSku = currentRenewProduct.android_sku
-                    val currentRenewBasePlan = currentRenewProduct.subscriptionProduct!!.android_basePlanId
+                    // If auto-renew is disabled, allow re-purchase in app
+                    if (entitlement.subscription.autoRenewEnable) {
+                        val currentRenewProduct = entitlement.subscription.renewProduct ?: entitlement.product
+                        val currentRenewSku = currentRenewProduct.android_sku
+                        val currentRenewBasePlan = currentRenewProduct.subscriptionProduct!!.android_basePlanId
 
-                    if (currentRenewSku == product.android_sku && currentRenewBasePlan == product.subscriptionProduct.android_basePlanId) {
-                        if (
-                            entitlement.product.android_sku == product.android_sku &&
-                            entitlement.product.subscriptionProduct!!.android_basePlanId == product.subscriptionProduct.android_basePlanId
-                        ) {
-                            if (entitlement.subscription.autoRenewEnable) {
-                                // If auto-renew is disabled, allow re-purchase in app
+                        if (currentRenewSku == product.android_sku && currentRenewBasePlan == product.subscriptionProduct.android_basePlanId) {
+                            if (
+                                entitlement.product.android_sku == product.android_sku &&
+                                entitlement.product.subscriptionProduct!!.android_basePlanId == product.subscriptionProduct.android_basePlanId
+                            ) {
+
                                 throw MobilyPurchaseException(MobilyPurchaseException.Type.ALREADY_PURCHASED)
+                            } else {
+                                throw MobilyPurchaseException(MobilyPurchaseException.Type.RENEW_ALREADY_ON_THIS_PLAN)
                             }
-                        } else {
-                            throw MobilyPurchaseException(MobilyPurchaseException.Type.RENEW_ALREADY_ON_THIS_PLAN)
                         }
                     }
 
