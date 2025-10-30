@@ -123,7 +123,6 @@ class MobilyPurchaseSDKHelper() {
                                 entitlement.product.android_sku == product.android_sku &&
                                 entitlement.product.subscriptionProduct!!.android_basePlanId == product.subscriptionProduct.android_basePlanId
                             ) {
-
                                 throw MobilyPurchaseException(MobilyPurchaseException.Type.ALREADY_PURCHASED)
                             } else {
                                 throw MobilyPurchaseException(MobilyPurchaseException.Type.RENEW_ALREADY_ON_THIS_PLAN)
