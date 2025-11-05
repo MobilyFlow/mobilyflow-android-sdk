@@ -17,7 +17,7 @@ class MobilyOneTimeProduct(
     // TODO: add android_purchaseOptionId (from android_basePlanId field)
 ) {
     companion object {
-        internal fun parse(jsonProduct: JSONObject, currentRegion: String?): MobilyOneTimeProduct {
+        internal fun parse(jsonProduct: JSONObject): MobilyOneTimeProduct {
             val priceMillis: Int
             val currencyCode: String
             val priceFormatted: String
@@ -30,7 +30,12 @@ class MobilyOneTimeProduct(
                 status =
                     if (androidProduct == null) ProductStatus.UNAVAILABLE else ProductStatus.INVALID
 
-                val storePrice = StorePrice.getDefaultPrice(jsonProduct.optJSONArray("StorePrices"), currentRegion)
+                val storePriceJson = jsonProduct.optJSONArray("StorePrices")
+                val storePrice =
+                    if ((storePriceJson?.length() ?: 0) > 0)
+                        StorePrice.parse(storePriceJson!!.getJSONObject(0))
+                    else null
+
                 priceMillis = storePrice?.priceMillis ?: 0
                 currencyCode = storePrice?.currency ?: ""
 

@@ -16,7 +16,6 @@ class MobilySubscriptionGroup(
     companion object {
         internal fun parse(
             jsonGroup: JSONObject,
-            currentRegion: String?,
             onlyAvailableProducts: Boolean = false
         ): MobilySubscriptionGroup {
             val group = MobilySubscriptionGroup(
@@ -36,7 +35,7 @@ class MobilySubscriptionGroup(
                 val jsonProducts = jsonGroup.getJSONArray("Products")
 
                 for (i in 0..<jsonProducts.length()) {
-                    val product = MobilyProduct.parse(jsonProducts.getJSONObject(i), currentRegion)
+                    val product = MobilyProduct.parse(jsonProducts.getJSONObject(i))
 
                     if (!onlyAvailableProducts || product.status === ProductStatus.AVAILABLE) {
                         (group.products as ArrayList).add(product)

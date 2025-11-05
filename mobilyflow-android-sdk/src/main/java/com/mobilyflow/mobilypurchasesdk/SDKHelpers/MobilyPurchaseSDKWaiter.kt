@@ -14,10 +14,8 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
     fun waitPurchaseWebhook(purchase: Purchase): WebhookStatus {
         val startTime = System.currentTimeMillis()
 
-        if (purchase.purchaseTime < (startTime - 7 * 24 * 3600000)) {
-            /*
-             In case of a PURCHASE older than 1 week, assume the webhook is already done.
-             */
+        if (purchase.purchaseTime < (startTime - 7 * 24 * 3600 * 1000)) {
+            // In case of a PURCHASE older than 1 week, assume the webhook is already done.
             Logger.w("finishTransaction with old purchaseDate -> skip waitWebhook")
             return WebhookStatus.SUCCESS
         }

@@ -22,7 +22,8 @@ class MobilyPurchaseAPI(
     private val apiKey: String,
     val environment: MobilyEnvironment,
     locales: Array<String>,
-    apiURL: String? = null
+    apiURL: String?,
+    val getCurrentRegion: () -> String?
 ) {
     val API_URL = apiURL ?: "https://api.mobilyflow.com/v1/"
     val locale = locales.joinToString(",")
@@ -47,6 +48,11 @@ class MobilyPurchaseAPI(
                 .put("externalRef", externalRef)
                 .put("environment", environment.toString().lowercase())
                 .put("locale", this.locale)
+
+            val currentRegion = this.getCurrentRegion()
+            if (currentRegion != null) {
+                data.put("region", currentRegion)
+            }
 
             response = this.helper.request(
                 ApiRequest("POST", "/apps/me/customers/login/android").setData(data)
@@ -107,6 +113,11 @@ class MobilyPurchaseAPI(
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
 
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            request.addParam("region", currentRegion)
+        }
+
         if (identifiers != null) {
             request.addParam("identifiers", identifiers.joinToString(","))
         }
@@ -140,6 +151,11 @@ class MobilyPurchaseAPI(
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
 
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            request.addParam("region", currentRegion)
+        }
+
         if (identifiers != null) {
             request.addParam("identifiers", identifiers.joinToString(","))
         }
@@ -169,6 +185,11 @@ class MobilyPurchaseAPI(
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
 
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            request.addParam("region", currentRegion)
+        }
+
         val response: ApiResponse?
         try {
             response = this.helper.request(request)
@@ -192,6 +213,11 @@ class MobilyPurchaseAPI(
         val request = ApiRequest("GET", "/apps/me/customers/${customerId}/entitlements")
         request.addParam("locale", this.locale)
         request.addParam("loadProduct", "true")
+
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            request.addParam("region", currentRegion)
+        }
 
         val response: ApiResponse?
         try {
@@ -223,6 +249,11 @@ class MobilyPurchaseAPI(
             .put("transactions", jsonTransactions)
             .put("platform", "android")
             .put("loadProduct", true)
+
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            data.put("region", currentRegion)
+        }
 
         val request = ApiRequest("POST", "/apps/me/customers/${customerId}/external-entitlements").setData(data)
 

@@ -50,7 +50,13 @@ class MobilyPurchaseSDK(
     options: MobilyPurchaseSDKOptions? = null,
 ) {
     private val API =
-        MobilyPurchaseAPI(appId, apiKey, environment, getPreferredLocales(options?.locales), options?.apiURL)
+        MobilyPurchaseAPI(
+            appId,
+            apiKey,
+            environment,
+            getPreferredLocales(options?.locales),
+            options?.apiURL
+        ) { this.getMostRelevantRegion() }
 
     private val billingClient: BillingClientWrapper
     private val diagnostics: MobilyPurchaseSDKDiagnostics
@@ -212,13 +218,12 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(jsonProducts, this.billingClient)
 
             // 3. Parse to MobilyProduct
-            val currentRegion = this.getMostRelevantRegion()
             val mobilyProducts = arrayListOf<MobilyProduct>()
 
             for (i in 0..<jsonProducts.length()) {
                 val jsonProduct = jsonProducts.getJSONObject(i)
 
-                val mobilyProduct = MobilyProduct.parse(jsonProduct, currentRegion)
+                val mobilyProduct = MobilyProduct.parse(jsonProduct)
                 productsCaches[mobilyProduct.id] = mobilyProduct
 
                 if (!onlyAvailable || mobilyProduct.status == ProductStatus.AVAILABLE) {
@@ -254,13 +259,12 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(allJsonProducts, this.billingClient)
 
             // 3. Parse to MobilySubscriptionGroup
-            val currentRegion = this.getMostRelevantRegion()
             val mobilyGroups = arrayListOf<MobilySubscriptionGroup>()
 
             for (i in 0..<jsonGroups.length()) {
                 val jsonGroup = jsonGroups.getJSONObject(i)
 
-                val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, currentRegion, onlyAvailable)
+                val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, onlyAvailable)
 
                 for (product in mobilyGroup.products) {
                     productsCaches[product.id] = product
@@ -294,8 +298,7 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(allJsonProducts, this.billingClient)
 
             // 3. Parse to MobilySubscriptionGroup
-            val currentRegion = this.getMostRelevantRegion()
-            val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, currentRegion, false)
+            val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, false)
 
             for (product in mobilyGroup.products) {
                 productsCaches[product.id] = product
@@ -359,11 +362,10 @@ class MobilyPurchaseSDK(
 
             if (transactionsToClaim.isNotEmpty()) {
                 val entitlementsJson = this.API.getCustomerExternalEntitlements(customer!!.id, transactionsToClaim)
-                val currentRegion = this.getMostRelevantRegion()
 
                 for (i in 0..<entitlementsJson.length()) {
                     val jsonEntitlement = entitlementsJson.getJSONObject(i)
-                    entitlements.add(MobilyCustomerEntitlement.parse(jsonEntitlement, purchases, currentRegion))
+                    entitlements.add(MobilyCustomerEntitlement.parse(jsonEntitlement, purchases))
                 }
             }
             return entitlements

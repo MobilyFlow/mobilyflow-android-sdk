@@ -98,7 +98,6 @@ class MobilyPurchaseSDKSyncer(
                 MobilyCustomerEntitlement.parse(
                     jsonEntitlement,
                     this.storeAccountTransactions,
-                    currentRegion
                 )
             )
         }

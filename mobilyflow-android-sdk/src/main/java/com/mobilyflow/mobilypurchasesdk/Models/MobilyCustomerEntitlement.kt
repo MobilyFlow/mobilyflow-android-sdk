@@ -25,11 +25,10 @@ class MobilyCustomerEntitlement(
         internal fun parse(
             jsonEntitlement: JSONObject,
             storeAccountTransactions: List<BillingClientWrapper.PurchaseWithType>?,
-            currentRegion: String?
         ): MobilyCustomerEntitlement {
             val type = ProductType.valueOf(jsonEntitlement.getString("type").uppercase())
             val jsonEntity = jsonEntitlement.getJSONObject("entity")
-            val product = MobilyProduct.parse(jsonEntity.getJSONObject("Product"), currentRegion)
+            val product = MobilyProduct.parse(jsonEntity.getJSONObject("Product"))
             val platformOriginalTransactionId = jsonEntitlement.optString("platformOriginalTransactionId")
 
             var item: ItemEntitlement? = null
@@ -85,18 +84,15 @@ class MobilyCustomerEntitlement(
                         basePlanId = product.subscriptionProduct!!.android_basePlanId,
                         jsonBase = jsonEntity.getJSONObject("Product"),
                         jsonOffer = productOfferJson,
-                        currentRegion = currentRegion
                     ) else null,
                     renewProduct = if (renewProductJson != null) MobilyProduct.parse(
-                        renewProductJson,
-                        currentRegion
+                        renewProductJson
                     ) else null,
                     renewProductOffer = if (renewProductJson != null && renewProductOfferJson != null) MobilySubscriptionOffer.parse(
                         sku = renewProductJson.getString("android_sku"),
                         basePlanId = renewProductJson.getString("android_basePlanId"),
                         jsonBase = renewProductJson,
                         jsonOffer = renewProductOfferJson,
-                        currentRegion = currentRegion
                     ) else null,
                     purchaseToken = storeAccountTx?.purchaseToken,
                 )

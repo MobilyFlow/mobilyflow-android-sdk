@@ -33,7 +33,6 @@ class MobilySubscriptionOffer(
             basePlanId: String,
             jsonBase: JSONObject,
             jsonOffer: JSONObject?,
-            currentRegion: String?
         ): MobilySubscriptionOffer {
             var id: String? = null
             var identifier: String? = null
@@ -90,7 +89,12 @@ class MobilySubscriptionOffer(
 
                 if (jsonOffer == null) {
                     // Base Offer but unavailable
-                    val storePrice = StorePrice.getDefaultPrice(jsonBase.optJSONArray("StorePrices"), currentRegion)
+                    val storePriceJson = jsonBase.optJSONArray("StorePrices")
+                    val storePrice =
+                        if ((storePriceJson?.length() ?: 0) > 0)
+                            StorePrice.parse(storePriceJson!!.getJSONObject(0))
+                        else null
+
                     priceMillis = storePrice?.priceMillis ?: 0
                     currencyCode = storePrice?.currency ?: ""
 
@@ -101,7 +105,12 @@ class MobilySubscriptionOffer(
                     countBillingCycle = 0
                 } else {
                     // Promotional offer but unavailable
-                    val storePrice = StorePrice.getDefaultPrice(jsonOffer.optJSONArray("StorePrices"), currentRegion)
+                    val storePriceJson = jsonOffer.optJSONArray("StorePrices")
+                    val storePrice =
+                        if ((storePriceJson?.length() ?: 0) > 0)
+                            StorePrice.parse(storePriceJson!!.getJSONObject(0))
+                        else null
+
                     priceMillis = storePrice?.priceMillis ?: 0
                     currencyCode = storePrice?.currency ?: ""
 
