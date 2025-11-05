@@ -46,6 +46,7 @@ class MobilyPurchaseAPI(
             val data = JSONObject()
                 .put("externalRef", externalRef)
                 .put("environment", environment.toString().lowercase())
+                .put("locale", this.locale)
 
             response = this.helper.request(
                 ApiRequest("POST", "/apps/me/customers/login/android").setData(data)

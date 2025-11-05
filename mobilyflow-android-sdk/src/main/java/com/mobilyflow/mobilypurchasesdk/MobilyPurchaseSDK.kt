@@ -36,9 +36,9 @@ import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKHelper
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKSyncer
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKWaiter
 import com.mobilyflow.mobilypurchasesdk.Utils.DeviceInfo
-import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.getPreferredLocales
 import org.json.JSONArray
+import java.util.Locale
 import java.util.concurrent.Executors
 
 
@@ -89,7 +89,7 @@ class MobilyPurchaseSDK(
 
         diagnostics = MobilyPurchaseSDKDiagnostics(billingClient, null)
         waiter = MobilyPurchaseSDKWaiter(API, diagnostics)
-        syncer = MobilyPurchaseSDKSyncer(API, billingClient)
+        syncer = MobilyPurchaseSDKSyncer(API, billingClient) { this.getMostRelevantRegion() }
 
         lifecycleListener = object : AppLifecycleProvider.AppLifecycleCallbacks() {
             override fun onActivityPaused(activity: Activity) {
@@ -212,7 +212,7 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(jsonProducts, this.billingClient)
 
             // 3. Parse to MobilyProduct
-            val currentRegion = StorePrice.getMostRelevantRegion()
+            val currentRegion = this.getMostRelevantRegion()
             val mobilyProducts = arrayListOf<MobilyProduct>()
 
             for (i in 0..<jsonProducts.length()) {
@@ -254,7 +254,7 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(allJsonProducts, this.billingClient)
 
             // 3. Parse to MobilySubscriptionGroup
-            val currentRegion = StorePrice.getMostRelevantRegion()
+            val currentRegion = this.getMostRelevantRegion()
             val mobilyGroups = arrayListOf<MobilySubscriptionGroup>()
 
             for (i in 0..<jsonGroups.length()) {
@@ -294,7 +294,7 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(allJsonProducts, this.billingClient)
 
             // 3. Parse to MobilySubscriptionGroup
-            val currentRegion = StorePrice.getMostRelevantRegion()
+            val currentRegion = this.getMostRelevantRegion()
             val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, currentRegion, false)
 
             for (product in mobilyGroup.products) {
@@ -317,19 +317,33 @@ class MobilyPurchaseSDK(
     /* ************************** ENTITLEMENTS *************************** */
     /* ******************************************************************* */
 
+    private fun _cacheEntitlement(entitlement: MobilyCustomerEntitlement?): MobilyCustomerEntitlement? {
+        if (entitlement == null) {
+            return entitlement
+        }
+
+        productsCaches[entitlement.product.id] = entitlement.product
+        if (entitlement.subscription?.renewProduct != null) {
+            productsCaches[entitlement.subscription.renewProduct.id] = entitlement.subscription.renewProduct
+        }
+        return entitlement
+    }
+
     @Throws(MobilyException::class)
     fun getEntitlementForSubscription(subscriptionGroupId: String): MobilyCustomerEntitlement? {
-        return this.syncer.getEntitlementForSubscription(subscriptionGroupId)
+        return _cacheEntitlement(this.syncer.getEntitlementForSubscription(subscriptionGroupId))
     }
 
     @Throws(MobilyException::class)
     fun getEntitlement(productId: String): MobilyCustomerEntitlement? {
-        return this.syncer.getEntitlement(productId)
+        return _cacheEntitlement(this.syncer.getEntitlement(productId))
     }
 
     @Throws(MobilyException::class)
     fun getEntitlements(productIds: Array<String>?): List<MobilyCustomerEntitlement> {
-        return this.syncer.getEntitlements(productIds)
+        val entitlements = this.syncer.getEntitlements(productIds)
+        entitlements.forEach { entitlement -> _cacheEntitlement(entitlement) }
+        return entitlements
     }
 
     @Throws(MobilyException::class)
@@ -345,7 +359,7 @@ class MobilyPurchaseSDK(
 
             if (transactionsToClaim.isNotEmpty()) {
                 val entitlementsJson = this.API.getCustomerExternalEntitlements(customer!!.id, transactionsToClaim)
-                val currentRegion = StorePrice.getMostRelevantRegion()
+                val currentRegion = this.getMostRelevantRegion()
 
                 for (i in 0..<entitlementsJson.length()) {
                     val jsonEntitlement = entitlementsJson.getJSONObject(i)
@@ -574,6 +588,22 @@ class MobilyPurchaseSDK(
     /* *********************************************************** */
     /* ************************* OTHERS ************************** */
     /* *********************************************************** */
+
+    private fun getMostRelevantRegion(): String? {
+        val storeCountry = this.getStoreCountry()
+        if (storeCountry != null) {
+            return storeCountry
+        }
+        return Locale.getDefault().country
+    }
+
+    fun getStoreCountry(): String? {
+        return this.billingClient.getConfig()?.countryCode
+    }
+
+    fun isBillingAvailable(): Boolean {
+        return this.billingClient.isAvailable()
+    }
 
     fun isForwardingEnable(externalRef: String): Boolean {
         return this.API.isForwardingEnable(externalRef)

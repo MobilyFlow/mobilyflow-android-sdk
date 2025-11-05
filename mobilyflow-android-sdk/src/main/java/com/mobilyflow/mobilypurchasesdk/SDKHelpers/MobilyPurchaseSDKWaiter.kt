@@ -12,8 +12,17 @@ import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: MobilyPurchaseSDKDiagnostics) {
     @Throws(MobilyPurchaseException::class)
     fun waitPurchaseWebhook(purchase: Purchase): WebhookStatus {
-        var result = WebhookStatus.PENDING
         val startTime = System.currentTimeMillis()
+
+        if (purchase.purchaseTime < (startTime - 7 * 24 * 3600000)) {
+            /*
+             In case of a PURCHASE older than 1 week, assume the webhook is already done.
+             */
+            Logger.w("finishTransaction with old purchaseDate -> skip waitWebhook")
+            return WebhookStatus.SUCCESS
+        }
+
+        var result = WebhookStatus.PENDING
         var retry = 0
 
         Logger.d("Wait webhook for ${purchase.orderId} (purchaseToken: ${purchase.purchaseToken})")

@@ -258,6 +258,11 @@ class MainActivity : ComponentActivity() {
 
                 val products = mobily!!.getProducts(null, false)
 
+                Log.d(
+                    "MobilyFlow",
+                    "StoreCountry: ${this.mobily!!.getStoreCountry()} (available ${this.mobily!!.isBillingAvailable()})"
+                )
+
                 Log.d("MobilyFlow", "External Entitlements: ")
                 val entitlements = mobily!!.getExternalEntitlements()
                 for (entitlement in entitlements) {

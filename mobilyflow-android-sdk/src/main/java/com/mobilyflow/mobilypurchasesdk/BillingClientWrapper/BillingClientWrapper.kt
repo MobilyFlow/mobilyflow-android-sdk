@@ -46,11 +46,12 @@ class BillingClientWrapper(
                 PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
             ).enableAutoServiceReconnection()
             .build()
+
         _client.startConnection(this)
     }
 
     @Throws(BillingClientException::class)
-    private fun ensureInitialization() {
+    private fun ensureInitialization(skipError: Boolean = false) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             throw NetworkOnMainThreadException()
         }
@@ -59,19 +60,11 @@ class BillingClientWrapper(
             if (this.status == BillingClientStatus.INITIALIZING) {
                 this.wait()
             } else if (this.status != BillingClientStatus.AVAILABLE) {
-                if (_client.isReady) {
-                    // Client already ready, probably means enableAutoServiceReconnection have done the job
-                    Logger.d("[BillingClient] ensureInitialization with status ${this.status} while client is ready -> Skip")
-                    this.status == BillingClientStatus.AVAILABLE
-                    return
-                }
-
                 // Retry connection
                 _client.startConnection(this)
-                this.syncConfig()
                 this.wait()
 
-                if (this.status == BillingClientStatus.UNAVAILABLE) {
+                if (this.status == BillingClientStatus.UNAVAILABLE && !skipError) {
                     throw BillingClientException(
                         BillingClient.BillingResponseCode.BILLING_UNAVAILABLE,
                         "Billing Unavailable"
@@ -93,7 +86,13 @@ class BillingClientWrapper(
     }
 
     fun getConfig(): BillingConfig? {
+        this.ensureInitialization(true)
         return this.clientConfig
+    }
+
+    fun isAvailable(): Boolean {
+        this.ensureInitialization(true)
+        return this.status == BillingClientStatus.AVAILABLE
     }
 
     fun endConnection() {
@@ -293,6 +292,7 @@ class BillingClientWrapper(
         synchronized(this) {
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 // The BillingClient is ready. You can query purchases here.
+                this.syncConfig()
                 this.status = BillingClientStatus.AVAILABLE
                 this.notifyAll()
                 Logger.d("[BillingClient] onBillingSetupFinished with success")

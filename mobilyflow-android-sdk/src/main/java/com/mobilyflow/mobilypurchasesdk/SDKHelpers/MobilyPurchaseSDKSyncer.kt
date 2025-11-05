@@ -11,12 +11,12 @@ import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomerEntitlement
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
-import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import org.json.JSONArray
 
 class MobilyPurchaseSDKSyncer(
     val API: MobilyPurchaseAPI,
     val billingClient: BillingClientWrapper,
+    val getCurrentRegion: () -> String?
 ) {
     private var customer: MobilyCustomer? = null
 
@@ -33,7 +33,7 @@ class MobilyPurchaseSDKSyncer(
             this.lastSyncTime = null
 
             if (customer != null && jsonEntitlements != null) {
-                this._syncEntitlements(StorePrice.getMostRelevantRegion(), jsonEntitlements)
+                this._syncEntitlements(this.getCurrentRegion(), jsonEntitlements)
             }
 
             this.lastSyncTime = System.currentTimeMillis()
@@ -71,7 +71,7 @@ class MobilyPurchaseSDKSyncer(
                 Logger.d("Run Sync expected...")
                 if (customer != null) {
                     Logger.d("Run Sync for customer ${customer!!.id} (externalRef: ${customer!!.externalRef})")
-                    _syncEntitlements(StorePrice.getMostRelevantRegion())
+                    _syncEntitlements(this.getCurrentRegion())
                     lastSyncTime = System.currentTimeMillis()
                 } else {
                     Logger.d(" -> Sync skipped (no customer)")

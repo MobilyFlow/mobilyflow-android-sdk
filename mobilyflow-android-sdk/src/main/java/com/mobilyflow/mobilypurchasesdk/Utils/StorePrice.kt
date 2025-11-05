@@ -3,7 +3,6 @@ package com.mobilyflow.mobilypurchasesdk.Utils
 import com.mobilyflow.mobilypurchasesdk.Enums.Platform
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.Locale
 
 
 class StorePrice(
@@ -57,11 +56,6 @@ class StorePrice(
 
             // Else return null
             return null
-        }
-
-        fun getMostRelevantRegion(): String? {
-            // TODO: Not reliable, we may fetch product from all regions with BillingWrapper to determine region ??
-            return Locale.getDefault().country
         }
     }
 }
