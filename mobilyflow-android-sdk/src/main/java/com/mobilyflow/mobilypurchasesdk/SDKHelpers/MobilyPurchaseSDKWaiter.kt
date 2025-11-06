@@ -1,8 +1,8 @@
 package com.mobilyflow.mobilypurchasesdk.SDKHelpers
 
 import com.android.billingclient.api.Purchase
-import com.mobilyflow.mobilypurchasesdk.Enums.TransferOwnershipStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.WebhookStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransferOwnershipStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyWebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
@@ -11,24 +11,24 @@ import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 
 class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: MobilyPurchaseSDKDiagnostics) {
     @Throws(MobilyPurchaseException::class)
-    fun waitPurchaseWebhook(purchase: Purchase): WebhookStatus {
+    fun waitPurchaseWebhook(purchase: Purchase): MobilyWebhookStatus {
         val startTime = System.currentTimeMillis()
 
         if (purchase.purchaseTime < (startTime - 7 * 24 * 3600 * 1000)) {
             // In case of a PURCHASE older than 1 week, assume the webhook is already done.
             Logger.w("finishTransaction with old purchaseDate -> skip waitWebhook")
-            return WebhookStatus.SUCCESS
+            return MobilyWebhookStatus.SUCCESS
         }
 
-        var result = WebhookStatus.PENDING
+        var result = MobilyWebhookStatus.PENDING
         var retry = 0
 
         Logger.d("Wait webhook for ${purchase.orderId} (purchaseToken: ${purchase.purchaseToken})")
 
-        while (result == WebhookStatus.PENDING) {
+        while (result == MobilyWebhookStatus.PENDING) {
             result = this.API.getWebhookStatus(purchase.purchaseToken, purchase.orderId!!)
 
-            if (result == WebhookStatus.PENDING) {
+            if (result == MobilyWebhookStatus.PENDING) {
                 // Exit the wait function after 1 minute
                 if (startTime + 60000 < System.currentTimeMillis()) {
                     Logger.e("Webhook still pending after 1 minutes (The user has probably paid without being credited)")
@@ -43,7 +43,7 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
 
         Logger.d("Webhook wait completed (${result})")
 
-        if (result == WebhookStatus.ERROR) {
+        if (result == MobilyWebhookStatus.ERROR) {
             throw MobilyPurchaseException(MobilyPurchaseException.Type.WEBHOOK_FAILED)
         }
 
@@ -51,15 +51,15 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
     }
 
     @Throws(MobilyTransferOwnershipException::class)
-    fun waitTransferOwnershipWebhook(requestId: String): TransferOwnershipStatus {
-        var result = TransferOwnershipStatus.PENDING
+    fun waitTransferOwnershipWebhook(requestId: String): MobilyTransferOwnershipStatus {
+        var result = MobilyTransferOwnershipStatus.PENDING
         val startTime = System.currentTimeMillis()
         var retry = 0
 
-        while (result == TransferOwnershipStatus.PENDING) {
+        while (result == MobilyTransferOwnershipStatus.PENDING) {
             result = this.API.getTransferRequestStatus(requestId)
 
-            if (result == TransferOwnershipStatus.PENDING) {
+            if (result == MobilyTransferOwnershipStatus.PENDING) {
                 // Exit the wait function after 1 minute
                 if (startTime + 60000 < System.currentTimeMillis()) {
                     throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_NOT_PROCESSED)

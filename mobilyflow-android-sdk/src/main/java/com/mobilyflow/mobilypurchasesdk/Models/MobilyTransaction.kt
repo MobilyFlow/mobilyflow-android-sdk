@@ -2,7 +2,7 @@ package com.mobilyflow.mobilypurchasesdk.Models
 
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransactionStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.Platform
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import kotlinx.datetime.LocalDateTime
 import org.json.JSONObject
@@ -26,7 +26,7 @@ class MobilyTransaction(
     val subscriptionId: String,
     val itemId: String,
     val productOfferId: String,
-    val platform: Platform,
+    val platform: MobilyPlatform,
     val environment: MobilyEnvironment,
     val startDate: LocalDateTime,
     val endDate: LocalDateTime,
@@ -54,7 +54,7 @@ class MobilyTransaction(
                 subscriptionId = jsonTx.getString("subscriptionId"),
                 itemId = jsonTx.getString("itemId"),
                 productOfferId = jsonTx.getString("productOfferId"),
-                platform = Platform.parse(jsonTx.getString("platform")),
+                platform = MobilyPlatform.parse(jsonTx.getString("platform")),
                 environment = MobilyEnvironment.parse(jsonTx.getString("environment")),
                 startDate = Utils.parseDate(jsonTx.getString("startDate")),
                 endDate = Utils.parseDate(jsonTx.getString("endDate")),

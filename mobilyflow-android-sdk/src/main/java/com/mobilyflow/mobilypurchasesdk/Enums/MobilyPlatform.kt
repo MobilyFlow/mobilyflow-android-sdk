@@ -1,12 +1,12 @@
 package com.mobilyflow.mobilypurchasesdk.Enums
 
-enum class Platform(val value: String) {
+enum class MobilyPlatform(val value: String) {
     IOS("ios"),
     ANDROID("android");
 
     companion object {
-        fun parse(value: String): Platform {
-            for (it in Platform.values()) {
+        fun parse(value: String): MobilyPlatform {
+            for (it in MobilyPlatform.values()) {
                 if (it.value == value) {
                     return it
                 }

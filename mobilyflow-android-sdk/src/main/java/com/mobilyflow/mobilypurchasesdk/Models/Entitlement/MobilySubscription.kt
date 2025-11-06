@@ -3,8 +3,8 @@ package com.mobilyflow.mobilypurchasesdk.Models.Entitlement
 import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
-import com.mobilyflow.mobilypurchasesdk.Enums.Platform
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionOffer
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
@@ -21,7 +21,7 @@ class MobilySubscription(
     val startDate: LocalDateTime,
     val endDate: LocalDateTime,
     val customerId: String,
-    val platform: Platform,
+    val platform: MobilyPlatform,
     val environment: MobilyEnvironment,
     val renewProductId: String,
     val renewProductOfferId: String,
@@ -52,15 +52,15 @@ class MobilySubscription(
             jsonSubscription: JSONObject,
             storeAccountTransactions: List<BillingClientWrapper.PurchaseWithType>?
         ): MobilySubscription {
-            val platform = Platform.parse(jsonSubscription.getString("platform"))
+            val platform = MobilyPlatform.parse(jsonSubscription.getString("platform"))
             var autoRenewEnable = jsonSubscription.getBoolean("autoRenewEnable")
             var storeAccountTx: Purchase? = null
 
             var lastPlatformTxOriginalId: String? = jsonSubscription.optString("lastPlatformTxOriginalId")
 
-            if (platform == Platform.ANDROID && lastPlatformTxOriginalId!!.isNotEmpty()) {
+            if (platform == MobilyPlatform.ANDROID && lastPlatformTxOriginalId!!.isNotEmpty()) {
                 val relatedPurchase = storeAccountTransactions?.find { tx ->
-                    tx.type == ProductType.SUBSCRIPTION && sha256(tx.purchase.purchaseToken) == lastPlatformTxOriginalId
+                    tx.type == MobilyProductType.SUBSCRIPTION && sha256(tx.purchase.purchaseToken) == lastPlatformTxOriginalId
                 }
                 storeAccountTx = relatedPurchase?.purchase
 
@@ -114,7 +114,7 @@ class MobilySubscription(
                 startDate = Utils.parseDate(jsonSubscription.getString("startDate")),
                 endDate = Utils.parseDate(jsonSubscription.getString("endDate")),
                 customerId = jsonSubscription.getString("customerId"),
-                platform = Platform.parse(jsonSubscription.getString("platform")),
+                platform = MobilyPlatform.parse(jsonSubscription.getString("platform")),
                 environment = MobilyEnvironment.parse(jsonSubscription.getString("environment")),
                 renewProductId = jsonSubscription.getString("renewProductId"),
                 renewProductOfferId = jsonSubscription.getString("renewProductOfferId"),

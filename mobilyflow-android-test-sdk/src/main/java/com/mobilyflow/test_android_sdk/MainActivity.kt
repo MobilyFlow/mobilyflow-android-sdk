@@ -39,7 +39,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
                                             offer = null,
                                         )
 
-                                        if (p.type == ProductType.SUBSCRIPTION && p.subscription!!.promotionalOffers.isNotEmpty()) {
+                                        if (p.type == MobilyProductType.SUBSCRIPTION && p.subscription!!.promotionalOffers.isNotEmpty()) {
                                             Column(
                                                 modifier = Modifier.padding(
                                                     horizontal = 20.dp,

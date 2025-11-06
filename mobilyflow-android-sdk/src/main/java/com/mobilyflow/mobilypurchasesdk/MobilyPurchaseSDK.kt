@@ -12,10 +12,10 @@ import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientExcept
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientStatus
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
-import com.mobilyflow.mobilypurchasesdk.Enums.TransferOwnershipStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.WebhookStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransferOwnershipStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyWebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
@@ -226,7 +226,7 @@ class MobilyPurchaseSDK(
                 val mobilyProduct = MobilyProduct.parse(jsonProduct)
                 productsCaches[mobilyProduct.id] = mobilyProduct
 
-                if (!onlyAvailable || mobilyProduct.status == ProductStatus.AVAILABLE) {
+                if (!onlyAvailable || mobilyProduct.status == MobilyProductStatus.AVAILABLE) {
                     mobilyProducts.add(mobilyProduct)
                 }
             }
@@ -380,7 +380,7 @@ class MobilyPurchaseSDK(
     }
 
     @Throws(MobilyException::class, MobilyTransferOwnershipException::class)
-    fun requestTransferOwnership(): TransferOwnershipStatus {
+    fun requestTransferOwnership(): MobilyTransferOwnershipStatus {
         if (customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
         }
@@ -427,7 +427,7 @@ class MobilyPurchaseSDK(
         activity: Activity,
         product: MobilyProduct,
         options: PurchaseOptions? = null,
-    ): WebhookStatus {
+    ): MobilyWebhookStatus {
         if (this.customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
         }
@@ -503,9 +503,9 @@ class MobilyPurchaseSDK(
         purchase: Purchase,
         mapTransaction: Boolean,
         product: MobilyProduct? = null
-    ): WebhookStatus {
+    ): MobilyWebhookStatus {
         Logger.d("finishPurchase: ${purchase.orderId}")
-        var status = WebhookStatus.ERROR
+        var status = MobilyWebhookStatus.ERROR
 
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED || purchase.isAcknowledged) {
             return status
@@ -535,7 +535,7 @@ class MobilyPurchaseSDK(
             }
         }
 
-        if (minimalProduct.type == ProductType.ONE_TIME && minimalProduct.isConsumable) {
+        if (minimalProduct.type == MobilyProductType.ONE_TIME && minimalProduct.isConsumable) {
             // Consumable
             val consumeParams =
                 ConsumeParams.newBuilder()

@@ -1,14 +1,14 @@
 package com.mobilyflow.mobilypurchasesdk.Enums
 
 
-enum class WebhookStatus(val value: String) {
+enum class MobilyWebhookStatus(val value: String) {
     PENDING("pending"),
     ERROR("error"),
     SUCCESS("success");
 
     companion object {
-        fun parse(value: String): WebhookStatus {
-            for (it in WebhookStatus.values()) {
+        fun parse(value: String): MobilyWebhookStatus {
+            for (it in MobilyWebhookStatus.values()) {
                 if (it.value == value) {
                     return it
                 }

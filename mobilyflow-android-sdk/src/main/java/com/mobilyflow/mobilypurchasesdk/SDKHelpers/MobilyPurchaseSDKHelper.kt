@@ -2,8 +2,8 @@ package com.mobilyflow.mobilypurchasesdk.SDKHelpers
 
 import com.android.billingclient.api.BillingFlowParams
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MapTransactionItem
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
@@ -58,11 +58,11 @@ class MobilyPurchaseSDKHelper() {
             options: PurchaseOptions? = null,
         ): BillingFlowParams {
             val androidProduct = MobilyPurchaseRegistry.getAndroidProduct(product.android_sku)
-            val androidOffer = if (product.type == ProductType.SUBSCRIPTION) {
+            val androidOffer = if (product.type == MobilyProductType.SUBSCRIPTION) {
                 MobilyPurchaseRegistry.getAndroidOffer(
                     product.android_sku,
                     product.android_basePlanId,
-                    if (options?.offer == null && product.subscription!!.freeTrial?.status == ProductStatus.AVAILABLE)
+                    if (options?.offer == null && product.subscription!!.freeTrial?.status == MobilyProductStatus.AVAILABLE)
                         product.subscription.freeTrial.android_offerId
                     else
                         options?.offer?.android_offerId
@@ -71,7 +71,7 @@ class MobilyPurchaseSDKHelper() {
                 null
             }
 
-            if (androidProduct == null || (product.type == ProductType.SUBSCRIPTION && androidOffer == null)) {
+            if (androidProduct == null || (product.type == MobilyProductType.SUBSCRIPTION && androidOffer == null)) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.PRODUCT_UNAVAILABLE)
             }
 
@@ -89,7 +89,7 @@ class MobilyPurchaseSDKHelper() {
             builder.setObfuscatedAccountId(customerId)
 
             // Manage already purchased
-            if (product.type == ProductType.ONE_TIME) {
+            if (product.type == MobilyProductType.ONE_TIME) {
                 if (!product.oneTime!!.isConsumable) {
                     val entitlement = syncer.getEntitlement(product.id)
                     if (entitlement != null) {

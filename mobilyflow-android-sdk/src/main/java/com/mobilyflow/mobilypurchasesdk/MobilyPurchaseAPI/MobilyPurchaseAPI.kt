@@ -4,9 +4,9 @@ import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiHelper
 import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiRequest
 import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiResponse
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
-import com.mobilyflow.mobilypurchasesdk.Enums.TransferOwnershipStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.WebhookStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransferOwnershipStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyWebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
 import com.mobilyflow.mobilypurchasesdk.MOBILYFLOW_SDK_VERSION
@@ -93,7 +93,7 @@ class MobilyPurchaseAPI(
 
         val jsonResponse = response.json().getJSONObject("data")
         return MinimalProductForAndroidPurchase(
-            type = ProductType.parse(jsonResponse.getString("type")),
+            type = MobilyProductType.parse(jsonResponse.getString("type")),
             isConsumable = jsonResponse.getBoolean("isConsumable")
         )
     }
@@ -346,7 +346,7 @@ class MobilyPurchaseAPI(
      * Get transfer ownership request status from requestId
      */
     @Throws(MobilyException::class, MobilyTransferOwnershipException::class)
-    fun getTransferRequestStatus(requestId: String): TransferOwnershipStatus {
+    fun getTransferRequestStatus(requestId: String): MobilyTransferOwnershipStatus {
         val request = ApiRequest("GET", "/apps/me/customer-transfer-ownerships/${requestId}/status")
 
         val response: ApiResponse?
@@ -362,7 +362,7 @@ class MobilyPurchaseAPI(
             if (statusStr == "ERROR") {
                 throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_FAILED)
             }
-            return TransferOwnershipStatus.parse(jsonResponse.getString("status"))
+            return MobilyTransferOwnershipStatus.parse(jsonResponse.getString("status"))
         } else {
             Logger.w("[getTransferRequestStatus] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
@@ -373,7 +373,7 @@ class MobilyPurchaseAPI(
      * Get webhook status from transactionID
      */
     @Throws(MobilyException::class)
-    fun getWebhookStatus(purchaseToken: String, transactionId: String): WebhookStatus {
+    fun getWebhookStatus(purchaseToken: String, transactionId: String): MobilyWebhookStatus {
         val request = ApiRequest("GET", "/apps/me/events/webhook-status/android")
         request.addParam("platformTxOriginalId", purchaseToken)
         request.addParam("platformTxId", transactionId)
@@ -391,7 +391,7 @@ class MobilyPurchaseAPI(
         }
 
         val jsonResponse = response.json().getJSONObject("data")
-        return WebhookStatus.parse(jsonResponse.getString("status"))
+        return MobilyWebhookStatus.parse(jsonResponse.getString("status"))
     }
 
     /**

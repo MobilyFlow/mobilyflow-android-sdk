@@ -2,8 +2,8 @@ package com.mobilyflow.mobilypurchasesdk.Models.Product
 
 import com.android.billingclient.api.ProductDetails.RecurrenceMode
 import com.mobilyflow.mobilypurchasesdk.Enums.PeriodUnit
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseRegistry
 import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
@@ -24,13 +24,13 @@ class MobilyProduct(
     val android_sku: String,
     val android_basePlanId: String,
 
-    val type: ProductType,
+    val type: MobilyProductType,
     val extras: JSONObject?,
 
     val priceMillis: Int,
     val currencyCode: String,
     val priceFormatted: String,
-    val status: ProductStatus,
+    val status: MobilyProductStatus,
 
     val name: String,
     val description: String,
@@ -57,9 +57,9 @@ class MobilyProduct(
         internal fun parse(jsonProduct: JSONObject): MobilyProduct {
             val android_sku = jsonProduct.getString("android_sku")
             val android_basePlanId = jsonProduct.getString("android_basePlanId")
-            val type = ProductType.parse(jsonProduct.getString("type"))
+            val type = MobilyProductType.parse(jsonProduct.getString("type"))
 
-            var status: ProductStatus
+            var status: MobilyProductStatus
             var priceMillis = 0
             var currencyCode = ""
             var priceFormatted = ""
@@ -83,15 +83,16 @@ class MobilyProduct(
                     priceFormatted = Utils.formatPrice(priceMillis, currencyCode)
              */
 
-            if (type == ProductType.ONE_TIME) {
+            if (type == MobilyProductType.ONE_TIME) {
                 if (androidProduct?.oneTimePurchaseOfferDetails != null) {
-                    status = ProductStatus.AVAILABLE
+                    status = MobilyProductStatus.AVAILABLE
 
                     priceMillis = Utils.microToMillis(androidProduct.oneTimePurchaseOfferDetails!!.priceAmountMicros)
                     currencyCode = androidProduct.oneTimePurchaseOfferDetails!!.priceCurrencyCode
                     priceFormatted = androidProduct.oneTimePurchaseOfferDetails!!.formattedPrice
                 } else {
-                    status = if (androidProduct == null) ProductStatus.UNAVAILABLE else ProductStatus.INVALID
+                    status =
+                        if (androidProduct == null) MobilyProductStatus.UNAVAILABLE else MobilyProductStatus.INVALID
                 }
 
                 oneTime = MobilyOneTimeProduct(
@@ -105,26 +106,26 @@ class MobilyProduct(
                 val promotionalOffers = mutableListOf<MobilySubscriptionOffer>()
 
                 val baseOffer = MobilyPurchaseRegistry.getAndroidOffer(android_sku, android_basePlanId, null)
-                status = if (baseOffer == null) ProductStatus.UNAVAILABLE else ProductStatus.AVAILABLE
+                status = if (baseOffer == null) MobilyProductStatus.UNAVAILABLE else MobilyProductStatus.AVAILABLE
 
                 if (baseOffer != null) {
                     val countPhases = baseOffer.pricingPhases.pricingPhaseList.count()
                     if (countPhases != 1) {
                         Logger.w("BaseOffer for $android_sku/$android_basePlanId is incompatible with MobilyFlow (only 1 pricingPhases allowed)")
-                        status = ProductStatus.INVALID
+                        status = MobilyProductStatus.INVALID
                     } else {
                         val phase = baseOffer.pricingPhases.pricingPhaseList[0]
                         if (phase.recurrenceMode == RecurrenceMode.NON_RECURRING) {
                             Logger.w("Offer $android_sku/$android_basePlanId is incompatible with MobilyFlow (NON_RECURRING phase)")
-                            status = ProductStatus.INVALID
+                            status = MobilyProductStatus.INVALID
                         }
                     }
                 }
 
-                if (baseOffer != null && status == ProductStatus.AVAILABLE) {
+                if (baseOffer != null && status == MobilyProductStatus.AVAILABLE) {
                     val phase = baseOffer.pricingPhases.pricingPhaseList[0]
 
-                    status = ProductStatus.AVAILABLE
+                    status = MobilyProductStatus.AVAILABLE
                     priceMillis = Utils.microToMillis(phase.priceAmountMicros)
                     currencyCode = phase.priceCurrencyCode
                     priceFormatted = phase.formattedPrice
@@ -169,7 +170,7 @@ class MobilyProduct(
                 )
             }
 
-            if (status != ProductStatus.AVAILABLE) {
+            if (status != MobilyProductStatus.AVAILABLE) {
                 val storePriceJson = jsonProduct.optJSONArray("StorePrices")
                 val storePrice =
                     if ((storePriceJson?.length() ?: 0) > 0)

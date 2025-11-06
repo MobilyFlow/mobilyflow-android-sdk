@@ -1,13 +1,13 @@
 package com.mobilyflow.mobilypurchasesdk.Enums
 
-enum class ProductStatus(val value: String) {
+enum class MobilyProductStatus(val value: String) {
     INVALID("invalid"),
     UNAVAILABLE("unavailable"),
     AVAILABLE("available");
 
     companion object {
-        fun parse(value: String): ProductStatus {
-            for (it in ProductStatus.values()) {
+        fun parse(value: String): MobilyProductStatus {
+            for (it in MobilyProductStatus.values()) {
                 if (it.value == value) {
                     return it
                 }

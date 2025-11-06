@@ -1,6 +1,6 @@
 package com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI
 
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 
-class MinimalProductForAndroidPurchase(val type: ProductType, val isConsumable: Boolean) {
+class MinimalProductForAndroidPurchase(val type: MobilyProductType, val isConsumable: Boolean) {
 }

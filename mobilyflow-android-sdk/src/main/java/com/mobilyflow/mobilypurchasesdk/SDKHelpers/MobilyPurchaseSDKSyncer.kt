@@ -5,7 +5,7 @@ import android.os.NetworkOnMainThreadException
 import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientException
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
 import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilyCustomerEntitlement
@@ -111,7 +111,7 @@ class MobilyPurchaseSDKSyncer(
         }
 
         for (entitlement in this.entitlements!!) {
-            if (entitlement.type == ProductType.SUBSCRIPTION && entitlement.Product.subscription!!.groupId == subscriptionGroupId) {
+            if (entitlement.type == MobilyProductType.SUBSCRIPTION && entitlement.Product.subscription!!.groupId == subscriptionGroupId) {
                 return entitlement
             }
         }

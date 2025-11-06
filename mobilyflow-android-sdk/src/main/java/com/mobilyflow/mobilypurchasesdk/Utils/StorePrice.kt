@@ -1,6 +1,6 @@
 package com.mobilyflow.mobilypurchasesdk.Utils
 
-import com.mobilyflow.mobilypurchasesdk.Enums.Platform
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
 import org.json.JSONObject
 
 
@@ -8,7 +8,7 @@ class StorePrice(
     val priceMillis: Int,
     val currency: String,
     val regionCode: String,
-    val platform: Platform
+    val platform: MobilyPlatform
 ) {
     companion object {
         fun parse(storePrice: JSONObject): StorePrice {
@@ -18,7 +18,7 @@ class StorePrice(
                 priceMillis = storePrice.getInt("priceMillis"),
                 currency = storePrice.getString("currency"),
                 regionCode = storePrice.getString("regionCode"),
-                platform = Platform.parse(platform)
+                platform = MobilyPlatform.parse(platform)
             )
         }
     }

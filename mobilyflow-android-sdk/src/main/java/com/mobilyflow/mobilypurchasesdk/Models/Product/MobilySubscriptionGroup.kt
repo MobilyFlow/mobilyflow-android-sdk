@@ -1,6 +1,6 @@
 package com.mobilyflow.mobilypurchasesdk.Models.Product
 
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
 import com.mobilyflow.mobilypurchasesdk.Utils.TranslationUtils
 import org.json.JSONObject
 
@@ -37,7 +37,7 @@ class MobilySubscriptionGroup(
                 for (i in 0..<jsonProducts.length()) {
                     val product = MobilyProduct.parse(jsonProducts.getJSONObject(i))
 
-                    if (!onlyAvailableProducts || product.status === ProductStatus.AVAILABLE) {
+                    if (!onlyAvailableProducts || product.status === MobilyProductStatus.AVAILABLE) {
                         (group.products as ArrayList).add(product)
                     }
                 }

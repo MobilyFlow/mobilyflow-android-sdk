@@ -3,7 +3,7 @@ package com.mobilyflow.mobilypurchasesdk.Models
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEventType
-import com.mobilyflow.mobilypurchasesdk.Enums.Platform
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
 import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilyItem
 import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilySubscription
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
@@ -22,7 +22,7 @@ class MobilyEvent(
     val customerId: String,
     val type: MobilyEventType,
     val extras: JSONObject,
-    val platform: Platform,
+    val platform: MobilyPlatform,
     val environment: MobilyEnvironment,
     val isSandbox: Boolean,
 
@@ -71,7 +71,7 @@ class MobilyEvent(
                 customerId = jsonEvent.getString("customerId"),
                 type = MobilyEventType.parse(jsonEvent.getString("type")),
                 extras = jsonEvent.getJSONObject("extras"),
-                platform = Platform.parse(jsonEvent.getString("platform")),
+                platform = MobilyPlatform.parse(jsonEvent.getString("platform")),
                 environment = MobilyEnvironment.parse(jsonEvent.getString("environment")),
                 isSandbox = jsonEvent.getBoolean("isSandbox"),
 

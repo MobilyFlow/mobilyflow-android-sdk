@@ -2,7 +2,8 @@ package com.mobilyflow.mobilypurchasesdk.Models.Product
 
 import com.android.billingclient.api.ProductDetails.RecurrenceMode
 import com.mobilyflow.mobilypurchasesdk.Enums.PeriodUnit
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductOfferType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseRegistry
 import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
@@ -18,13 +19,13 @@ class MobilySubscriptionOffer(
     val priceMillis: Int,
     val currencyCode: String,
     val priceFormatted: String,
-    val type: String, // TODO: Enum
+    val type: MobilyProductOfferType,
     val periodCount: Int,
     val periodUnit: PeriodUnit,
     val countBillingCycle: Int,
     val android_offerId: String,
     val extras: JSONObject?,
-    val status: ProductStatus,
+    val status: MobilyProductStatus,
 
     val name: String,
 ) {
@@ -40,7 +41,7 @@ class MobilySubscriptionOffer(
             val externalRef = jsonOffer.optString("externalRef")
             val referenceName = jsonOffer.optString("referenceName")
             val name = TranslationUtils.getTranslationValue(jsonOffer.getJSONArray("_translations"), "name")!!
-            val type = jsonOffer.getString("type")
+            val type = MobilyProductOfferType.parse(jsonOffer.getString("type"))
             val extras = jsonOffer.optJSONObject("extras")
             val android_offerId = jsonOffer.getString("android_offerId")
 
@@ -50,7 +51,7 @@ class MobilySubscriptionOffer(
             val periodCount: Int
             val periodUnit: PeriodUnit
             val countBillingCycle: Int
-            var status: ProductStatus = ProductStatus.UNAVAILABLE
+            var status: MobilyProductStatus = MobilyProductStatus.UNAVAILABLE
 
             // 1. Validate offer & phases
             val androidOffer = MobilyPurchaseRegistry.getAndroidOffer(sku, basePlanId, android_offerId)
@@ -59,16 +60,16 @@ class MobilySubscriptionOffer(
                 val countPhases = androidOffer.pricingPhases.pricingPhaseList.count()
                 if (countPhases != 2) {
                     Logger.w("Offer $sku/$basePlanId/${android_offerId} is incompatible with MobilyFlow (only 2 pricingPhases allowed)")
-                    status = ProductStatus.INVALID
+                    status = MobilyProductStatus.INVALID
                 } else {
-                    if (type == "free_trial" && androidOffer.pricingPhases.pricingPhaseList[0].priceAmountMicros > 0) {
+                    if (type == MobilyProductOfferType.FREE_TRIAL && androidOffer.pricingPhases.pricingPhaseList[0].priceAmountMicros > 0) {
                         Logger.w("Offer $sku/$basePlanId/${android_offerId ?: "null"} should be a free trial")
-                        status = ProductStatus.INVALID
+                        status = MobilyProductStatus.INVALID
                     }
                     for (phase in androidOffer.pricingPhases.pricingPhaseList) {
                         if (phase.recurrenceMode == RecurrenceMode.NON_RECURRING) {
                             Logger.w("Offer $sku/${basePlanId}/${android_offerId ?: "null"} is incompatible with MobilyFlow (NON_RECURRING phase)")
-                            status = ProductStatus.INVALID
+                            status = MobilyProductStatus.INVALID
                             continue
                         }
                     }
@@ -76,7 +77,7 @@ class MobilySubscriptionOffer(
             }
 
             // 2. Populate
-            if (androidOffer == null || status == ProductStatus.INVALID) {
+            if (androidOffer == null || status == MobilyProductStatus.INVALID) {
                 // Promotional offer but unavailable
                 val storePriceJson = jsonOffer.optJSONArray("StorePrices")
                 val storePrice =
@@ -89,7 +90,7 @@ class MobilySubscriptionOffer(
 
                 priceFormatted = Utils.formatPrice(priceMillis, currencyCode)
 
-                if (type == "free_trial") {
+                if (type == MobilyProductOfferType.FREE_TRIAL) {
                     periodCount = jsonOffer.getInt("offerPeriodCount")
                     periodUnit = PeriodUnit.parse(jsonOffer.getString("offerPeriodUnit"))
                     countBillingCycle = 1
@@ -103,7 +104,7 @@ class MobilySubscriptionOffer(
             } else {
                 val phase = androidOffer.pricingPhases.pricingPhaseList[0]
 
-                status = ProductStatus.AVAILABLE
+                status = MobilyProductStatus.AVAILABLE
                 priceMillis = Utils.microToMillis(phase.priceAmountMicros)
                 currencyCode = phase.priceCurrencyCode
                 priceFormatted = phase.formattedPrice
