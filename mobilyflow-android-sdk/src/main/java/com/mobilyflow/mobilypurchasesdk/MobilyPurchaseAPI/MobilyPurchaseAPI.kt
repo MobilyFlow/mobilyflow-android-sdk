@@ -93,7 +93,7 @@ class MobilyPurchaseAPI(
 
         val jsonResponse = response.json().getJSONObject("data")
         return MinimalProductForAndroidPurchase(
-            type = ProductType.valueOf(jsonResponse.getString("type").uppercase()),
+            type = ProductType.parse(jsonResponse.getString("type")),
             isConsumable = jsonResponse.getBoolean("isConsumable")
         )
     }
@@ -362,7 +362,7 @@ class MobilyPurchaseAPI(
             if (statusStr == "ERROR") {
                 throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_FAILED)
             }
-            return TransferOwnershipStatus.valueOf(jsonResponse.getString("status").uppercase())
+            return TransferOwnershipStatus.parse(jsonResponse.getString("status"))
         } else {
             Logger.w("[getTransferRequestStatus] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
@@ -391,7 +391,7 @@ class MobilyPurchaseAPI(
         }
 
         val jsonResponse = response.json().getJSONObject("data")
-        return WebhookStatus.valueOf(jsonResponse.getString("status").uppercase())
+        return WebhookStatus.parse(jsonResponse.getString("status"))
     }
 
     /**

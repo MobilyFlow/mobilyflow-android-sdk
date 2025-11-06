@@ -91,14 +91,14 @@ class MobilySubscriptionOffer(
 
                 if (type == "free_trial") {
                     periodCount = jsonOffer.getInt("offerPeriodCount")
-                    periodUnit = PeriodUnit.valueOf(jsonOffer.getString("offerPeriodUnit").uppercase())
+                    periodUnit = PeriodUnit.parse(jsonOffer.getString("offerPeriodUnit"))
                     countBillingCycle = 1
                 } else {
                     countBillingCycle = jsonOffer.getInt("offerCountBillingCycle")
 
                     // Inherit from baseOffer
                     periodCount = jsonProduct.getInt("subscriptionPeriodCount")
-                    periodUnit = PeriodUnit.valueOf(jsonProduct.getString("subscriptionPeriodUnit").uppercase())
+                    periodUnit = PeriodUnit.parse(jsonProduct.getString("subscriptionPeriodUnit"))
                 }
             } else {
                 val phase = androidOffer.pricingPhases.pricingPhaseList[0]

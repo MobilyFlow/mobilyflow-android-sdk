@@ -57,7 +57,7 @@ class MobilyProduct(
         internal fun parse(jsonProduct: JSONObject): MobilyProduct {
             val android_sku = jsonProduct.getString("android_sku")
             val android_basePlanId = jsonProduct.getString("android_basePlanId")
-            val type = ProductType.valueOf(jsonProduct.getString("type").uppercase())
+            val type = ProductType.parse(jsonProduct.getString("type"))
 
             var status: ProductStatus
             var priceMillis = 0
@@ -134,7 +134,7 @@ class MobilyProduct(
                     periodUnit = periodParsed.second
                 } else {
                     periodCount = jsonProduct.getInt("subscriptionPeriodCount")
-                    periodUnit = PeriodUnit.valueOf(jsonProduct.getString("subscriptionPeriodUnit").uppercase())
+                    periodUnit = PeriodUnit.parse(jsonProduct.getString("subscriptionPeriodUnit"))
                 }
 
                 val jsonOffers = jsonProduct.optJSONArray("Offers")

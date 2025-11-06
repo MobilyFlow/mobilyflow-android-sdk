@@ -24,7 +24,7 @@ class MobilyItem(
                 createdAt = Utils.parseDate(jsonItem.getString("createdAt")),
                 updatedAt = Utils.parseDate(jsonItem.getString("updatedAt")),
                 deletedAt = Utils.parseDate(jsonItem.getString("deletedAt")),
-                environment = MobilyEnvironment.valueOf(jsonItem.getString("environment").uppercase()),
+                environment = MobilyEnvironment.parse(jsonItem.getString("environment")),
                 productId = jsonItem.getString("productId"),
                 customerId = jsonItem.getString("customerId"),
                 quantity = jsonItem.getInt("quantity"),

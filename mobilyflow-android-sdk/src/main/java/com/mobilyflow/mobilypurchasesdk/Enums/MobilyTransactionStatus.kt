@@ -1,18 +1,18 @@
 package com.mobilyflow.mobilypurchasesdk.Enums
 
-enum class MobilyTransactionStatus(val value: Int) {
-    SUCCESS(0),
-    BILLING_ERROR(1),
-    REFUNDED(2);
+enum class MobilyTransactionStatus(val value: String) {
+    SUCCESS("success"),
+    BILLING_ERROR("billing-error"),
+    REFUNDED("refunded");
 
     companion object {
-        fun parse(strValue: String): MobilyTransactionStatus {
-            return when (strValue) {
-                "success" -> SUCCESS
-                "billing-error" -> BILLING_ERROR
-                "refunded" -> REFUNDED
-                else -> throw IllegalArgumentException("Unknown Event: ${strValue}")
+        fun parse(value: String): MobilyTransactionStatus {
+            for (it in MobilyTransactionStatus.values()) {
+                if (it.value == value) {
+                    return it
+                }
             }
+            throw IllegalArgumentException("Unknown MobilyTransactionStatus: $value")
         }
     }
 }

@@ -1,7 +1,18 @@
 package com.mobilyflow.mobilypurchasesdk.Enums
 
-enum class MobilyEnvironment(val value: Int) {
-    DEVELOPMENT(0),
-    STAGING(1),
-    PRODUCTION(2);
+enum class MobilyEnvironment(val value: String) {
+    DEVELOPMENT("development"),
+    STAGING("staging"),
+    PRODUCTION("production");
+
+    companion object {
+        fun parse(value: String): MobilyEnvironment {
+            for (it in MobilyEnvironment.values()) {
+                if (it.value == value) {
+                    return it
+                }
+            }
+            throw IllegalArgumentException("Unknown MobilyEnvironment: $value")
+        }
+    }
 }

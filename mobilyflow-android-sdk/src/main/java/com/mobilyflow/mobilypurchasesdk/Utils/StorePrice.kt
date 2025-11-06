@@ -8,7 +8,7 @@ class StorePrice(
     val priceMillis: Int,
     val currency: String,
     val regionCode: String,
-    val platform: Platform?
+    val platform: Platform
 ) {
     companion object {
         fun parse(storePrice: JSONObject): StorePrice {
@@ -18,7 +18,7 @@ class StorePrice(
                 priceMillis = storePrice.getInt("priceMillis"),
                 currency = storePrice.getString("currency"),
                 regionCode = storePrice.getString("regionCode"),
-                platform = if (platform.isEmpty()) null else Platform.valueOf(platform.uppercase())
+                platform = Platform.parse(platform)
             )
         }
     }

@@ -1,10 +1,10 @@
 package com.mobilyflow.mobilypurchasesdk.Enums
 
 
-enum class PeriodUnit(val value: Int) {
-    WEEK(0),
-    MONTH(1),
-    YEAR(2);
+enum class PeriodUnit(val value: String) {
+    WEEK("week"),
+    MONTH("month"),
+    YEAR("year");
 
     companion object {
         fun parseSubscriptionPeriod(isoPeriod: String): Pair<Int, PeriodUnit> {
@@ -27,6 +27,15 @@ enum class PeriodUnit(val value: Int) {
             }
 
             return Pair(periodCount, periodUnit)
+        }
+
+        fun parse(value: String): PeriodUnit {
+            for (it in PeriodUnit.values()) {
+                if (it.value == value) {
+                    return it
+                }
+            }
+            throw IllegalArgumentException("Unknown PeriodUnit: $value")
         }
     }
 }

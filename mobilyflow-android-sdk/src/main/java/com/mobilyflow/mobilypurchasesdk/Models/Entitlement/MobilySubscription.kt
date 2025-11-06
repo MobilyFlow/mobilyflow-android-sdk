@@ -52,7 +52,7 @@ class MobilySubscription(
             jsonSubscription: JSONObject,
             storeAccountTransactions: List<BillingClientWrapper.PurchaseWithType>?
         ): MobilySubscription {
-            val platform = Platform.valueOf(jsonSubscription.getString("platform").uppercase())
+            val platform = Platform.parse(jsonSubscription.getString("platform"))
             var autoRenewEnable = jsonSubscription.getBoolean("autoRenewEnable")
             var storeAccountTx: Purchase? = null
 
@@ -114,8 +114,8 @@ class MobilySubscription(
                 startDate = Utils.parseDate(jsonSubscription.getString("startDate")),
                 endDate = Utils.parseDate(jsonSubscription.getString("endDate")),
                 customerId = jsonSubscription.getString("customerId"),
-                platform = Platform.valueOf(jsonSubscription.getString("platform").uppercase()),
-                environment = MobilyEnvironment.valueOf(jsonSubscription.getString("environment").uppercase()),
+                platform = Platform.parse(jsonSubscription.getString("platform")),
+                environment = MobilyEnvironment.parse(jsonSubscription.getString("environment")),
                 renewProductId = jsonSubscription.getString("renewProductId"),
                 renewProductOfferId = jsonSubscription.getString("renewProductOfferId"),
                 lastPriceMillis = jsonSubscription.getInt("lastPriceMillis"),

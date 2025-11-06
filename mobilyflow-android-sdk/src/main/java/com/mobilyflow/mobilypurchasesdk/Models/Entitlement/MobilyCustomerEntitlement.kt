@@ -17,7 +17,7 @@ class MobilyCustomerEntitlement(
             jsonEntitlement: JSONObject,
             storeAccountTransactions: List<BillingClientWrapper.PurchaseWithType>?,
         ): MobilyCustomerEntitlement {
-            val type = ProductType.valueOf(jsonEntitlement.getString("type").uppercase())
+            val type = ProductType.parse(jsonEntitlement.getString("type"))
             val jsonEntity = jsonEntitlement.getJSONObject("entity")
             val product: MobilyProduct
 

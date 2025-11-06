@@ -71,8 +71,8 @@ class MobilyEvent(
                 customerId = jsonEvent.getString("customerId"),
                 type = MobilyEventType.parse(jsonEvent.getString("type")),
                 extras = jsonEvent.getJSONObject("extras"),
-                platform = Platform.valueOf(jsonEvent.getString("platform").uppercase()),
-                environment = MobilyEnvironment.valueOf(jsonEvent.getString("environment").uppercase()),
+                platform = Platform.parse(jsonEvent.getString("platform")),
+                environment = MobilyEnvironment.parse(jsonEvent.getString("environment")),
                 isSandbox = jsonEvent.getBoolean("isSandbox"),
 
                 Customer = if (jsonCustomer != null) MobilyCustomer.parse(jsonCustomer) else null,
