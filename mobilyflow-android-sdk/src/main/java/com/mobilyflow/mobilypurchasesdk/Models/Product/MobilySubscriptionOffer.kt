@@ -24,6 +24,7 @@ class MobilySubscriptionOffer(
     val periodUnit: PeriodUnit,
     val countBillingCycle: Int,
     val android_offerId: String,
+    val ios_offerId: String?,
     val extras: JSONObject?,
     val status: MobilyProductStatus,
 
@@ -97,7 +98,7 @@ class MobilySubscriptionOffer(
                 } else {
                     countBillingCycle = jsonOffer.getInt("offerCountBillingCycle")
 
-                    // Inherit from baseOffer
+                    // Inherit from product
                     periodCount = jsonProduct.getInt("subscriptionPeriodCount")
                     periodUnit = PeriodUnit.parse(jsonProduct.getString("subscriptionPeriodUnit"))
                 }
@@ -129,6 +130,7 @@ class MobilySubscriptionOffer(
                 periodUnit = periodUnit,
                 countBillingCycle = countBillingCycle,
                 android_offerId = android_offerId,
+                ios_offerId = jsonOffer.optString("ios_offerId"),
                 extras = extras,
                 status = status,
             )

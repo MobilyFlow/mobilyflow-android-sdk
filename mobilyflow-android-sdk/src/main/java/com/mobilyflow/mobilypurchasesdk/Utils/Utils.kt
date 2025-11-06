@@ -86,6 +86,13 @@ abstract class Utils {
             return Instant.parse(isoDate).toLocalDateTime(TimeZone.UTC)
         }
 
+        fun parseDateOpt(isoDate: String?): LocalDateTime? {
+            if (isoDate == null || isoDate.isEmpty()) {
+                return null
+            }
+            return parseDate(isoDate)
+        }
+
         fun moveFile(sourceFile: File, targetFile: File) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 Files.move(

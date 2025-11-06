@@ -2,7 +2,6 @@ package com.mobilyflow.mobilypurchasesdk.Models.Entitlement
 
 import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
-import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
@@ -20,9 +19,7 @@ class MobilySubscription(
     val productOfferId: String,
     val startDate: LocalDateTime,
     val endDate: LocalDateTime,
-    val customerId: String,
     val platform: MobilyPlatform,
-    val environment: MobilyEnvironment,
     val renewProductId: String,
     val renewProductOfferId: String,
     val lastPriceMillis: Int,
@@ -54,9 +51,9 @@ class MobilySubscription(
         ): MobilySubscription {
             val platform = MobilyPlatform.parse(jsonSubscription.getString("platform"))
             var autoRenewEnable = jsonSubscription.getBoolean("autoRenewEnable")
-            var storeAccountTx: Purchase? = null
 
             var lastPlatformTxOriginalId: String? = jsonSubscription.optString("lastPlatformTxOriginalId")
+            var storeAccountTx: Purchase? = null
 
             if (platform == MobilyPlatform.ANDROID && lastPlatformTxOriginalId!!.isNotEmpty()) {
                 val relatedPurchase = storeAccountTransactions?.find { tx ->
@@ -73,11 +70,12 @@ class MobilySubscription(
             }
 
             val jsonProduct = jsonSubscription.getJSONObject("Product")
+            val product = MobilyProduct.parse(jsonProduct)
+
             val jsonProductOffer = jsonSubscription.optJSONObject("ProductOffer")
             val jsonRenewProduct = jsonSubscription.optJSONObject("RenewProduct")
             val jsonRenewProductOffer = jsonSubscription.optJSONObject("RenewProductOffer")
 
-            val product = MobilyProduct.parse(jsonProduct)
             var productOffer: MobilySubscriptionOffer? = null
             var renewProduct: MobilyProduct? = null
             var renewProductOffer: MobilySubscriptionOffer? = null
@@ -113,23 +111,21 @@ class MobilySubscription(
                 productOfferId = jsonSubscription.getString("productOfferId"),
                 startDate = Utils.parseDate(jsonSubscription.getString("startDate")),
                 endDate = Utils.parseDate(jsonSubscription.getString("endDate")),
-                customerId = jsonSubscription.getString("customerId"),
-                platform = MobilyPlatform.parse(jsonSubscription.getString("platform")),
-                environment = MobilyEnvironment.parse(jsonSubscription.getString("environment")),
+                platform = platform,
                 renewProductId = jsonSubscription.getString("renewProductId"),
                 renewProductOfferId = jsonSubscription.getString("renewProductOfferId"),
                 lastPriceMillis = jsonSubscription.getInt("lastPriceMillis"),
                 regularPriceMillis = jsonSubscription.getInt("regularPriceMillis"),
                 renewPriceMillis = jsonSubscription.getInt("renewPriceMillis"),
                 currency = jsonSubscription.getString("currency"),
-                offerExpiryDate = Utils.parseDate(jsonSubscription.getString("offerExpiryDate")),
-                offerRemainingCycle = jsonSubscription.getInt("offerRemainingCycle"),
+                offerExpiryDate = Utils.parseDateOpt(jsonSubscription.optString("offerExpiryDate")),
+                offerRemainingCycle = jsonSubscription.optInt("offerRemainingCycle"),
                 autoRenewEnable = autoRenewEnable,
                 isInGracePeriod = jsonSubscription.getBoolean("isInGracePeriod"),
                 isInBillingIssue = jsonSubscription.getBoolean("isInBillingIssue"),
                 hasPauseScheduled = jsonSubscription.getBoolean("hasPauseScheduled"),
                 isPaused = jsonSubscription.getBoolean("isPaused"),
-                resumeDate = Utils.parseDate(jsonSubscription.getString("resumeDate")),
+                resumeDate = Utils.parseDateOpt(jsonSubscription.optString("resumeDate")),
                 isExpiredOrRevoked = jsonSubscription.getBoolean("isExpiredOrRevoked"),
 
                 isManagedByThisStoreAccount = storeAccountTx != null,
