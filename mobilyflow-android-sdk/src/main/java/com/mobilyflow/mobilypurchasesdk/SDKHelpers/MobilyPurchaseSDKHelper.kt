@@ -6,7 +6,7 @@ import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MapTransactionItem
-import com.mobilyflow.mobilypurchasesdk.Models.MobilyProduct
+import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.sha256
 
@@ -61,9 +61,9 @@ class MobilyPurchaseSDKHelper() {
             val androidOffer = if (product.type == ProductType.SUBSCRIPTION) {
                 MobilyPurchaseRegistry.getAndroidOffer(
                     product.android_sku,
-                    product.subscriptionProduct!!.android_basePlanId,
-                    if (options?.offer == null && product.subscriptionProduct.freeTrial?.status == ProductStatus.AVAILABLE)
-                        product.subscriptionProduct.freeTrial.android_offerId
+                    product.android_basePlanId,
+                    if (options?.offer == null && product.subscription!!.freeTrial?.status == ProductStatus.AVAILABLE)
+                        product.subscription.freeTrial.android_offerId
                     else
                         options?.offer?.android_offerId
                 )
@@ -90,7 +90,7 @@ class MobilyPurchaseSDKHelper() {
 
             // Manage already purchased
             if (product.type == ProductType.ONE_TIME) {
-                if (!product.oneTimeProduct!!.isConsumable) {
+                if (!product.oneTime!!.isConsumable) {
                     val entitlement = syncer.getEntitlement(product.id)
                     if (entitlement != null) {
                         throw MobilyPurchaseException(MobilyPurchaseException.Type.ALREADY_PURCHASED)
@@ -105,23 +105,23 @@ class MobilyPurchaseSDKHelper() {
                 }
             } else {
                 val entitlement =
-                    syncer.getEntitlementForSubscription(product.subscriptionProduct!!.subscriptionGroupId)
+                    syncer.getEntitlementForSubscription(product.subscription!!.groupId)
 
                 if (entitlement != null) {
-                    if (!entitlement.subscription!!.isManagedByThisStoreAccount) {
+                    if (!entitlement.Subscription!!.isManagedByThisStoreAccount) {
                         throw MobilyPurchaseException(MobilyPurchaseException.Type.NOT_MANAGED_BY_THIS_STORE_ACCOUNT)
                     }
 
                     // If auto-renew is disabled, allow re-purchase in app
-                    if (entitlement.subscription.autoRenewEnable) {
-                        val currentRenewProduct = entitlement.subscription.renewProduct ?: entitlement.product
+                    if (entitlement.Subscription.autoRenewEnable) {
+                        val currentRenewProduct = entitlement.Subscription.RenewProduct ?: entitlement.Product
                         val currentRenewSku = currentRenewProduct.android_sku
-                        val currentRenewBasePlan = currentRenewProduct.subscriptionProduct!!.android_basePlanId
+                        val currentRenewBasePlan = currentRenewProduct.android_basePlanId
 
-                        if (currentRenewSku == product.android_sku && currentRenewBasePlan == product.subscriptionProduct.android_basePlanId) {
+                        if (currentRenewSku == product.android_sku && currentRenewBasePlan == product.android_basePlanId) {
                             if (
-                                entitlement.product.android_sku == product.android_sku &&
-                                entitlement.product.subscriptionProduct!!.android_basePlanId == product.subscriptionProduct.android_basePlanId
+                                entitlement.Product.android_sku == product.android_sku &&
+                                entitlement.Product.android_basePlanId == product.android_basePlanId
                             ) {
                                 throw MobilyPurchaseException(MobilyPurchaseException.Type.ALREADY_PURCHASED)
                             } else {
@@ -130,25 +130,27 @@ class MobilyPurchaseSDKHelper() {
                         }
                     }
 
-                    builder.setSubscriptionUpdateParams(
-                        BillingFlowParams.SubscriptionUpdateParams.newBuilder()
-                            .setOldPurchaseToken(entitlement.subscription.purchaseToken!!)
-                            // https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.SubscriptionUpdateParams.ReplacementMode
-                            .setSubscriptionReplacementMode(
-                                if (entitlement.product.android_sku == product.android_sku) {
-                                    // Always DOWNGRADE when same SKU, officially, this credit the subscription directly, but only rebuy at the end of actual period
-                                    // This is the only ReplacementMode that work when SKU is the same
-                                    BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.WITHOUT_PRORATION
-                                } else if (entitlement.product.subscriptionProduct!!.groupLevel > product.subscriptionProduct.groupLevel) {
-                                    // When UPGRADE, Charge immediately, remaining time is prorated and added to the subscription
-                                    BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.CHARGE_FULL_PRICE
-                                } else {
-                                    // DOWNGRADE: Charge at next billing date
-                                    BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.DEFERRED
-                                }
-                            )
-                            .build()
+                    val updateParams = BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+
+                    if (entitlement.Subscription.lastPlatformTxOriginalId != null) {
+                        updateParams.setOldPurchaseToken(entitlement.Subscription.lastPlatformTxOriginalId)
+                    }
+
+                    updateParams.setSubscriptionReplacementMode(
+                        if (entitlement.Product.android_sku == product.android_sku) {
+                            // Always DOWNGRADE when same SKU, officially, this credit the subscription directly, but only rebuy at the end of actual period
+                            // This is the only ReplacementMode that work when SKU is the same
+                            BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.WITHOUT_PRORATION
+                        } else if (entitlement.Product.subscription!!.groupLevel > product.subscription.groupLevel) {
+                            // When UPGRADE, Charge immediately, remaining time is prorated and added to the subscription
+                            BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.CHARGE_FULL_PRICE
+                        } else {
+                            // DOWNGRADE: Charge at next billing date
+                            BillingFlowParams.SubscriptionUpdateParams.ReplacementMode.DEFERRED
+                        }
                     )
+
+                    builder.setSubscriptionUpdateParams(updateParams.build())
                 } else {
                     val storeAccountTransaction = syncer.getStoreAccountTransaction(product.android_sku)
 

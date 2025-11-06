@@ -23,9 +23,9 @@ import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MapTransactionItem
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MinimalProductForAndroidPurchase
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
-import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomerEntitlement
-import com.mobilyflow.mobilypurchasesdk.Models.MobilyProduct
-import com.mobilyflow.mobilypurchasesdk.Models.MobilySubscriptionGroup
+import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilyCustomerEntitlement
+import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
+import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionGroup
 import com.mobilyflow.mobilypurchasesdk.Models.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Monitoring.AppLifecycleProvider
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
@@ -95,7 +95,7 @@ class MobilyPurchaseSDK(
 
         diagnostics = MobilyPurchaseSDKDiagnostics(billingClient, null)
         waiter = MobilyPurchaseSDKWaiter(API, diagnostics)
-        syncer = MobilyPurchaseSDKSyncer(API, billingClient) { this.getMostRelevantRegion() }
+        syncer = MobilyPurchaseSDKSyncer(API, billingClient)
 
         lifecycleListener = object : AppLifecycleProvider.AppLifecycleCallbacks() {
             override fun onActivityPaused(activity: Activity) {
@@ -149,12 +149,12 @@ class MobilyPurchaseSDK(
 
     fun login(externalRef: String): MobilyCustomer {
         // 1. Logout previous user
-        this.logout();
+        this.logout()
 
         // 2. Login
         val loginResponse = this.API.login(externalRef)
 
-        this.customer = MobilyCustomer.parse(loginResponse.customer, loginResponse.isForwardingEnable)
+        this.customer = MobilyCustomer.parse(loginResponse.customer)
         diagnostics.customerId = this.customer?.id
         this.syncer.login(customer, loginResponse.entitlements)
 
@@ -325,9 +325,9 @@ class MobilyPurchaseSDK(
             return entitlement
         }
 
-        productsCaches[entitlement.product.id] = entitlement.product
-        if (entitlement.subscription?.renewProduct != null) {
-            productsCaches[entitlement.subscription.renewProduct.id] = entitlement.subscription.renewProduct
+        productsCaches[entitlement.Product.id] = entitlement.Product
+        if (entitlement.Subscription?.RenewProduct != null) {
+            productsCaches[entitlement.Subscription.RenewProduct.id] = entitlement.Subscription.RenewProduct
         }
         return entitlement
     }
@@ -442,7 +442,7 @@ class MobilyPurchaseSDK(
         this.syncer.ensureSync()
 
         try {
-            if (this.customer!!.isForwardingEnable) {
+            if (this.customer!!.forwardNotificationEnable) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
             }
 
@@ -524,7 +524,7 @@ class MobilyPurchaseSDK(
         if (product != null && product.android_sku == androidSku) {
             minimalProduct = MinimalProductForAndroidPurchase(
                 type = product.type,
-                isConsumable = product.oneTimeProduct?.isConsumable ?: false,
+                isConsumable = product.oneTime?.isConsumable ?: false,
             )
         } else {
             try {
@@ -570,7 +570,7 @@ class MobilyPurchaseSDK(
             }
 
             runCatching {
-                if (!this.customer!!.isForwardingEnable) {
+                if (!this.customer!!.forwardNotificationEnable) {
                     status = this.waiter.waitPurchaseWebhook(purchase)
                 }
             }

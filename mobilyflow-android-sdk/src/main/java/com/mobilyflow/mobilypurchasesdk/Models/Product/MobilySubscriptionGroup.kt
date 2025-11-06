@@ -1,4 +1,4 @@
-package com.mobilyflow.mobilypurchasesdk.Models
+package com.mobilyflow.mobilypurchasesdk.Models.Product
 
 import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
 import com.mobilyflow.mobilypurchasesdk.Utils.TranslationUtils

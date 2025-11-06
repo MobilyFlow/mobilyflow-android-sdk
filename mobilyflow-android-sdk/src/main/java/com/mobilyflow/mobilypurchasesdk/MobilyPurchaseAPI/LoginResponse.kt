@@ -7,6 +7,5 @@ class LoginResponse(
     val customer: JSONObject,
     val entitlements: JSONArray,
     val platformOriginalTransactionIds: Array<String>,
-    val isForwardingEnable: Boolean,
     val haveMonitoringRequests: Boolean,
 ) {}

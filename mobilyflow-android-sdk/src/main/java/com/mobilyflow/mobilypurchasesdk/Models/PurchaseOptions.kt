@@ -1,5 +1,7 @@
 package com.mobilyflow.mobilypurchasesdk.Models
 
+import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionOffer
+
 class PurchaseOptions {
     var offer: MobilySubscriptionOffer? = null
 

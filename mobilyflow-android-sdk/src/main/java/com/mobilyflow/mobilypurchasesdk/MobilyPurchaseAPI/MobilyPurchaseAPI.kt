@@ -71,7 +71,6 @@ class MobilyPurchaseAPI(
             customer = jsonResponse.getJSONObject("customer"),
             platformOriginalTransactionIds = jsonArrayToStringArray(jsonResponse.getJSONArray("platformOriginalTransactionIds")),
             entitlements = jsonResponse.getJSONArray("entitlements"),
-            isForwardingEnable = jsonResponse.getBoolean("isForwardingEnable"),
             haveMonitoringRequests = jsonResponse.optBoolean("haveMonitoringRequests"),
         )
     }
