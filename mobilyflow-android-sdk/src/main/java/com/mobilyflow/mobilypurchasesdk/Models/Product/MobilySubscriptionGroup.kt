@@ -22,9 +22,9 @@ class MobilySubscriptionGroup(
                 id = jsonGroup.getString("id"),
                 identifier = jsonGroup.getString("identifier"),
                 referenceName = jsonGroup.getString("referenceName"),
-                name = TranslationUtils.getTranslationValue(jsonGroup.getJSONArray("_translations"), "name")!!,
+                name = TranslationUtils.getTranslationValue(jsonGroup.optJSONArray("_translations"), "name") ?: "",
                 description = TranslationUtils.getTranslationValue(
-                    jsonGroup.getJSONArray("_translations"),
+                    jsonGroup.optJSONArray("_translations"),
                     "description"
                 ) ?: "",
                 extras = jsonGroup.optJSONObject("extras"),

@@ -1,8 +1,8 @@
 package com.mobilyflow.mobilypurchasesdk.Models
 
-import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
-import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransactionStatus
+import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransactionStatus
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import com.mobilyflow.mobilypurchasesdk.Utils.optStringNull
 import kotlinx.datetime.LocalDateTime
@@ -13,7 +13,7 @@ class MobilyTransaction(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val platformTxId: String,
-    val platformTxOriginalId: String,
+    val platformTxOriginalId: String?,
     val customerId: String,
     val quantity: Int,
     val country: String,
@@ -24,9 +24,9 @@ class MobilyTransaction(
     val status: MobilyTransactionStatus,
     val refundedPercent: Double,
     val productId: String,
-    val subscriptionId: String,
-    val itemId: String,
-    val productOfferId: String,
+    val subscriptionId: String?,
+    val itemId: String?,
+    val productOfferId: String?,
     val platform: MobilyPlatform,
     val startDate: LocalDateTime,
     val endDate: LocalDateTime,
@@ -34,13 +34,26 @@ class MobilyTransaction(
     val isSandbox: Boolean,
 ) {
     companion object {
-        internal fun parse(jsonTx: JSONObject): MobilyTransaction {
+        internal fun parse(
+            jsonTx: JSONObject,
+            storeAccountTransactions: List<BillingClientWrapper.PurchaseWithType>?
+        ): MobilyTransaction {
+            val platform = MobilyPlatform.parse(jsonTx.getString("platform"))
+            var platformTxOriginalId: String? = jsonTx.getString("platformTxOriginalId")
+
+            if (platform == MobilyPlatform.ANDROID) {
+                val relatedPurchase =
+                    Utils.getPurchaseWithSha256PurchaseToken(platformTxOriginalId, storeAccountTransactions)
+                val storeAccountTx = relatedPurchase?.purchase
+                platformTxOriginalId = storeAccountTx?.purchaseToken
+            }
+
             return MobilyTransaction(
                 id = jsonTx.getString("id"),
                 createdAt = Utils.parseDate(jsonTx.getString("createdAt")),
                 updatedAt = Utils.parseDate(jsonTx.getString("updatedAt")),
                 platformTxId = jsonTx.getString("platformTxId"),
-                platformTxOriginalId = jsonTx.getString("platformTxOriginalId"),
+                platformTxOriginalId = platformTxOriginalId,
                 customerId = jsonTx.getString("customerId"),
                 quantity = jsonTx.optInt("quantity", 1),
                 country = jsonTx.getString("country"),
@@ -49,12 +62,12 @@ class MobilyTransaction(
                 convertedPriceMillis = jsonTx.getInt("convertedPriceMillis"),
                 convertedCurrency = jsonTx.getString("convertedCurrency"),
                 status = MobilyTransactionStatus.parse(jsonTx.getString("status")),
-                refundedPercent = jsonTx.getDouble("refundedPercent"),
+                refundedPercent = jsonTx.optDouble("refundedPercent", 0.0),
                 productId = jsonTx.getString("productId"),
-                subscriptionId = jsonTx.getString("subscriptionId"),
-                itemId = jsonTx.getString("itemId"),
-                productOfferId = jsonTx.getString("productOfferId"),
-                platform = MobilyPlatform.parse(jsonTx.getString("platform")),
+                subscriptionId = jsonTx.optStringNull("subscriptionId"),
+                itemId = jsonTx.optStringNull("itemId"),
+                productOfferId = jsonTx.optStringNull("productOfferId"),
+                platform = platform,
                 startDate = Utils.parseDate(jsonTx.getString("startDate")),
                 endDate = Utils.parseDate(jsonTx.getString("endDate")),
                 refundDate = Utils.parseDateOpt(jsonTx.optStringNull("refundDate")),

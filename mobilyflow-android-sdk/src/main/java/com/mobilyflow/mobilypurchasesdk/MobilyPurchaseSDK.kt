@@ -512,6 +512,7 @@ class MobilyPurchaseSDK(
         var event: MobilyEvent? = null
 
         if (purchase.isAcknowledged) {
+            Logger.w("finishPurchase with already acknowledged purchase")
             return null
         } else if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
             throw MobilyPurchaseException(MobilyPurchaseException.Type.PENDING)
@@ -575,12 +576,10 @@ class MobilyPurchaseSDK(
                 }
             }
 
-            runCatching {
-                if (!this.customer!!.forwardNotificationEnable) {
-                    val result = this.waiter.waitPurchaseWebhook(purchase)
-                    if (result.event != null) {
-                        event = MobilyEvent.parse(result.event, this.billingClient.queryPurchases())
-                    }
+            if (!this.customer!!.forwardNotificationEnable) {
+                val result = this.waiter.waitPurchaseWebhook(purchase)
+                if (result.event != null) {
+                    event = MobilyEvent.parse(result.event, this.billingClient.queryPurchases())
                 }
             }
             syncer.ensureSync(true)

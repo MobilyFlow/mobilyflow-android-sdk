@@ -42,7 +42,7 @@ class MobilySubscriptionOffer(
             val identifier = jsonOffer.getString("identifier")
             val externalRef = jsonOffer.optStringNull("externalRef")
             val referenceName = jsonOffer.getString("referenceName")
-            val name = TranslationUtils.getTranslationValue(jsonOffer.getJSONArray("_translations"), "name")!!
+            val name = TranslationUtils.getTranslationValue(jsonOffer.optJSONArray("_translations"), "name") ?: ""
             val type = MobilyProductOfferType.parse(jsonOffer.getString("type"))
             val extras = jsonOffer.optJSONObject("extras")
             val android_offerId = jsonOffer.getString("android_offerId")

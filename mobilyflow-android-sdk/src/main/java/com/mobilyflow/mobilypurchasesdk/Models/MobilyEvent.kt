@@ -77,7 +77,10 @@ class MobilyEvent(
                 Customer = if (jsonCustomer != null) MobilyCustomer.parse(jsonCustomer) else null,
                 Product = product,
                 ProductOffer = productOffer,
-                Transaction = if (jsonTransaction != null) MobilyTransaction.parse(jsonTransaction) else null,
+                Transaction = if (jsonTransaction != null) MobilyTransaction.parse(
+                    jsonTransaction,
+                    storeAccountTransactions
+                ) else null,
                 Subscription = if (jsonSubscription != null) MobilySubscription.parse(
                     jsonSubscription,
                     storeAccountTransactions

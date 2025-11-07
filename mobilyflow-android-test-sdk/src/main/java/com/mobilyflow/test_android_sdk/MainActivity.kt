@@ -460,7 +460,7 @@ fun IAPButton(
                 } else {
                     Log.d(
                         "MobilyFlow",
-                        "Click ${product.identifier} offer ${offer.android_offerId ?: "null"}"
+                        "Click ${product.identifier} offer ${offer.android_offerId}"
                     )
                     val status = sdk.purchaseProduct(activity, product, PurchaseOptions().setOffer(offer))
                     Log.d("MobilyFlow", "Purchase result = $status")

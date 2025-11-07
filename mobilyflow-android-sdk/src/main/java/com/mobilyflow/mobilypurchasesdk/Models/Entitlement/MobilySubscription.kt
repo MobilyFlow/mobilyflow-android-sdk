@@ -17,12 +17,12 @@ class MobilySubscription(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val productId: String,
-    val productOfferId: String,
+    val productOfferId: String?,
     val startDate: LocalDateTime,
     val endDate: LocalDateTime,
     val platform: MobilyPlatform,
-    val renewProductId: String,
-    val renewProductOfferId: String,
+    val renewProductId: String?,
+    val renewProductOfferId: String?,
     val lastPriceMillis: Int,
     val regularPriceMillis: Int,
     val renewPriceMillis: Int,
@@ -53,20 +53,17 @@ class MobilySubscription(
             val platform = MobilyPlatform.parse(jsonSubscription.getString("platform"))
             var autoRenewEnable = jsonSubscription.getBoolean("autoRenewEnable")
 
-            var lastPlatformTxOriginalId: String? = jsonSubscription.optStringNull("lastPlatformTxOriginalId")
+            var lastPlatformTxOriginalId = jsonSubscription.optStringNull("lastPlatformTxOriginalId")
             var storeAccountTx: Purchase? = null
 
-            if (platform == MobilyPlatform.ANDROID && lastPlatformTxOriginalId!!.isNotEmpty()) {
-                val relatedPurchase = storeAccountTransactions?.find { tx ->
-                    tx.type == MobilyProductType.SUBSCRIPTION && sha256(tx.purchase.purchaseToken) == lastPlatformTxOriginalId
-                }
+            if (platform == MobilyPlatform.ANDROID) {
+                val relatedPurchase =
+                    Utils.getPurchaseWithSha256PurchaseToken(lastPlatformTxOriginalId, storeAccountTransactions)
                 storeAccountTx = relatedPurchase?.purchase
+                lastPlatformTxOriginalId = storeAccountTx?.purchaseToken
 
                 if (storeAccountTx != null) {
                     autoRenewEnable = storeAccountTx.isAutoRenewing
-                    lastPlatformTxOriginalId = storeAccountTx.purchaseToken
-                } else {
-                    lastPlatformTxOriginalId = null
                 }
             }
 
@@ -109,12 +106,12 @@ class MobilySubscription(
                 createdAt = Utils.parseDate(jsonSubscription.getString("createdAt")),
                 updatedAt = Utils.parseDate(jsonSubscription.getString("updatedAt")),
                 productId = jsonSubscription.getString("productId"),
-                productOfferId = jsonSubscription.getString("productOfferId"),
+                productOfferId = jsonSubscription.optStringNull("productOfferId"),
                 startDate = Utils.parseDate(jsonSubscription.getString("startDate")),
                 endDate = Utils.parseDate(jsonSubscription.getString("endDate")),
                 platform = platform,
-                renewProductId = jsonSubscription.getString("renewProductId"),
-                renewProductOfferId = jsonSubscription.getString("renewProductOfferId"),
+                renewProductId = jsonSubscription.optStringNull("renewProductId"),
+                renewProductOfferId = jsonSubscription.optStringNull("renewProductOfferId"),
                 lastPriceMillis = jsonSubscription.getInt("lastPriceMillis"),
                 regularPriceMillis = jsonSubscription.getInt("regularPriceMillis"),
                 renewPriceMillis = jsonSubscription.getInt("renewPriceMillis"),

@@ -185,11 +185,11 @@ class MobilyProduct(
                 type = type,
                 extras = jsonProduct.optJSONObject("extras"),
 
-                name = TranslationUtils.getTranslationValue(jsonProduct.getJSONArray("_translations"), "name")!!,
+                name = TranslationUtils.getTranslationValue(jsonProduct.optJSONArray("_translations"), "name") ?: "",
                 description = TranslationUtils.getTranslationValue(
-                    jsonProduct.getJSONArray("_translations"),
+                    jsonProduct.optJSONArray("_translations"),
                     "description"
-                )!!,
+                ) ?: "",
 
                 priceMillis = priceMillis,
                 currencyCode = currencyCode,

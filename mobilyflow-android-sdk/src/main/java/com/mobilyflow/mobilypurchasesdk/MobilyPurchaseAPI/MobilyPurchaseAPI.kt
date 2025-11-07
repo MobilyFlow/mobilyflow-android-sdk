@@ -375,10 +375,14 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class)
     fun getWebhookResult(purchaseToken: String, transactionId: String): MobilyWebhookResult {
-        val request = ApiRequest("GET", "/apps/me/events/webhook-result/android")
-        request.addParam("signedTransaction", purchaseToken)
-        request.addParam("platformTxId", transactionId)
-        request.addParam("environment", environment.value)
+        val request = ApiRequest("POST", "/apps/me/events/webhook-result/android")
+
+        request.setData(
+            JSONObject()
+                .put("signedTransaction", purchaseToken)
+                .put("platformTxId", transactionId)
+                .put("environment", environment.value)
+        )
 
         val response: ApiResponse?
         try {
