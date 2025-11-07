@@ -266,11 +266,11 @@ class MobilyPurchaseSDK(
 
                 val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, onlyAvailable)
 
-                for (product in mobilyGroup.products) {
+                for (product in mobilyGroup.Products) {
                     productsCaches[product.id] = product
                 }
 
-                if (!onlyAvailable || mobilyGroup.products.isNotEmpty()) {
+                if (!onlyAvailable || mobilyGroup.Products.isNotEmpty()) {
                     mobilyGroups.add(mobilyGroup)
                 }
             }
@@ -300,7 +300,7 @@ class MobilyPurchaseSDK(
             // 3. Parse to MobilySubscriptionGroup
             val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, false)
 
-            for (product in mobilyGroup.products) {
+            for (product in mobilyGroup.Products) {
                 productsCaches[product.id] = product
             }
 

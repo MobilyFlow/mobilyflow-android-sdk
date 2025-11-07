@@ -11,7 +11,7 @@ class MobilySubscriptionGroup(
     val name: String,
     val description: String,
     val extras: JSONObject?,
-    var products: List<MobilyProduct>
+    var Products: List<MobilyProduct>
 ) {
     companion object {
         internal fun parse(
@@ -28,7 +28,7 @@ class MobilySubscriptionGroup(
                     "description"
                 ) ?: "",
                 extras = jsonGroup.optJSONObject("extras"),
-                products = arrayListOf(),
+                Products = arrayListOf(),
             )
 
             if (jsonGroup.has("Products")) {
@@ -38,7 +38,7 @@ class MobilySubscriptionGroup(
                     val product = MobilyProduct.parse(jsonProducts.getJSONObject(i))
 
                     if (!onlyAvailableProducts || product.status === MobilyProductStatus.AVAILABLE) {
-                        (group.products as ArrayList).add(product)
+                        (group.Products as ArrayList).add(product)
                     }
                 }
             }

@@ -3,11 +3,9 @@ package com.mobilyflow.mobilypurchasesdk.Models.Entitlement
 import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
-import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionOffer
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
-import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.sha256
 import com.mobilyflow.mobilypurchasesdk.Utils.optStringNull
 import kotlinx.datetime.LocalDateTime
 import org.json.JSONObject

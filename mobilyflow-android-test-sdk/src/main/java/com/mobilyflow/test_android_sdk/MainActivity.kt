@@ -272,7 +272,7 @@ class MainActivity : ComponentActivity() {
 
                 Log.d("MobilyFlow", "SubGroup (test_group_managed): ")
                 val group = mobily!!.getSubscriptionGroupById("7169b477-c649-4981-91ef-f3c0d7fa64ca")
-                for (product in group.products) {
+                for (product in group.Products) {
                     Log.d("MobilyFlow", "Product: ${product.identifier} / ${product.status}")
                 }
                 Log.d("MobilyFlow", "==================")
