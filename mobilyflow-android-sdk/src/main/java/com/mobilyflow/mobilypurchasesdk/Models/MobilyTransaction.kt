@@ -4,6 +4,7 @@ import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransactionStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
+import com.mobilyflow.mobilypurchasesdk.Utils.optStringNull
 import kotlinx.datetime.LocalDateTime
 import org.json.JSONObject
 
@@ -14,7 +15,7 @@ class MobilyTransaction(
     val platformTxId: String,
     val platformTxOriginalId: String,
     val customerId: String,
-    val quantity: Int?,
+    val quantity: Int,
     val country: String,
     val priceMillis: Int,
     val currency: String,
@@ -27,10 +28,9 @@ class MobilyTransaction(
     val itemId: String,
     val productOfferId: String,
     val platform: MobilyPlatform,
-    val environment: MobilyEnvironment,
     val startDate: LocalDateTime,
     val endDate: LocalDateTime,
-    val refundDate: LocalDateTime,
+    val refundDate: LocalDateTime?,
     val isSandbox: Boolean,
 ) {
     companion object {
@@ -42,7 +42,7 @@ class MobilyTransaction(
                 platformTxId = jsonTx.getString("platformTxId"),
                 platformTxOriginalId = jsonTx.getString("platformTxOriginalId"),
                 customerId = jsonTx.getString("customerId"),
-                quantity = jsonTx.getInt("quantity"),
+                quantity = jsonTx.optInt("quantity", 1),
                 country = jsonTx.getString("country"),
                 priceMillis = jsonTx.getInt("priceMillis"),
                 currency = jsonTx.getString("currency"),
@@ -55,10 +55,9 @@ class MobilyTransaction(
                 itemId = jsonTx.getString("itemId"),
                 productOfferId = jsonTx.getString("productOfferId"),
                 platform = MobilyPlatform.parse(jsonTx.getString("platform")),
-                environment = MobilyEnvironment.parse(jsonTx.getString("environment")),
                 startDate = Utils.parseDate(jsonTx.getString("startDate")),
                 endDate = Utils.parseDate(jsonTx.getString("endDate")),
-                refundDate = Utils.parseDate(jsonTx.getString("refundDate")),
+                refundDate = Utils.parseDateOpt(jsonTx.optStringNull("refundDate")),
                 isSandbox = jsonTx.getBoolean("isSandbox"),
             )
         }

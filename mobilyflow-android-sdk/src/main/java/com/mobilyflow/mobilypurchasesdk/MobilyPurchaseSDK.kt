@@ -15,7 +15,6 @@ import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransferOwnershipStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.MobilyWebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
@@ -24,9 +23,10 @@ import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MinimalProductForAndro
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilyCustomerEntitlement
+import com.mobilyflow.mobilypurchasesdk.Models.MobilyEvent
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionGroup
-import com.mobilyflow.mobilypurchasesdk.Models.PurchaseOptions
+import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Monitoring.AppLifecycleProvider
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Monitoring
@@ -427,7 +427,7 @@ class MobilyPurchaseSDK(
         activity: Activity,
         product: MobilyProduct,
         options: PurchaseOptions? = null,
-    ): MobilyWebhookStatus {
+    ): MobilyEvent {
         if (this.customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
         }
@@ -465,7 +465,11 @@ class MobilyPurchaseSDK(
                 throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
             }
 
-            return finishPurchase(purchases[0], false, product)
+            val event = finishPurchase(purchases[0], false, product)
+            if (event == null) {
+                throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+            }
+            return event
         } catch (e: BillingClientException) {
             if (e.code == BillingClient.BillingResponseCode.USER_CANCELED) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.USER_CANCELED)
@@ -503,19 +507,21 @@ class MobilyPurchaseSDK(
         purchase: Purchase,
         mapTransaction: Boolean,
         product: MobilyProduct? = null
-    ): MobilyWebhookStatus {
+    ): MobilyEvent? {
         Logger.d("finishPurchase: ${purchase.orderId}")
-        var status = MobilyWebhookStatus.ERROR
+        var event: MobilyEvent? = null
 
-        if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED || purchase.isAcknowledged) {
-            return status
+        if (purchase.isAcknowledged) {
+            return null
+        } else if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
+            throw MobilyPurchaseException(MobilyPurchaseException.Type.PENDING)
         }
 
         // https://developer.android.com/google/play/billing/integrate#process
         if (purchase.products.size != 1) {
             Logger.d("finishPurchase: should only have one product (actually: ${purchase.products.size})")
             this.sendDiagnostic()
-            return status
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
 
@@ -531,7 +537,7 @@ class MobilyPurchaseSDK(
                 minimalProduct = API.getMinimalProductForAndroidPurchase(androidSku)
             } catch (e: Exception) {
                 Logger.e("Can't get minimal product for sku $androidSku, we can't finish transaction")
-                return status
+                throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
             }
         }
 
@@ -542,7 +548,7 @@ class MobilyPurchaseSDK(
                     .setPurchaseToken(purchase.purchaseToken)
                     .build()
 
-            // Note: consume also do an implicit acknowledge
+            // Note: consume made an implicit acknowledgement
             this.billingClient.consumeAsync(consumeParams) { billingResult, purchaseToken ->
                 Logger.d("finishPurchase: consumeAsync result: ${billingResult.responseCode}/${billingResult.debugMessage}, purchaseToken: $purchaseToken")
             }
@@ -571,12 +577,15 @@ class MobilyPurchaseSDK(
 
             runCatching {
                 if (!this.customer!!.forwardNotificationEnable) {
-                    status = this.waiter.waitPurchaseWebhook(purchase)
+                    val result = this.waiter.waitPurchaseWebhook(purchase)
+                    if (result.event != null) {
+                        event = MobilyEvent.parse(result.event, this.billingClient.queryPurchases())
+                    }
                 }
             }
             syncer.ensureSync(true)
         }
-        return status
+        return event
     }
 
     /* *********************************************************** */

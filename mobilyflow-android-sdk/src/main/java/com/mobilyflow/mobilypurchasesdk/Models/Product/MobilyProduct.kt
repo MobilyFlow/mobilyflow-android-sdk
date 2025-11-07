@@ -10,6 +10,7 @@ import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseRegistry
 import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import com.mobilyflow.mobilypurchasesdk.Utils.TranslationUtils
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
+import com.mobilyflow.mobilypurchasesdk.Utils.optStringNull
 import kotlinx.datetime.LocalDateTime
 import org.json.JSONObject
 
@@ -179,7 +180,7 @@ class MobilyProduct(
 
                 android_sku = android_sku,
                 android_basePlanId = android_basePlanId,
-                ios_sku = jsonProduct.optString("ios_sku"),
+                ios_sku = jsonProduct.optStringNull("ios_sku"),
 
                 type = type,
                 extras = jsonProduct.optJSONObject("extras"),

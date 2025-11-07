@@ -26,10 +26,10 @@ class MobilyCustomerEntitlement(
 
             if (type == MobilyProductType.ONE_TIME) {
                 item = MobilyItem.parse(jsonEntity)
-                product = item.Product
+                product = item.Product!!
             } else {
                 subscription = MobilySubscription.parse(jsonEntity, storeAccountTransactions)
-                product = subscription.Product
+                product = subscription.Product!!
             }
 
             return MobilyCustomerEntitlement(

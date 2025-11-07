@@ -10,6 +10,7 @@ import com.mobilyflow.mobilypurchasesdk.Enums.MobilyWebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
 import com.mobilyflow.mobilypurchasesdk.MOBILYFLOW_SDK_VERSION
+import com.mobilyflow.mobilypurchasesdk.Models.Internal.MobilyWebhookResult
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.jsonArrayToStringArray
 import org.json.JSONArray
@@ -46,7 +47,7 @@ class MobilyPurchaseAPI(
         try {
             val data = JSONObject()
                 .put("externalRef", externalRef)
-                .put("environment", environment.toString().lowercase())
+                .put("environment", environment.value)
                 .put("locale", this.locale)
 
             val currentRegion = this.getCurrentRegion()
@@ -108,7 +109,7 @@ class MobilyPurchaseAPI(
         }
 
         val request = ApiRequest("GET", "/apps/me/products/for-app")
-        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("environment", environment.value)
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
 
@@ -146,7 +147,7 @@ class MobilyPurchaseAPI(
         }
 
         val request = ApiRequest("GET", "/apps/me/subscription-groups/for-app")
-        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("environment", environment.value)
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
 
@@ -180,7 +181,7 @@ class MobilyPurchaseAPI(
     @Throws(MobilyException::class)
     fun getSubscriptionGroupById(id: String): JSONObject {
         val request = ApiRequest("GET", "/apps/me/subscription-groups/for-app/${id}")
-        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("environment", environment.value)
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
 
@@ -373,10 +374,11 @@ class MobilyPurchaseAPI(
      * Get webhook status from transactionID
      */
     @Throws(MobilyException::class)
-    fun getWebhookStatus(purchaseToken: String, transactionId: String): MobilyWebhookStatus {
-        val request = ApiRequest("GET", "/apps/me/events/webhook-status/android")
-        request.addParam("platformTxOriginalId", purchaseToken)
+    fun getWebhookResult(purchaseToken: String, transactionId: String): MobilyWebhookResult {
+        val request = ApiRequest("GET", "/apps/me/events/webhook-result/android")
+        request.addParam("signedTransaction", purchaseToken)
         request.addParam("platformTxId", transactionId)
+        request.addParam("environment", environment.value)
 
         val response: ApiResponse?
         try {
@@ -391,7 +393,11 @@ class MobilyPurchaseAPI(
         }
 
         val jsonResponse = response.json().getJSONObject("data")
-        return MobilyWebhookStatus.parse(jsonResponse.getString("status"))
+
+        return MobilyWebhookResult(
+            status = MobilyWebhookStatus.parse(jsonResponse.getString("status")),
+            event = jsonResponse.optJSONObject("event"),
+        )
     }
 
     /**
@@ -425,7 +431,7 @@ class MobilyPurchaseAPI(
         if (externalRef != null) {
             request.addParam("externalRef", externalRef)
         }
-        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("environment", environment.value)
         request.addParam("platform", "android")
 
         val response: ApiResponse?

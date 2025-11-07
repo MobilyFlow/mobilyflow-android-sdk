@@ -12,13 +12,11 @@ class StorePrice(
 ) {
     companion object {
         fun parse(storePrice: JSONObject): StorePrice {
-            val platform = storePrice.optString("platform")
-
             return StorePrice(
                 priceMillis = storePrice.getInt("priceMillis"),
                 currency = storePrice.getString("currency"),
                 regionCode = storePrice.getString("regionCode"),
-                platform = MobilyPlatform.parse(platform)
+                platform = MobilyPlatform.parse(storePrice.getString("platform"))
             )
         }
     }

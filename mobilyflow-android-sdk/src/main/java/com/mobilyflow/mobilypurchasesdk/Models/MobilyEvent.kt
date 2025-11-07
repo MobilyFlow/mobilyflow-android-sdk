@@ -9,6 +9,7 @@ import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilySubscription
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionOffer
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
+import com.mobilyflow.mobilypurchasesdk.Utils.optStringNull
 import kotlinx.datetime.LocalDateTime
 import org.json.JSONObject
 
@@ -16,14 +17,13 @@ class MobilyEvent(
     val id: String,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val transactionId: String,
-    val subscriptionId: String,
-    val itemId: String,
-    val customerId: String,
+    val transactionId: String?,
+    val subscriptionId: String?,
+    val itemId: String?,
+    val customerId: String?,
     val type: MobilyEventType,
-    val extras: JSONObject,
+    val extras: JSONObject?,
     val platform: MobilyPlatform,
-    val environment: MobilyEnvironment,
     val isSandbox: Boolean,
 
     val Customer: MobilyCustomer?,
@@ -65,14 +65,13 @@ class MobilyEvent(
                 id = jsonEvent.getString("id"),
                 createdAt = Utils.parseDate(jsonEvent.getString("createdAt")),
                 updatedAt = Utils.parseDate(jsonEvent.getString("updatedAt")),
-                transactionId = jsonEvent.getString("transactionId"),
-                subscriptionId = jsonEvent.getString("subscriptionId"),
-                itemId = jsonEvent.getString("itemId"),
-                customerId = jsonEvent.getString("customerId"),
+                transactionId = jsonEvent.optStringNull("transactionId"),
+                subscriptionId = jsonEvent.optStringNull("subscriptionId"),
+                itemId = jsonEvent.optStringNull("itemId"),
+                customerId = jsonEvent.optStringNull("customerId"),
                 type = MobilyEventType.parse(jsonEvent.getString("type")),
-                extras = jsonEvent.getJSONObject("extras"),
+                extras = jsonEvent.optJSONObject("extras"),
                 platform = MobilyPlatform.parse(jsonEvent.getString("platform")),
-                environment = MobilyEnvironment.parse(jsonEvent.getString("environment")),
                 isSandbox = jsonEvent.getBoolean("isSandbox"),
 
                 Customer = if (jsonCustomer != null) MobilyCustomer.parse(jsonCustomer) else null,

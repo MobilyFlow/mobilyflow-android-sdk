@@ -8,6 +8,7 @@ import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionOffer
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.sha256
+import com.mobilyflow.mobilypurchasesdk.Utils.optStringNull
 import kotlinx.datetime.LocalDateTime
 import org.json.JSONObject
 
@@ -39,7 +40,7 @@ class MobilySubscription(
     val isManagedByThisStoreAccount: Boolean,
     val lastPlatformTxOriginalId: String?,
 
-    val Product: MobilyProduct,
+    val Product: MobilyProduct?,
     val ProductOffer: MobilySubscriptionOffer?,
     val RenewProduct: MobilyProduct?,
     val RenewProductOffer: MobilySubscriptionOffer?,
@@ -52,7 +53,7 @@ class MobilySubscription(
             val platform = MobilyPlatform.parse(jsonSubscription.getString("platform"))
             var autoRenewEnable = jsonSubscription.getBoolean("autoRenewEnable")
 
-            var lastPlatformTxOriginalId: String? = jsonSubscription.optString("lastPlatformTxOriginalId")
+            var lastPlatformTxOriginalId: String? = jsonSubscription.optStringNull("lastPlatformTxOriginalId")
             var storeAccountTx: Purchase? = null
 
             if (platform == MobilyPlatform.ANDROID && lastPlatformTxOriginalId!!.isNotEmpty()) {
@@ -69,8 +70,8 @@ class MobilySubscription(
                 }
             }
 
-            val jsonProduct = jsonSubscription.getJSONObject("Product")
-            val product = MobilyProduct.parse(jsonProduct)
+            val jsonProduct = jsonSubscription.optJSONObject("Product")
+            val product = if (jsonProduct != null) MobilyProduct.parse(jsonProduct) else null
 
             val jsonProductOffer = jsonSubscription.optJSONObject("ProductOffer")
             val jsonRenewProduct = jsonSubscription.optJSONObject("RenewProduct")
@@ -80,7 +81,7 @@ class MobilySubscription(
             var renewProduct: MobilyProduct? = null
             var renewProductOffer: MobilySubscriptionOffer? = null
 
-            if (jsonProductOffer != null) {
+            if (product != null && jsonProductOffer != null) {
                 productOffer = MobilySubscriptionOffer.parse(
                     product.android_sku,
                     product.android_basePlanId,
@@ -118,14 +119,14 @@ class MobilySubscription(
                 regularPriceMillis = jsonSubscription.getInt("regularPriceMillis"),
                 renewPriceMillis = jsonSubscription.getInt("renewPriceMillis"),
                 currency = jsonSubscription.getString("currency"),
-                offerExpiryDate = Utils.parseDateOpt(jsonSubscription.optString("offerExpiryDate")),
+                offerExpiryDate = Utils.parseDateOpt(jsonSubscription.optStringNull("offerExpiryDate")),
                 offerRemainingCycle = jsonSubscription.optInt("offerRemainingCycle"),
                 autoRenewEnable = autoRenewEnable,
                 isInGracePeriod = jsonSubscription.getBoolean("isInGracePeriod"),
                 isInBillingIssue = jsonSubscription.getBoolean("isInBillingIssue"),
                 hasPauseScheduled = jsonSubscription.getBoolean("hasPauseScheduled"),
                 isPaused = jsonSubscription.getBoolean("isPaused"),
-                resumeDate = Utils.parseDateOpt(jsonSubscription.optString("resumeDate")),
+                resumeDate = Utils.parseDateOpt(jsonSubscription.optStringNull("resumeDate")),
                 isExpiredOrRevoked = jsonSubscription.getBoolean("isExpiredOrRevoked"),
 
                 isManagedByThisStoreAccount = storeAccountTx != null,

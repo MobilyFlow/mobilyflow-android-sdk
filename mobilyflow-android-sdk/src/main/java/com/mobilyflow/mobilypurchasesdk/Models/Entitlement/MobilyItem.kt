@@ -11,17 +11,19 @@ class MobilyItem(
     val updatedAt: LocalDateTime,
     val productId: String,
     val quantity: Int,
-    val Product: MobilyProduct,
+    val Product: MobilyProduct?,
 ) {
     companion object {
         internal fun parse(jsonItem: JSONObject): MobilyItem {
+            val jsonProduct = jsonItem.optJSONObject("Product")
+
             return MobilyItem(
                 id = jsonItem.getString("id"),
                 createdAt = Utils.parseDate(jsonItem.getString("createdAt")),
                 updatedAt = Utils.parseDate(jsonItem.getString("updatedAt")),
                 productId = jsonItem.getString("productId"),
                 quantity = jsonItem.getInt("quantity"),
-                Product = MobilyProduct.parse(jsonItem.getJSONObject("Product")),
+                Product = if (jsonProduct != null) MobilyProduct.parse(jsonProduct) else null,
             )
         }
     }

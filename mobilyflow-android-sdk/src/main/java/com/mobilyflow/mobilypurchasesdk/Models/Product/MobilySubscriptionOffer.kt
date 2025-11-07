@@ -9,12 +9,13 @@ import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseRegistry
 import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import com.mobilyflow.mobilypurchasesdk.Utils.TranslationUtils
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
+import com.mobilyflow.mobilypurchasesdk.Utils.optStringNull
 import org.json.JSONObject
 
 class MobilySubscriptionOffer(
     val id: String,
     val identifier: String,
-    val externalRef: String,
+    val externalRef: String?,
     val referenceName: String,
     val priceMillis: Int,
     val currencyCode: String,
@@ -39,8 +40,8 @@ class MobilySubscriptionOffer(
         ): MobilySubscriptionOffer {
             val id = jsonOffer.getString("id")
             val identifier = jsonOffer.getString("identifier")
-            val externalRef = jsonOffer.optString("externalRef")
-            val referenceName = jsonOffer.optString("referenceName")
+            val externalRef = jsonOffer.optStringNull("externalRef")
+            val referenceName = jsonOffer.getString("referenceName")
             val name = TranslationUtils.getTranslationValue(jsonOffer.getJSONArray("_translations"), "name")!!
             val type = MobilyProductOfferType.parse(jsonOffer.getString("type"))
             val extras = jsonOffer.optJSONObject("extras")
@@ -130,7 +131,7 @@ class MobilySubscriptionOffer(
                 periodUnit = periodUnit,
                 countBillingCycle = countBillingCycle,
                 android_offerId = android_offerId,
-                ios_offerId = jsonOffer.optString("ios_offerId"),
+                ios_offerId = jsonOffer.optStringNull("ios_offerId"),
                 extras = extras,
                 status = status,
             )

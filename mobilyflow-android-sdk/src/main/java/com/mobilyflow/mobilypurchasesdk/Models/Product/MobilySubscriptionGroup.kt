@@ -21,7 +21,7 @@ class MobilySubscriptionGroup(
             val group = MobilySubscriptionGroup(
                 id = jsonGroup.getString("id"),
                 identifier = jsonGroup.getString("identifier"),
-                referenceName = jsonGroup.optString("referenceName"),
+                referenceName = jsonGroup.getString("referenceName"),
                 name = TranslationUtils.getTranslationValue(jsonGroup.getJSONArray("_translations"), "name")!!,
                 description = TranslationUtils.getTranslationValue(
                     jsonGroup.getJSONArray("_translations"),
