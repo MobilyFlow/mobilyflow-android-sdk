@@ -21,8 +21,8 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
             return MobilyWebhookResult(MobilyWebhookStatus.SUCCESS, null)
         }
 
-        var result = MobilyWebhookResult(MobilyWebhookStatus.PENDING, null)
         var retry = 0
+        var result = MobilyWebhookResult(MobilyWebhookStatus.PENDING, null)
 
         Logger.d("Wait webhook for ${purchase.orderId} (purchaseToken: ${purchase.purchaseToken})")
 
