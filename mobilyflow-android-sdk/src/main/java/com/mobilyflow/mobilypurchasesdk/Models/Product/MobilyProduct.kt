@@ -21,7 +21,7 @@ class MobilyProduct(
     val updatedAt: LocalDateTime,
     val identifier: String,
     val referenceName: String,
-    val externalRef: String,
+    val externalRef: String?,
 
     val android_sku: String,
     val android_basePlanId: String,
@@ -176,7 +176,7 @@ class MobilyProduct(
                 updatedAt = Utils.parseDate(jsonProduct.getString("updatedAt")),
                 identifier = jsonProduct.getString("identifier"),
                 referenceName = jsonProduct.getString("referenceName"),
-                externalRef = jsonProduct.getString("externalRef"),
+                externalRef = jsonProduct.optStringNull("externalRef"),
 
                 android_sku = android_sku,
                 android_basePlanId = android_basePlanId,
