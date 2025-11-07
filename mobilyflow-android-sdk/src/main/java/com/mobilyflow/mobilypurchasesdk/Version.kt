@@ -1,3 +1,3 @@
 package com.mobilyflow.mobilypurchasesdk
 
-val MOBILYFLOW_SDK_VERSION = "0.4.0-alpha.1"
+val MOBILYFLOW_SDK_VERSION = "0.4.0-alpha.2"
