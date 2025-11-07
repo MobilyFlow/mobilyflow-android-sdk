@@ -28,8 +28,8 @@ class MobilyTransaction(
     val itemId: String?,
     val productOfferId: String?,
     val platform: MobilyPlatform,
-    val startDate: LocalDateTime,
-    val endDate: LocalDateTime,
+    val startDate: LocalDateTime?,
+    val endDate: LocalDateTime?,
     val refundDate: LocalDateTime?,
     val isSandbox: Boolean,
 ) {
@@ -68,8 +68,8 @@ class MobilyTransaction(
                 itemId = jsonTx.optStringNull("itemId"),
                 productOfferId = jsonTx.optStringNull("productOfferId"),
                 platform = platform,
-                startDate = Utils.parseDate(jsonTx.getString("startDate")),
-                endDate = Utils.parseDate(jsonTx.getString("endDate")),
+                startDate = Utils.parseDateOpt(jsonTx.optStringNull("startDate")),
+                endDate = Utils.parseDateOpt(jsonTx.optStringNull("endDate")),
                 refundDate = Utils.parseDateOpt(jsonTx.optStringNull("refundDate")),
                 isSandbox = jsonTx.getBoolean("isSandbox"),
             )

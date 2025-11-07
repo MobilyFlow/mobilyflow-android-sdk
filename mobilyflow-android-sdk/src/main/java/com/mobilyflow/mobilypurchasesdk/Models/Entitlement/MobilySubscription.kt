@@ -90,7 +90,6 @@ class MobilySubscription(
             if (jsonRenewProduct != null) {
                 renewProduct = MobilyProduct.parse(jsonRenewProduct)
 
-                // TODO: What if jsonRenewProduct is NULL but renewOffer is defined (change renew to same product but with an offer)
                 if (jsonRenewProductOffer != null) {
                     renewProductOffer = MobilySubscriptionOffer.parse(
                         renewProduct.android_sku,
