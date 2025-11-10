@@ -4,6 +4,8 @@ import android.icu.text.NumberFormat
 import android.icu.util.Currency
 import android.os.Build
 import androidx.core.os.LocaleListCompat
+import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
@@ -84,6 +86,26 @@ abstract class Utils {
 
         fun parseDate(isoDate: String): LocalDateTime {
             return Instant.parse(isoDate).toLocalDateTime(TimeZone.UTC)
+        }
+
+        fun parseDateOpt(isoDate: String?): LocalDateTime? {
+            if (isoDate == null || isoDate.isEmpty()) {
+                return null
+            }
+            return parseDate(isoDate)
+        }
+
+        fun getPurchaseWithSha256PurchaseToken(
+            sha256PurchaseToken: String?,
+            storeAccountTransactions: List<BillingClientWrapper.PurchaseWithType>?
+        ): BillingClientWrapper.PurchaseWithType? {
+            if (sha256PurchaseToken.isNullOrEmpty() || storeAccountTransactions == null) {
+                return null
+            }
+
+            return storeAccountTransactions.find { tx ->
+                tx.type == MobilyProductType.SUBSCRIPTION && sha256(tx.purchase.purchaseToken) == sha256PurchaseToken
+            }
         }
 
         fun moveFile(sourceFile: File, targetFile: File) {

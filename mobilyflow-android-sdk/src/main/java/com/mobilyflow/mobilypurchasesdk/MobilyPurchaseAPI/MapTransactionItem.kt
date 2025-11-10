@@ -1,9 +1,9 @@
 package com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI
 
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import org.json.JSONObject
 
-class MapTransactionItem(val sku: String, val purchaseToken: String, val type: ProductType) {
+class MapTransactionItem(val sku: String, val purchaseToken: String, val type: MobilyProductType) {
     fun toJSON(): JSONObject {
         val result = JSONObject()
         result.put("sku", sku)

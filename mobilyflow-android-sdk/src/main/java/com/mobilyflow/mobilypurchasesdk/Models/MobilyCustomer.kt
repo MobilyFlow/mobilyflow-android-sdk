@@ -8,20 +8,17 @@ class MobilyCustomer(
     val id: String,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val externalRef: String?,
-    var isForwardingEnable: Boolean,
+    val externalRef: String,
+    var forwardNotificationEnable: Boolean,
 ) {
     companion object {
-        internal fun parse(
-            jsonCustomer: JSONObject,
-            isForwardingEnable: Boolean
-        ): MobilyCustomer {
+        internal fun parse(json: JSONObject): MobilyCustomer {
             return MobilyCustomer(
-                id = jsonCustomer.getString("id"),
-                createdAt = Utils.parseDate(jsonCustomer.getString("createdAt")),
-                updatedAt = Utils.parseDate(jsonCustomer.getString("updatedAt")),
-                externalRef = jsonCustomer.getString("externalRef"),
-                isForwardingEnable = isForwardingEnable
+                id = json.getString("id"),
+                createdAt = Utils.parseDate(json.getString("createdAt")),
+                updatedAt = Utils.parseDate(json.getString("updatedAt")),
+                externalRef = json.getString("externalRef"),
+                forwardNotificationEnable = json.getBoolean("forwardNotificationEnable")
             )
         }
     }

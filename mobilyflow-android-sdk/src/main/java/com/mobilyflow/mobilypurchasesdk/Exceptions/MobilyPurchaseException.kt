@@ -20,6 +20,6 @@ class MobilyPurchaseException(val type: Type, cause: Throwable? = null) : Except
 
         USER_CANCELED,
         FAILED,
-        PENDING
+        PENDING,
     }
 }

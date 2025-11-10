@@ -39,16 +39,16 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDK
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDKOptions
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
-import com.mobilyflow.mobilypurchasesdk.Models.MobilyProduct
-import com.mobilyflow.mobilypurchasesdk.Models.MobilySubscriptionOffer
-import com.mobilyflow.mobilypurchasesdk.Models.PurchaseOptions
+import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
+import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionOffer
+import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.test_android_sdk.ui.theme.MobilyflowAndroidSDKTheme
 import java.util.concurrent.Executors
@@ -121,7 +121,7 @@ class MainActivity : ComponentActivity() {
                                             offer = null,
                                         )
 
-                                        if (p.type == ProductType.SUBSCRIPTION && p.subscriptionProduct!!.promotionalOffers.isNotEmpty()) {
+                                        if (p.type == MobilyProductType.SUBSCRIPTION && p.subscription!!.promotionalOffers.isNotEmpty()) {
                                             Column(
                                                 modifier = Modifier.padding(
                                                     horizontal = 20.dp,
@@ -130,7 +130,7 @@ class MainActivity : ComponentActivity() {
                                                 verticalArrangement = Arrangement.spacedBy(30.dp),
                                                 horizontalAlignment = Alignment.CenterHorizontally
                                             ) {
-                                                p.subscriptionProduct!!.promotionalOffers.forEach { offer ->
+                                                p.subscription!!.promotionalOffers.forEach { offer ->
                                                     IAPButton(
                                                         activity = this@MainActivity,
                                                         sdk = mobily!!,
@@ -253,21 +253,26 @@ class MainActivity : ComponentActivity() {
                 Log.d("MobilyFlow", "Go login ")
                 customer = mobily!!.login(externalRef)
                 Log.d("MobilyFlow", "Login on customer ${customer!!.id}")
-                Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer!!.isForwardingEnable))
+                Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer!!.forwardNotificationEnable))
 //                Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
 
                 val products = mobily!!.getProducts(null, false)
 
+                Log.d(
+                    "MobilyFlow",
+                    "StoreCountry: ${this.mobily!!.getStoreCountry()} (available ${this.mobily!!.isBillingAvailable()})"
+                )
+
                 Log.d("MobilyFlow", "External Entitlements: ")
                 val entitlements = mobily!!.getExternalEntitlements()
                 for (entitlement in entitlements) {
-                    Log.d("MobilyFlow", "    ${entitlement.product.identifier} / ${entitlement.customerId}")
+                    Log.d("MobilyFlow", "    ${entitlement.Product.identifier} / ${entitlement.customerId}")
                 }
                 Log.d("MobilyFlow", "==================")
 
                 Log.d("MobilyFlow", "SubGroup (test_group_managed): ")
                 val group = mobily!!.getSubscriptionGroupById("7169b477-c649-4981-91ef-f3c0d7fa64ca")
-                for (product in group.products) {
+                for (product in group.Products) {
                     Log.d("MobilyFlow", "Product: ${product.identifier} / ${product.status}")
                 }
                 Log.d("MobilyFlow", "==================")
@@ -455,7 +460,7 @@ fun IAPButton(
                 } else {
                     Log.d(
                         "MobilyFlow",
-                        "Click ${product.identifier} offer ${offer.android_offerId ?: "null"}"
+                        "Click ${product.identifier} offer ${offer.android_offerId}"
                     )
                     val status = sdk.purchaseProduct(activity, product, PurchaseOptions().setOffer(offer))
                     Log.d("MobilyFlow", "Purchase result = $status")
@@ -484,11 +489,10 @@ fun IAPButton(
             Text(product.description)
             Text(product.identifier)
             Text(
-                offer?.priceFormatted ?: product.oneTimeProduct?.priceFormatted
-                ?: product.subscriptionProduct?.baseOffer?.priceFormatted ?: "-"
+                offer?.priceFormatted ?: product.priceFormatted
             )
             if (offer != null) {
-                Text(offer.android_offerId ?: "-")
+                Text(offer.android_offerId)
                 Text("${offer.periodCount} ${offer.periodUnit} - ${offer.countBillingCycle}/cycles")
             }
             Text("Status = " + (offer?.status ?: product.status).toString())

@@ -12,10 +12,9 @@ import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientExcept
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientStatus
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
-import com.mobilyflow.mobilypurchasesdk.Enums.TransferOwnershipStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.WebhookStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransferOwnershipStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
@@ -23,10 +22,11 @@ import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MapTransactionItem
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MinimalProductForAndroidPurchase
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
-import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomerEntitlement
-import com.mobilyflow.mobilypurchasesdk.Models.MobilyProduct
-import com.mobilyflow.mobilypurchasesdk.Models.MobilySubscriptionGroup
-import com.mobilyflow.mobilypurchasesdk.Models.PurchaseOptions
+import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilyCustomerEntitlement
+import com.mobilyflow.mobilypurchasesdk.Models.MobilyEvent
+import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
+import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionGroup
+import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Monitoring.AppLifecycleProvider
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Monitoring
@@ -36,9 +36,9 @@ import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKHelper
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKSyncer
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKWaiter
 import com.mobilyflow.mobilypurchasesdk.Utils.DeviceInfo
-import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.getPreferredLocales
 import org.json.JSONArray
+import java.util.Locale
 import java.util.concurrent.Executors
 
 
@@ -50,7 +50,13 @@ class MobilyPurchaseSDK(
     options: MobilyPurchaseSDKOptions? = null,
 ) {
     private val API =
-        MobilyPurchaseAPI(appId, apiKey, environment, getPreferredLocales(options?.locales), options?.apiURL)
+        MobilyPurchaseAPI(
+            appId,
+            apiKey,
+            environment,
+            getPreferredLocales(options?.locales),
+            options?.apiURL
+        ) { this.getMostRelevantRegion() }
 
     private val billingClient: BillingClientWrapper
     private val diagnostics: MobilyPurchaseSDKDiagnostics
@@ -143,12 +149,12 @@ class MobilyPurchaseSDK(
 
     fun login(externalRef: String): MobilyCustomer {
         // 1. Logout previous user
-        this.logout();
+        this.logout()
 
         // 2. Login
         val loginResponse = this.API.login(externalRef)
 
-        this.customer = MobilyCustomer.parse(loginResponse.customer, loginResponse.isForwardingEnable)
+        this.customer = MobilyCustomer.parse(loginResponse.customer)
         diagnostics.customerId = this.customer?.id
         this.syncer.login(customer, loginResponse.entitlements)
 
@@ -212,16 +218,15 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(jsonProducts, this.billingClient)
 
             // 3. Parse to MobilyProduct
-            val currentRegion = StorePrice.getMostRelevantRegion()
             val mobilyProducts = arrayListOf<MobilyProduct>()
 
             for (i in 0..<jsonProducts.length()) {
                 val jsonProduct = jsonProducts.getJSONObject(i)
 
-                val mobilyProduct = MobilyProduct.parse(jsonProduct, currentRegion)
+                val mobilyProduct = MobilyProduct.parse(jsonProduct)
                 productsCaches[mobilyProduct.id] = mobilyProduct
 
-                if (!onlyAvailable || mobilyProduct.status == ProductStatus.AVAILABLE) {
+                if (!onlyAvailable || mobilyProduct.status == MobilyProductStatus.AVAILABLE) {
                     mobilyProducts.add(mobilyProduct)
                 }
             }
@@ -254,19 +259,18 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(allJsonProducts, this.billingClient)
 
             // 3. Parse to MobilySubscriptionGroup
-            val currentRegion = StorePrice.getMostRelevantRegion()
             val mobilyGroups = arrayListOf<MobilySubscriptionGroup>()
 
             for (i in 0..<jsonGroups.length()) {
                 val jsonGroup = jsonGroups.getJSONObject(i)
 
-                val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, currentRegion, onlyAvailable)
+                val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, onlyAvailable)
 
-                for (product in mobilyGroup.products) {
+                for (product in mobilyGroup.Products) {
                     productsCaches[product.id] = product
                 }
 
-                if (!onlyAvailable || mobilyGroup.products.isNotEmpty()) {
+                if (!onlyAvailable || mobilyGroup.Products.isNotEmpty()) {
                     mobilyGroups.add(mobilyGroup)
                 }
             }
@@ -294,10 +298,9 @@ class MobilyPurchaseSDK(
             MobilyPurchaseRegistry.registerAndroidJsonProducts(allJsonProducts, this.billingClient)
 
             // 3. Parse to MobilySubscriptionGroup
-            val currentRegion = StorePrice.getMostRelevantRegion()
-            val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, currentRegion, false)
+            val mobilyGroup = MobilySubscriptionGroup.parse(jsonGroup, false)
 
-            for (product in mobilyGroup.products) {
+            for (product in mobilyGroup.Products) {
                 productsCaches[product.id] = product
             }
 
@@ -317,19 +320,33 @@ class MobilyPurchaseSDK(
     /* ************************** ENTITLEMENTS *************************** */
     /* ******************************************************************* */
 
+    private fun _cacheEntitlement(entitlement: MobilyCustomerEntitlement?): MobilyCustomerEntitlement? {
+        if (entitlement == null) {
+            return entitlement
+        }
+
+        productsCaches[entitlement.Product.id] = entitlement.Product
+        if (entitlement.Subscription?.RenewProduct != null) {
+            productsCaches[entitlement.Subscription.RenewProduct.id] = entitlement.Subscription.RenewProduct
+        }
+        return entitlement
+    }
+
     @Throws(MobilyException::class)
     fun getEntitlementForSubscription(subscriptionGroupId: String): MobilyCustomerEntitlement? {
-        return this.syncer.getEntitlementForSubscription(subscriptionGroupId)
+        return _cacheEntitlement(this.syncer.getEntitlementForSubscription(subscriptionGroupId))
     }
 
     @Throws(MobilyException::class)
     fun getEntitlement(productId: String): MobilyCustomerEntitlement? {
-        return this.syncer.getEntitlement(productId)
+        return _cacheEntitlement(this.syncer.getEntitlement(productId))
     }
 
     @Throws(MobilyException::class)
     fun getEntitlements(productIds: Array<String>?): List<MobilyCustomerEntitlement> {
-        return this.syncer.getEntitlements(productIds)
+        val entitlements = this.syncer.getEntitlements(productIds)
+        entitlements.forEach { entitlement -> _cacheEntitlement(entitlement) }
+        return entitlements
     }
 
     @Throws(MobilyException::class)
@@ -345,11 +362,10 @@ class MobilyPurchaseSDK(
 
             if (transactionsToClaim.isNotEmpty()) {
                 val entitlementsJson = this.API.getCustomerExternalEntitlements(customer!!.id, transactionsToClaim)
-                val currentRegion = StorePrice.getMostRelevantRegion()
 
                 for (i in 0..<entitlementsJson.length()) {
                     val jsonEntitlement = entitlementsJson.getJSONObject(i)
-                    entitlements.add(MobilyCustomerEntitlement.parse(jsonEntitlement, purchases, currentRegion))
+                    entitlements.add(MobilyCustomerEntitlement.parse(jsonEntitlement, purchases))
                 }
             }
             return entitlements
@@ -364,7 +380,7 @@ class MobilyPurchaseSDK(
     }
 
     @Throws(MobilyException::class, MobilyTransferOwnershipException::class)
-    fun requestTransferOwnership(): TransferOwnershipStatus {
+    fun requestTransferOwnership(): MobilyTransferOwnershipStatus {
         if (customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
         }
@@ -411,7 +427,7 @@ class MobilyPurchaseSDK(
         activity: Activity,
         product: MobilyProduct,
         options: PurchaseOptions? = null,
-    ): WebhookStatus {
+    ): MobilyEvent {
         if (this.customer == null) {
             throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
         }
@@ -426,7 +442,7 @@ class MobilyPurchaseSDK(
         this.syncer.ensureSync()
 
         try {
-            if (this.customer!!.isForwardingEnable) {
+            if (this.customer!!.forwardNotificationEnable) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
             }
 
@@ -449,7 +465,11 @@ class MobilyPurchaseSDK(
                 throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
             }
 
-            return finishPurchase(purchases[0], false, product)
+            val event = finishPurchase(purchases[0], false, product)
+            if (event == null) {
+                throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+            }
+            return event
         } catch (e: BillingClientException) {
             if (e.code == BillingClient.BillingResponseCode.USER_CANCELED) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.USER_CANCELED)
@@ -487,19 +507,22 @@ class MobilyPurchaseSDK(
         purchase: Purchase,
         mapTransaction: Boolean,
         product: MobilyProduct? = null
-    ): WebhookStatus {
+    ): MobilyEvent? {
         Logger.d("finishPurchase: ${purchase.orderId}")
-        var status = WebhookStatus.ERROR
+        var event: MobilyEvent? = null
 
-        if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED || purchase.isAcknowledged) {
-            return status
+        if (purchase.isAcknowledged) {
+            Logger.w("finishPurchase with already acknowledged purchase")
+            return null
+        } else if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) {
+            throw MobilyPurchaseException(MobilyPurchaseException.Type.PENDING)
         }
 
         // https://developer.android.com/google/play/billing/integrate#process
         if (purchase.products.size != 1) {
             Logger.d("finishPurchase: should only have one product (actually: ${purchase.products.size})")
             this.sendDiagnostic()
-            return status
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
 
@@ -508,25 +531,25 @@ class MobilyPurchaseSDK(
         if (product != null && product.android_sku == androidSku) {
             minimalProduct = MinimalProductForAndroidPurchase(
                 type = product.type,
-                isConsumable = product.oneTimeProduct?.isConsumable ?: false,
+                isConsumable = product.oneTime?.isConsumable ?: false,
             )
         } else {
             try {
                 minimalProduct = API.getMinimalProductForAndroidPurchase(androidSku)
             } catch (e: Exception) {
                 Logger.e("Can't get minimal product for sku $androidSku, we can't finish transaction")
-                return status
+                throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
             }
         }
 
-        if (minimalProduct.type == ProductType.ONE_TIME && minimalProduct.isConsumable) {
+        if (minimalProduct.type == MobilyProductType.ONE_TIME && minimalProduct.isConsumable) {
             // Consumable
             val consumeParams =
                 ConsumeParams.newBuilder()
                     .setPurchaseToken(purchase.purchaseToken)
                     .build()
 
-            // Note: consume also do an implicit acknowledge
+            // Note: consume made an implicit acknowledgement
             this.billingClient.consumeAsync(consumeParams) { billingResult, purchaseToken ->
                 Logger.d("finishPurchase: consumeAsync result: ${billingResult.responseCode}/${billingResult.debugMessage}, purchaseToken: $purchaseToken")
             }
@@ -553,14 +576,15 @@ class MobilyPurchaseSDK(
                 }
             }
 
-            runCatching {
-                if (!this.customer!!.isForwardingEnable) {
-                    status = this.waiter.waitPurchaseWebhook(purchase)
+            if (!this.customer!!.forwardNotificationEnable) {
+                val result = this.waiter.waitPurchaseWebhook(purchase)
+                if (result.event != null) {
+                    event = MobilyEvent.parse(result.event, this.billingClient.queryPurchases())
                 }
             }
             syncer.ensureSync(true)
         }
-        return status
+        return event
     }
 
     /* *********************************************************** */
@@ -574,6 +598,22 @@ class MobilyPurchaseSDK(
     /* *********************************************************** */
     /* ************************* OTHERS ************************** */
     /* *********************************************************** */
+
+    private fun getMostRelevantRegion(): String? {
+        val storeCountry = this.getStoreCountry()
+        if (storeCountry != null) {
+            return storeCountry
+        }
+        return Locale.getDefault().country
+    }
+
+    fun getStoreCountry(): String? {
+        return this.billingClient.getConfig()?.countryCode
+    }
+
+    fun isBillingAvailable(): Boolean {
+        return this.billingClient.isAvailable()
+    }
 
     fun isForwardingEnable(externalRef: String): Boolean {
         return this.API.isForwardingEnable(externalRef)

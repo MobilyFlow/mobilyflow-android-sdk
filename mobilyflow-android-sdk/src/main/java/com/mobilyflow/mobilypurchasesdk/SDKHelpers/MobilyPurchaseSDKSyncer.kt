@@ -5,13 +5,12 @@ import android.os.NetworkOnMainThreadException
 import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientException
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
+import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilyCustomerEntitlement
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
-import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomerEntitlement
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
-import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
 import org.json.JSONArray
 
 class MobilyPurchaseSDKSyncer(
@@ -33,7 +32,7 @@ class MobilyPurchaseSDKSyncer(
             this.lastSyncTime = null
 
             if (customer != null && jsonEntitlements != null) {
-                this._syncEntitlements(StorePrice.getMostRelevantRegion(), jsonEntitlements)
+                this._syncEntitlements(jsonEntitlements)
             }
 
             this.lastSyncTime = System.currentTimeMillis()
@@ -56,11 +55,11 @@ class MobilyPurchaseSDKSyncer(
 
         // Synchronise ensure a new call to ensureSync with wait the old one to finish
         synchronized(this) {
-            if (customer != null && customer!!.isForwardingEnable) {
+            if (customer != null && customer!!.forwardNotificationEnable) {
                 // If a customer is flag as forwarded, we double check if it's still the case (so if we disable forwarding
                 // on the backoffice, it's take effect instantly)
                 val isForwardingEnable = this.API.isForwardingEnable(customer!!.externalRef)
-                customer!!.isForwardingEnable = isForwardingEnable
+                customer!!.forwardNotificationEnable = isForwardingEnable
             }
 
             if (
@@ -71,7 +70,7 @@ class MobilyPurchaseSDKSyncer(
                 Logger.d("Run Sync expected...")
                 if (customer != null) {
                     Logger.d("Run Sync for customer ${customer!!.id} (externalRef: ${customer!!.externalRef})")
-                    _syncEntitlements(StorePrice.getMostRelevantRegion())
+                    _syncEntitlements()
                     lastSyncTime = System.currentTimeMillis()
                 } else {
                     Logger.d(" -> Sync skipped (no customer)")
@@ -82,7 +81,7 @@ class MobilyPurchaseSDKSyncer(
     }
 
     @Throws(MobilyException::class)
-    private fun _syncEntitlements(currentRegion: String?, overrideJsonEntitlements: JSONArray? = null) {
+    private fun _syncEntitlements(overrideJsonEntitlements: JSONArray? = null) {
         try {
             this.storeAccountTransactions = this.billingClient.queryPurchases()
         } catch (e: BillingClientException) {
@@ -98,7 +97,6 @@ class MobilyPurchaseSDKSyncer(
                 MobilyCustomerEntitlement.parse(
                     jsonEntitlement,
                     this.storeAccountTransactions,
-                    currentRegion
                 )
             )
         }
@@ -113,7 +111,7 @@ class MobilyPurchaseSDKSyncer(
         }
 
         for (entitlement in this.entitlements!!) {
-            if (entitlement.type == ProductType.SUBSCRIPTION && entitlement.product.subscriptionProduct!!.subscriptionGroupId == subscriptionGroupId) {
+            if (entitlement.type == MobilyProductType.SUBSCRIPTION && entitlement.Product.subscription!!.groupId == subscriptionGroupId) {
                 return entitlement
             }
         }
@@ -126,7 +124,7 @@ class MobilyPurchaseSDKSyncer(
         }
 
         for (entitlement in this.entitlements!!) {
-            if (entitlement.product.id == productId) {
+            if (entitlement.Product.id == productId) {
                 return entitlement
             }
         }
@@ -141,7 +139,7 @@ class MobilyPurchaseSDKSyncer(
         val result = mutableListOf<MobilyCustomerEntitlement>()
 
         for (entitlement in this.entitlements!!) {
-            if (productIds == null || productIds.contains(entitlement.product.id)) {
+            if (productIds == null || productIds.contains(entitlement.Product.id)) {
                 result.add(entitlement)
             }
         }

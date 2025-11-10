@@ -21,7 +21,7 @@ import com.android.billingclient.api.PurchasesResponseListener
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 
@@ -36,7 +36,7 @@ class BillingClientWrapper(
     private var billingFlowResult: BillingRequestResult<List<Purchase>?>? = null
     private var queryPurchaseResult: BillingRequestResult<List<Purchase>?>? = null
 
-    class PurchaseWithType(val purchase: Purchase, val type: ProductType) {}
+    class PurchaseWithType(val purchase: Purchase, val type: MobilyProductType) {}
 
     init {
         this.status = BillingClientStatus.INITIALIZING
@@ -46,11 +46,12 @@ class BillingClientWrapper(
                 PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
             ).enableAutoServiceReconnection()
             .build()
+
         _client.startConnection(this)
     }
 
     @Throws(BillingClientException::class)
-    private fun ensureInitialization() {
+    private fun ensureInitialization(skipError: Boolean = false) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             throw NetworkOnMainThreadException()
         }
@@ -59,19 +60,11 @@ class BillingClientWrapper(
             if (this.status == BillingClientStatus.INITIALIZING) {
                 this.wait()
             } else if (this.status != BillingClientStatus.AVAILABLE) {
-                if (_client.isReady) {
-                    // Client already ready, probably means enableAutoServiceReconnection have done the job
-                    Logger.d("[BillingClient] ensureInitialization with status ${this.status} while client is ready -> Skip")
-                    this.status == BillingClientStatus.AVAILABLE
-                    return
-                }
-
                 // Retry connection
                 _client.startConnection(this)
-                this.syncConfig()
                 this.wait()
 
-                if (this.status == BillingClientStatus.UNAVAILABLE) {
+                if (this.status == BillingClientStatus.UNAVAILABLE && !skipError) {
                     throw BillingClientException(
                         BillingClient.BillingResponseCode.BILLING_UNAVAILABLE,
                         "Billing Unavailable"
@@ -93,7 +86,13 @@ class BillingClientWrapper(
     }
 
     fun getConfig(): BillingConfig? {
+        this.ensureInitialization(true)
         return this.clientConfig
+    }
+
+    fun isAvailable(): Boolean {
+        this.ensureInitialization(true)
+        return this.status == BillingClientStatus.AVAILABLE
     }
 
     fun endConnection() {
@@ -258,22 +257,22 @@ class BillingClientWrapper(
      * @param type Type of the product, null to query all products
      */
     @Throws(BillingClientException::class)
-    fun queryPurchases(type: ProductType? = null): List<PurchaseWithType> {
+    fun queryPurchases(type: MobilyProductType? = null): List<PurchaseWithType> {
         this.ensureInitialization()
 
         val result = arrayListOf<PurchaseWithType>()
 
-        if (type == null || type == ProductType.SUBSCRIPTION) {
+        if (type == null || type == MobilyProductType.SUBSCRIPTION) {
             val subs = this._queryPurchases(BillingClient.ProductType.SUBS)
             for (sub in subs) {
-                result.add(PurchaseWithType(sub, ProductType.SUBSCRIPTION))
+                result.add(PurchaseWithType(sub, MobilyProductType.SUBSCRIPTION))
             }
         }
 
-        if (type == null || type == ProductType.ONE_TIME) {
+        if (type == null || type == MobilyProductType.ONE_TIME) {
             val items = this._queryPurchases(BillingClient.ProductType.INAPP)
             for (item in items) {
-                result.add(PurchaseWithType(item, ProductType.ONE_TIME))
+                result.add(PurchaseWithType(item, MobilyProductType.ONE_TIME))
             }
         }
 
@@ -293,6 +292,7 @@ class BillingClientWrapper(
         synchronized(this) {
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 // The BillingClient is ready. You can query purchases here.
+                this.syncConfig()
                 this.status = BillingClientStatus.AVAILABLE
                 this.notifyAll()
                 Logger.d("[BillingClient] onBillingSetupFinished with success")

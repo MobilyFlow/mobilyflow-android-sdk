@@ -1,6 +1,6 @@
-package com.mobilyflow.mobilypurchasesdk.Models
+package com.mobilyflow.mobilypurchasesdk.Models.Product
 
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
 import com.mobilyflow.mobilypurchasesdk.Utils.TranslationUtils
 import org.json.JSONObject
 
@@ -11,35 +11,34 @@ class MobilySubscriptionGroup(
     val name: String,
     val description: String,
     val extras: JSONObject?,
-    var products: List<MobilyProduct>
+    var Products: List<MobilyProduct>
 ) {
     companion object {
         internal fun parse(
             jsonGroup: JSONObject,
-            currentRegion: String?,
             onlyAvailableProducts: Boolean = false
         ): MobilySubscriptionGroup {
             val group = MobilySubscriptionGroup(
                 id = jsonGroup.getString("id"),
                 identifier = jsonGroup.getString("identifier"),
-                referenceName = jsonGroup.optString("referenceName"),
-                name = TranslationUtils.getTranslationValue(jsonGroup.getJSONArray("_translations"), "name")!!,
+                referenceName = jsonGroup.getString("referenceName"),
+                name = TranslationUtils.getTranslationValue(jsonGroup.optJSONArray("_translations"), "name") ?: "",
                 description = TranslationUtils.getTranslationValue(
-                    jsonGroup.getJSONArray("_translations"),
+                    jsonGroup.optJSONArray("_translations"),
                     "description"
                 ) ?: "",
                 extras = jsonGroup.optJSONObject("extras"),
-                products = arrayListOf(),
+                Products = arrayListOf(),
             )
 
             if (jsonGroup.has("Products")) {
                 val jsonProducts = jsonGroup.getJSONArray("Products")
 
                 for (i in 0..<jsonProducts.length()) {
-                    val product = MobilyProduct.parse(jsonProducts.getJSONObject(i), currentRegion)
+                    val product = MobilyProduct.parse(jsonProducts.getJSONObject(i))
 
-                    if (!onlyAvailableProducts || product.status === ProductStatus.AVAILABLE) {
-                        (group.products as ArrayList).add(product)
+                    if (!onlyAvailableProducts || product.status === MobilyProductStatus.AVAILABLE) {
+                        (group.Products as ArrayList).add(product)
                     }
                 }
             }

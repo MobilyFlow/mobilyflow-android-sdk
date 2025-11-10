@@ -4,12 +4,13 @@ import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiHelper
 import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiRequest
 import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiResponse
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
-import com.mobilyflow.mobilypurchasesdk.Enums.ProductType
-import com.mobilyflow.mobilypurchasesdk.Enums.TransferOwnershipStatus
-import com.mobilyflow.mobilypurchasesdk.Enums.WebhookStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransferOwnershipStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyWebhookStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
 import com.mobilyflow.mobilypurchasesdk.MOBILYFLOW_SDK_VERSION
+import com.mobilyflow.mobilypurchasesdk.Models.Internal.MobilyWebhookResult
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.jsonArrayToStringArray
 import org.json.JSONArray
@@ -22,7 +23,8 @@ class MobilyPurchaseAPI(
     private val apiKey: String,
     val environment: MobilyEnvironment,
     locales: Array<String>,
-    apiURL: String? = null
+    apiURL: String?,
+    val getCurrentRegion: () -> String?
 ) {
     val API_URL = apiURL ?: "https://api.mobilyflow.com/v1/"
     val locale = locales.joinToString(",")
@@ -45,7 +47,13 @@ class MobilyPurchaseAPI(
         try {
             val data = JSONObject()
                 .put("externalRef", externalRef)
-                .put("environment", environment.toString().lowercase())
+                .put("environment", environment.value)
+                .put("locale", this.locale)
+
+            val currentRegion = this.getCurrentRegion()
+            if (currentRegion != null) {
+                data.put("region", currentRegion)
+            }
 
             response = this.helper.request(
                 ApiRequest("POST", "/apps/me/customers/login/android").setData(data)
@@ -64,7 +72,6 @@ class MobilyPurchaseAPI(
             customer = jsonResponse.getJSONObject("customer"),
             platformOriginalTransactionIds = jsonArrayToStringArray(jsonResponse.getJSONArray("platformOriginalTransactionIds")),
             entitlements = jsonResponse.getJSONArray("entitlements"),
-            isForwardingEnable = jsonResponse.getBoolean("isForwardingEnable"),
             haveMonitoringRequests = jsonResponse.optBoolean("haveMonitoringRequests"),
         )
     }
@@ -87,7 +94,7 @@ class MobilyPurchaseAPI(
 
         val jsonResponse = response.json().getJSONObject("data")
         return MinimalProductForAndroidPurchase(
-            type = ProductType.valueOf(jsonResponse.getString("type").uppercase()),
+            type = MobilyProductType.parse(jsonResponse.getString("type")),
             isConsumable = jsonResponse.getBoolean("isConsumable")
         )
     }
@@ -102,9 +109,14 @@ class MobilyPurchaseAPI(
         }
 
         val request = ApiRequest("GET", "/apps/me/products/for-app")
-        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("environment", environment.value)
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
+
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            request.addParam("region", currentRegion)
+        }
 
         if (identifiers != null) {
             request.addParam("identifiers", identifiers.joinToString(","))
@@ -135,9 +147,14 @@ class MobilyPurchaseAPI(
         }
 
         val request = ApiRequest("GET", "/apps/me/subscription-groups/for-app")
-        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("environment", environment.value)
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
+
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            request.addParam("region", currentRegion)
+        }
 
         if (identifiers != null) {
             request.addParam("identifiers", identifiers.joinToString(","))
@@ -164,9 +181,14 @@ class MobilyPurchaseAPI(
     @Throws(MobilyException::class)
     fun getSubscriptionGroupById(id: String): JSONObject {
         val request = ApiRequest("GET", "/apps/me/subscription-groups/for-app/${id}")
-        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("environment", environment.value)
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
+
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            request.addParam("region", currentRegion)
+        }
 
         val response: ApiResponse?
         try {
@@ -191,6 +213,11 @@ class MobilyPurchaseAPI(
         val request = ApiRequest("GET", "/apps/me/customers/${customerId}/entitlements")
         request.addParam("locale", this.locale)
         request.addParam("loadProduct", "true")
+
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            request.addParam("region", currentRegion)
+        }
 
         val response: ApiResponse?
         try {
@@ -222,6 +249,11 @@ class MobilyPurchaseAPI(
             .put("transactions", jsonTransactions)
             .put("platform", "android")
             .put("loadProduct", true)
+
+        val currentRegion = this.getCurrentRegion()
+        if (currentRegion != null) {
+            data.put("region", currentRegion)
+        }
 
         val request = ApiRequest("POST", "/apps/me/customers/${customerId}/external-entitlements").setData(data)
 
@@ -315,7 +347,7 @@ class MobilyPurchaseAPI(
      * Get transfer ownership request status from requestId
      */
     @Throws(MobilyException::class, MobilyTransferOwnershipException::class)
-    fun getTransferRequestStatus(requestId: String): TransferOwnershipStatus {
+    fun getTransferRequestStatus(requestId: String): MobilyTransferOwnershipStatus {
         val request = ApiRequest("GET", "/apps/me/customer-transfer-ownerships/${requestId}/status")
 
         val response: ApiResponse?
@@ -331,7 +363,7 @@ class MobilyPurchaseAPI(
             if (statusStr == "ERROR") {
                 throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_FAILED)
             }
-            return TransferOwnershipStatus.valueOf(jsonResponse.getString("status").uppercase())
+            return MobilyTransferOwnershipStatus.parse(jsonResponse.getString("status"))
         } else {
             Logger.w("[getTransferRequestStatus] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
@@ -342,10 +374,15 @@ class MobilyPurchaseAPI(
      * Get webhook status from transactionID
      */
     @Throws(MobilyException::class)
-    fun getWebhookStatus(purchaseToken: String, transactionId: String): WebhookStatus {
-        val request = ApiRequest("GET", "/apps/me/events/webhook-status/android")
-        request.addParam("platformTxOriginalId", purchaseToken)
-        request.addParam("platformTxId", transactionId)
+    fun getWebhookResult(purchaseToken: String, transactionId: String): MobilyWebhookResult {
+        val request = ApiRequest("POST", "/apps/me/events/webhook-result/android")
+
+        request.setData(
+            JSONObject()
+                .put("signedTransaction", purchaseToken)
+                .put("platformTxId", transactionId)
+                .put("environment", environment.value)
+        )
 
         val response: ApiResponse?
         try {
@@ -360,7 +397,11 @@ class MobilyPurchaseAPI(
         }
 
         val jsonResponse = response.json().getJSONObject("data")
-        return WebhookStatus.valueOf(jsonResponse.getString("status").uppercase())
+
+        return MobilyWebhookResult(
+            status = MobilyWebhookStatus.parse(jsonResponse.getString("status")),
+            event = jsonResponse.optJSONObject("event"),
+        )
     }
 
     /**
@@ -394,7 +435,7 @@ class MobilyPurchaseAPI(
         if (externalRef != null) {
             request.addParam("externalRef", externalRef)
         }
-        request.addParam("environment", environment.toString().lowercase())
+        request.addParam("environment", environment.value)
         request.addParam("platform", "android")
 
         val response: ApiResponse?
