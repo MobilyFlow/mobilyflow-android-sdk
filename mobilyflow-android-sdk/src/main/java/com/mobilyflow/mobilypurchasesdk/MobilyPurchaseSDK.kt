@@ -21,12 +21,12 @@ import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipExcept
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MapTransactionItem
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MinimalProductForAndroidPurchase
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MobilyPurchaseAPI
-import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilyCustomerEntitlement
+import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
+import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyEvent
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionGroup
-import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Monitoring.AppLifecycleProvider
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Monitoring
@@ -35,7 +35,6 @@ import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKDiagnostics
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKHelper
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKSyncer
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKWaiter
-import com.mobilyflow.mobilypurchasesdk.Utils.DeviceInfo
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.getPreferredLocales
 import org.json.JSONArray
 import java.util.Locale
@@ -93,7 +92,7 @@ class MobilyPurchaseSDK(
             }
         }
 
-        diagnostics = MobilyPurchaseSDKDiagnostics(billingClient, null)
+        diagnostics = MobilyPurchaseSDKDiagnostics(context, billingClient, null)
         waiter = MobilyPurchaseSDKWaiter(API, diagnostics)
         syncer = MobilyPurchaseSDKSyncer(API, billingClient)
 
@@ -122,16 +121,6 @@ class MobilyPurchaseSDK(
             }
         }
         AppLifecycleProvider.registerListener(lifecycleListener)
-
-        // Log device info
-        Logger.d("[Device Info] OS = Android ${DeviceInfo.getOSVersion()}")
-        Logger.d("[Device Info] deviceModel = ${DeviceInfo.getDeviceModelName()}")
-        Logger.d("[Device Info] appPackage = ${DeviceInfo.getAppPackage(context)}")
-        Logger.d(
-            "[Device Info] appVersion = ${DeviceInfo.getAppVersionName(context)} (${
-                DeviceInfo.getAppVersionCode(context)
-            })"
-        )
     }
 
     fun close() {

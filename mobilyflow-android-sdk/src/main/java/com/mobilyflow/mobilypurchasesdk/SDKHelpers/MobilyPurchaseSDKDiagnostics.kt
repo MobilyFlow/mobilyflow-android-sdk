@@ -1,25 +1,32 @@
 package com.mobilyflow.mobilypurchasesdk.SDKHelpers
 
+import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Build
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Monitoring
+import com.mobilyflow.mobilypurchasesdk.Utils.DeviceInfo
 import java.util.concurrent.Executors
 
 
-class MobilyPurchaseSDKDiagnostics(val billingClient: BillingClientWrapper, var customerId: String?) {
+class MobilyPurchaseSDKDiagnostics(
+    val context: Context,
+    val billingClient: BillingClientWrapper,
+    var customerId: String?
+) {
     fun sendDiagnostic(sinceDays: Int = 1) {
         Executors.newSingleThreadExecutor().execute {
             // 1. Write maximum info we can get
             runCatching {
-                val packageName = billingClient.context.packageName
-                val pInfo: PackageInfo = billingClient.context.packageManager.getPackageInfo(packageName, 0)
-                val versionName = pInfo.versionName
-                val versionCode =
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pInfo.longVersionCode else pInfo.versionCode
-
-                Logger.d("App $packageName version $versionName ($versionCode)")
+                Logger.d("[Device Info] OS = Android ${DeviceInfo.getOSVersion()}")
+                Logger.d("[Device Info] deviceModel = ${DeviceInfo.getDeviceModelName()}")
+                Logger.d("[Device Info] appPackage = ${DeviceInfo.getAppPackage(context)}")
+                Logger.d(
+                    "[Device Info] appVersion = ${DeviceInfo.getAppVersionName(context)} (${
+                        DeviceInfo.getAppVersionCode(context)
+                    })"
+                )
             }
             runCatching {
                 if (customerId == null) {
