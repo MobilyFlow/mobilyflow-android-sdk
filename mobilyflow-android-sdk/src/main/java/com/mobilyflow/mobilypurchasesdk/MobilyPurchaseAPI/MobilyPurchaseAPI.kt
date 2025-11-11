@@ -1,5 +1,6 @@
 package com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI
 
+import android.content.Context
 import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiHelper
 import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiRequest
 import com.mobilyflow.mobilypurchasesdk.ApiHelper.ApiResponse
@@ -12,6 +13,7 @@ import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipExcept
 import com.mobilyflow.mobilypurchasesdk.MOBILYFLOW_SDK_VERSION
 import com.mobilyflow.mobilypurchasesdk.Models.Internal.MobilyWebhookResult
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
+import com.mobilyflow.mobilypurchasesdk.Utils.DeviceInfo
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.jsonArrayToStringArray
 import org.json.JSONArray
 import org.json.JSONObject
@@ -42,7 +44,7 @@ class MobilyPurchaseAPI(
      * Throws on error.
      */
     @Throws(MobilyException::class)
-    fun login(externalRef: String): LoginResponse {
+    fun login(context: Context, externalRef: String): LoginResponse {
         val response: ApiResponse?
         try {
             val data = JSONObject()
@@ -54,6 +56,18 @@ class MobilyPurchaseAPI(
             if (currentRegion != null) {
                 data.put("region", currentRegion)
             }
+
+            data.put(
+                "device", JSONObject()
+                    .put("osVersion", DeviceInfo.getOSVersion())
+                    .put("deviceModel", DeviceInfo.getDeviceModelName())
+                    .put("appVersionName", DeviceInfo.getAppVersionName(context))
+                    .put("appVersionCode", DeviceInfo.getAppVersionCode(context))
+                    .put("sdkVersion", MOBILYFLOW_SDK_VERSION)
+                    .put("installIdentifier", DeviceInfo.getInstallIdentifier(context))
+                    .put("idfv", DeviceInfo.getIdfv(context))
+                    .put("adid", DeviceInfo.getAdid(context))
+            )
 
             response = this.helper.request(
                 ApiRequest("POST", "/apps/me/customers/login/android").setData(data)

@@ -336,7 +336,7 @@ class MainActivity : ComponentActivity() {
                 this.products.postValue(products)
             } catch (e: MobilyException) {
                 this.error.postValue(e.type.toString())
-                Log.e("MobilyFlow", "Error: ${e.type} ${e.message}")
+                Log.e("MobilyFlow", "Error: ${e.type} ${e.message}", e)
             }
 
 //            forge.playground()

@@ -152,7 +152,7 @@ class MobilyPurchaseSDK(
         this.logout()
 
         // 2. Login
-        val loginResponse = this.API.login(externalRef)
+        val loginResponse = this.API.login(context, externalRef)
 
         this.customer = MobilyCustomer.parse(loginResponse.customer)
         diagnostics.customerId = this.customer?.id
