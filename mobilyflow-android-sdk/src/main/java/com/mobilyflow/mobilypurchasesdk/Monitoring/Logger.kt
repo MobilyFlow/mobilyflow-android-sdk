@@ -2,7 +2,6 @@ package com.mobilyflow.mobilypurchasesdk.Monitoring
 
 import android.app.Activity
 import android.util.Log
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
@@ -14,6 +13,8 @@ import java.text.Normalizer
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 enum class LogFolderType(val value: String) {
     RAW_LOGS("raw"),
@@ -116,6 +117,7 @@ class Logger private constructor(
      *  1. Close the stream & create a new one if we are on a new day
      *  2. Remove old log file, keeping only files from last 5 days
      */
+    @OptIn(ExperimentalTime::class)
     private fun ensureFileRotation() {
         val nowDate = Clock.System.todayIn(TimeZone.UTC)
         if (stream == null || nowDate.toEpochDays() > lastWritingDate!!.toEpochDays()) {
@@ -176,6 +178,7 @@ class Logger private constructor(
     }
 
 
+    @OptIn(ExperimentalTime::class)
     fun log(level: Int, msg: String, tr: Throwable? = null) {
         ensureFileRotation()
 
@@ -236,6 +239,7 @@ class Logger private constructor(
             logger?.e(msg, tr)
         }
 
+        @OptIn(ExperimentalTime::class)
         internal fun getLogFileName(slug: String, date: LocalDate? = null): String {
             val dateStr = date?.toString() ?: Clock.System.todayIn(TimeZone.UTC).toString()
             return slug + "_" + dateStr + ".log"

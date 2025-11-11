@@ -3,7 +3,6 @@ package com.mobilyflow.mobilypurchasesdk.Monitoring
 import android.app.Activity
 import android.content.Context
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -20,6 +19,8 @@ import java.nio.file.StandardCopyOption
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 abstract class Monitoring {
     companion object {
@@ -101,6 +102,7 @@ abstract class Monitoring {
          * startDate and toDate both default to now() if they are null.
          * If clearLogs is true, remove exported logfiles
          */
+        @OptIn(ExperimentalTime::class)
         private fun exportLogs(
             fromDate: LocalDate? = null,
             toDate: LocalDate? = null,
@@ -180,6 +182,7 @@ abstract class Monitoring {
          * If sinceDays is 0, export only today, if it 1 export also yesterday, etc...
          * If clearLogs is true, remove exported logfiles
          */
+        @OptIn(ExperimentalTime::class)
         private fun exportLogs(sinceDays: Int = 0, clearLogs: Boolean = false): File {
             val fromDate = Clock.System.todayIn(TimeZone.UTC).minus(sinceDays.toLong(), DateTimeUnit.DAY)
             return exportLogs(fromDate, null, clearLogs)

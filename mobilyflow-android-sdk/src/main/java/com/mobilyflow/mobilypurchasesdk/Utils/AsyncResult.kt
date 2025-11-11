@@ -1,24 +1,23 @@
 package com.mobilyflow.mobilypurchasesdk.Utils
 
-import okhttp3.internal.notifyAll
-import okhttp3.internal.wait
-
 class AsyncResult<T> {
+    private val lock = Object()
+
     private var _resultData: T? = null
     private var _isSet = false
 
     fun set(data: T) {
-        synchronized(this) {
+        synchronized(this.lock) {
             this._resultData = data
             this._isSet = true
-            this.notifyAll()
+            this.lock.notifyAll()
         }
     }
 
     fun waitResult() {
-        synchronized(this) {
+        synchronized(this.lock) {
             if (!this._isSet) {
-                this.wait()
+                this.lock.wait()
             }
         }
     }
