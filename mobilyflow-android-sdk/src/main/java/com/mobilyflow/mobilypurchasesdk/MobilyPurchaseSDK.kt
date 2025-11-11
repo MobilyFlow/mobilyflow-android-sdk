@@ -73,7 +73,7 @@ class MobilyPurchaseSDK(
 
     init {
         Monitoring.initialize(context, "MobilyFlow", options?.debug == true) { logFile ->
-            API.uploadMonitoring(customer?.id, logFile)
+            API.uploadMonitoring(context, customer?.id, logFile)
         }
 
         // TODO: Double check this code doesn't duplicate if there is multiple SDK instances

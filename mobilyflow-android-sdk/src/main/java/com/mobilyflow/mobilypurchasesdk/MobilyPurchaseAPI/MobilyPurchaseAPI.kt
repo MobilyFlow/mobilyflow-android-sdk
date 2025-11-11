@@ -422,12 +422,13 @@ class MobilyPurchaseAPI(
      * Upload monitoring file
      */
     @Throws(MobilyException::class)
-    fun uploadMonitoring(customerId: String?, file: File) {
+    fun uploadMonitoring(context: Context, customerId: String?, file: File) {
         val request = ApiRequest("POST", "/apps/me/monitoring/upload")
         request.addData("platform", "android")
         if (customerId != null) {
             request.addData("customerId", customerId)
         }
+        request.addData("deviceInstallIdentifier", DeviceInfo.getInstallIdentifier(context))
         request.addFile("logFile", file)
 
         val response: ApiResponse?
