@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -46,10 +45,10 @@ import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDK
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDKOptions
-import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionOffer
+import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.test_android_sdk.ui.theme.MobilyflowAndroidSDKTheme
 import java.util.concurrent.Executors
@@ -101,9 +100,7 @@ class MainActivity : ComponentActivity() {
 
                         if (products == null && error == null) {
                             CircularProgressIndicator(
-                                modifier = Modifier
-                                    .width(64.dp)
-                                    .height(64.dp),
+                                modifier = Modifier.width(64.dp),
                             )
                         } else {
                             if (error != null) {
