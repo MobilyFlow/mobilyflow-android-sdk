@@ -2,7 +2,7 @@
 
 # Test Project
 
-Add a `env.properties` file in the root folder with following structure:
+Add a `env.properties` file in the root folder with the following structure:
 ```properties
 MOBILYFLOW_APP_ID=""
 MOBILYFLOW_API_KEY=""
