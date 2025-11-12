@@ -80,7 +80,7 @@ class MobilySubscription(
                 productOffer = MobilySubscriptionOffer.parse(
                     product.android_sku,
                     product.android_basePlanId,
-                    jsonProduct,
+                    jsonProduct!!,
                     jsonProductOffer
                 )
             }

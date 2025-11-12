@@ -44,17 +44,19 @@ abstract class Monitoring {
                 val rawLogFolder = Logger.getLogFolder(LogFolderType.RAW_LOGS)
 
                 val listFiles = baseLogFolder.listFiles()
-                for (oldFile in listFiles) {
-                    if (oldFile.isFile && oldFile.name.endsWith(".log")) {
-                        val newFile = File(rawLogFolder, oldFile.name)
+                if (listFiles != null) {
+                    for (oldFile in listFiles) {
+                        if (oldFile.isFile && oldFile.name.endsWith(".log")) {
+                            val newFile = File(rawLogFolder, oldFile.name)
 
-                        if (newFile.exists()) {
-                            // New file already exists, remove the old one
-                            Logger.d("Remove old log file ${oldFile.path}")
-                            newFile.delete()
-                        } else {
-                            Logger.d("Move old log file ${oldFile.path} to ${newFile.path}")
-                            Utils.moveFile(oldFile, newFile)
+                            if (newFile.exists()) {
+                                // New file already exists, remove the old one
+                                Logger.d("Remove old log file ${oldFile.path}")
+                                newFile.delete()
+                            } else {
+                                Logger.d("Move old log file ${oldFile.path} to ${newFile.path}")
+                                Utils.moveFile(oldFile, newFile)
+                            }
                         }
                     }
                 }

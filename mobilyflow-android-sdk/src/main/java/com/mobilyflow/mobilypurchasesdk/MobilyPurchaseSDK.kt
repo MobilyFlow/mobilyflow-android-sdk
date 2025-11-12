@@ -3,6 +3,7 @@ package com.mobilyflow.mobilypurchasesdk
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.net.Uri
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
@@ -430,6 +431,9 @@ class MobilyPurchaseSDK(
 
         this.syncer.ensureSync()
 
+        // Lock screen orientation during purchase, as it cause Activity re-create
+        val previousScreenOrientation = activity.requestedOrientation
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
         try {
             if (this.customer!!.forwardNotificationEnable) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
@@ -484,6 +488,7 @@ class MobilyPurchaseSDK(
             }
             throw e
         } finally {
+            activity.requestedOrientation = previousScreenOrientation
             this.isPurchasing = false
         }
     }
