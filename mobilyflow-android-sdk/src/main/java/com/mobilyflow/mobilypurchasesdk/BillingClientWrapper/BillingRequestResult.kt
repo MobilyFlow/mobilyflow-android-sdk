@@ -19,7 +19,7 @@ class BillingRequestResult<T> {
     }
 
     fun waitResult() {
-        synchronized(this) {
+        synchronized(this.lock) {
             if (!this._isSet) {
                 this.lock.wait()
             }
