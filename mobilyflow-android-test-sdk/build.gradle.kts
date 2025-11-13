@@ -1,8 +1,14 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
 }
+
+val env = Properties()
+env.load(FileInputStream(rootProject.file("env.properties")))
 
 android {
     namespace = "com.mobilyflow.test_android_sdk"
@@ -20,6 +26,10 @@ android {
         versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "MOBILYFLOW_APP_ID", env.getProperty("MOBILYFLOW_APP_ID"))
+        buildConfigField("String", "MOBILYFLOW_API_KEY", env.getProperty("MOBILYFLOW_API_KEY"))
+        buildConfigField("String", "MOBILYFLOW_API_URL", env.getProperty("MOBILYFLOW_API_URL", "null"))
     }
 
     signingConfigs {
@@ -30,6 +40,10 @@ android {
             keyPassword = "android"
         }
         create("release") { }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -51,18 +65,6 @@ android {
     }
     buildFeatures {
         compose = true
-    }
-
-    flavorDimensions += "target"
-    productFlavors {
-        create("mobilyflow") {
-            dimension = "target"
-            applicationId = "com.mobilyflow.test_android_sdk"
-        }
-        create("nouslib") {
-            dimension = "target"
-            applicationId = "com.mobilyflow.NousLibTest"
-        }
     }
 }
 

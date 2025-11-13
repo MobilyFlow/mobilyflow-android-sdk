@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -67,18 +68,16 @@ class MainActivity : ComponentActivity() {
 
         mobily = MobilyPurchaseSDK(
             this,
-            appId = "caecc000-45ce-49b3-b218-46c1d985ae85",
-            apiKey = "7aa18f9720a5c9731d17f5c54e89bdd218647f71269eed2f6c27c8fa5924da84",
-//            appId = "e84c9576-2642-4267-80d3-1928eda8e06d",
-//            apiKey = "29aa51e84cd97fd48f1e05262d11f0a8adead84222b11a7fae7cfd9584ba94d5",
+            appId = BuildConfig.MOBILYFLOW_APP_ID,
+            apiKey = BuildConfig.MOBILYFLOW_API_KEY,
             environment = MobilyEnvironment.DEVELOPMENT,
             options = MobilyPurchaseSDKOptions(
                 locales = null,
                 debug = true,
-                apiURL = "https://mobilyflow.eu-1.sharedwithexpose.com/v1/"
-//                apiURL = "https://api-staging.mobilyflow.com/v1/"
+                apiURL = BuildConfig.MOBILYFLOW_API_URL
             )
         )
+        loadData()
 
         setContent {
             MobilyflowAndroidSDKTheme {
@@ -103,7 +102,9 @@ class MainActivity : ComponentActivity() {
 
                         if (products == null && error == null) {
                             CircularProgressIndicator(
-                                modifier = Modifier.width(64.dp),
+                                modifier = Modifier
+                                    .width(64.dp)
+                                    .height(64.dp),
                             )
                         } else {
                             if (error != null) {
@@ -218,8 +219,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
-        loadData()
     }
 
     override fun onDestroy() {
@@ -336,7 +335,7 @@ class MainActivity : ComponentActivity() {
                 this.products.postValue(products)
             } catch (e: MobilyException) {
                 this.error.postValue(e.type.toString())
-                Log.e("MobilyFlow", "Error: ${e.type} ${e.message}")
+                Log.e("MobilyFlow", "Error: ${e.type} ${e.message}", e)
             }
 
 //            forge.playground()

@@ -38,13 +38,15 @@ dependencies {
     implementation(libs.kotlinx.datetime)
     implementation(libs.okhttp)
     implementation(libs.billing)
+    implementation(libs.play.services.appset)
+    implementation(libs.play.services.ads.identifier)
 }
 
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
-    coordinates("com.mobilyflow", "mobilyflow-android-sdk", "0.4.0")
+    coordinates("com.mobilyflow", "mobilyflow-android-sdk", "0.4.1")
 
     pom {
         name.set("MobilyFlow Android SDK")
