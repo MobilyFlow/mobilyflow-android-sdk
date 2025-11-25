@@ -13,7 +13,7 @@
 
         <provider
             android:name="com.mobilyflow.mobilypurchasesdk.Monitoring.AppLifecycleProvider"
-            android:authorities="com.mobilyflow.mobilypurchasesdk.Monitoring.AppLifecycleProvider"
+            android:authorities="com.mobilyflow.test_android_sdk.AppLifecycleProvider"
             android:exported="false"
             android:enabled="true" />
 

@@ -226,7 +226,7 @@ class MobilyPurchaseAPI(
     fun getCustomerEntitlements(customerId: String): JSONArray {
         val request = ApiRequest("GET", "/apps/me/customers/${customerId}/entitlements")
         request.addParam("locale", this.locale)
-        request.addParam("loadProduct", "true")
+        request.addParam("platform", "android")
 
         val currentRegion = this.getCurrentRegion()
         if (currentRegion != null) {
@@ -262,7 +262,6 @@ class MobilyPurchaseAPI(
             .put("locale", this.locale)
             .put("transactions", jsonTransactions)
             .put("platform", "android")
-            .put("loadProduct", true)
 
         val currentRegion = this.getCurrentRegion()
         if (currentRegion != null) {

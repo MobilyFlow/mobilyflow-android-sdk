@@ -22,8 +22,8 @@ android {
         applicationId = "com.mobilyflow.test_android_sdk"
         minSdk = 23
         targetSdk = 35
-        versionCode = 4
-        versionName = "1.0.1"
+        versionCode = 5
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

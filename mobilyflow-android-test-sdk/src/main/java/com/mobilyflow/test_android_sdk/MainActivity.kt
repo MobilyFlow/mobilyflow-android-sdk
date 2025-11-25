@@ -247,7 +247,7 @@ class MainActivity : ComponentActivity() {
 //                val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
 //                val externalRef = "random-user-android"
 //                val externalRef = "android-user"
-                val externalRef = "gregoire-android"
+                val externalRef = "gregoire-android-xx"
 
                 Log.d("MobilyFlow", "Go login ")
                 customer = mobily!!.login(externalRef)
@@ -262,12 +262,12 @@ class MainActivity : ComponentActivity() {
                     "StoreCountry: ${this.mobily!!.getStoreCountry()} (available ${this.mobily!!.isBillingAvailable()})"
                 )
 
-                Log.d("MobilyFlow", "External Entitlements: ")
+                /*Log.d("MobilyFlow", "External Entitlements: ")
                 val entitlements = mobily!!.getExternalEntitlements()
                 for (entitlement in entitlements) {
                     Log.d("MobilyFlow", "    ${entitlement.Product.identifier} / ${entitlement.customerId}")
                 }
-                Log.d("MobilyFlow", "==================")
+                Log.d("MobilyFlow", "==================")*/
 
                 Log.d("MobilyFlow", "SubGroup (test_group_managed): ")
                 val group = mobily!!.getSubscriptionGroupById("7169b477-c649-4981-91ef-f3c0d7fa64ca")
