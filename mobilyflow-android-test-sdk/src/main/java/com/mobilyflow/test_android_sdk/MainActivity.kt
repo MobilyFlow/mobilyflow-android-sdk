@@ -40,6 +40,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductOfferPricingMode
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
@@ -262,12 +263,12 @@ class MainActivity : ComponentActivity() {
                     "StoreCountry: ${this.mobily!!.getStoreCountry()} (available ${this.mobily!!.isBillingAvailable()})"
                 )
 
-                /*Log.d("MobilyFlow", "External Entitlements: ")
+                Log.d("MobilyFlow", "External Entitlements: ")
                 val entitlements = mobily!!.getExternalEntitlements()
                 for (entitlement in entitlements) {
                     Log.d("MobilyFlow", "    ${entitlement.Product.identifier} / ${entitlement.customerId}")
                 }
-                Log.d("MobilyFlow", "==================")*/
+                Log.d("MobilyFlow", "==================")
 
                 Log.d("MobilyFlow", "SubGroup (test_group_managed): ")
                 val group = mobily!!.getSubscriptionGroupById("7169b477-c649-4981-91ef-f3c0d7fa64ca")
@@ -484,17 +485,25 @@ fun IAPButton(
         }
     }, modifier = Modifier.fillMaxWidth()) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            val effectiveOffer = offer ?: product.subscription?.introductoryOffer
+
             Text(product.name)
             Text(product.description)
             Text(product.identifier)
-            Text(
-                offer?.priceFormatted ?: product.priceFormatted
-            )
-            if (offer != null) {
-                Text(offer.android_offerId)
-                Text("${offer.periodCount} ${offer.periodUnit} - ${offer.countBillingCycle}/cycles")
+
+            if (effectiveOffer != null) {
+                Text(effectiveOffer.android_offerId)
+                if (effectiveOffer.pricingMode == MobilyProductOfferPricingMode.FREE_TRIAL) {
+                    Text(product.priceFormatted)
+                    Text("Free for ${effectiveOffer.periodCount} ${effectiveOffer.periodUnit}")
+                } else {
+                    Text(effectiveOffer.priceFormatted)
+                    Text("${effectiveOffer.periodCount} ${effectiveOffer.periodUnit} - ${effectiveOffer.countBillingCycle}/cycles")
+                }
+            } else {
+                Text(product.priceFormatted)
             }
-            Text("Status = " + (offer?.status ?: product.status).toString())
+            Text("Status = " + (effectiveOffer?.status ?: product.status).toString())
         }
     }
 }

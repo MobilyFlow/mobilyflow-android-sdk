@@ -1,9 +1,10 @@
 package com.mobilyflow.mobilypurchasesdk.Models.Product
 
 import com.android.billingclient.api.ProductDetails.RecurrenceMode
-import com.mobilyflow.mobilypurchasesdk.Enums.PeriodUnit
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductOfferPricingMode
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductOfferType
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
+import com.mobilyflow.mobilypurchasesdk.Enums.PeriodUnit
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseRegistry
 import com.mobilyflow.mobilypurchasesdk.Utils.StorePrice
@@ -21,6 +22,7 @@ class MobilySubscriptionOffer(
     val currencyCode: String,
     val priceFormatted: String,
     val type: MobilyProductOfferType,
+    val pricingMode: MobilyProductOfferPricingMode,
     val periodCount: Int,
     val periodUnit: PeriodUnit,
     val countBillingCycle: Int,
@@ -43,7 +45,25 @@ class MobilySubscriptionOffer(
             val externalRef = jsonOffer.optStringNull("externalRef")
             val referenceName = jsonOffer.getString("referenceName")
             val name = TranslationUtils.getTranslationValue(jsonOffer.optJSONArray("_translations"), "name") ?: ""
-            val type = MobilyProductOfferType.parse(jsonOffer.getString("type"))
+
+            // TODO: Retro compatibility with old backend, remove it after API updates
+            var type: MobilyProductOfferType
+            var pricingMode: MobilyProductOfferPricingMode
+
+            val typeStr = jsonOffer.getString("type")
+            if (typeStr == "free_trial") {
+                type = MobilyProductOfferType.INTRODUCTORY
+                pricingMode = MobilyProductOfferPricingMode.FREE_TRIAL
+            } else if (typeStr == "recurring") {
+                type = MobilyProductOfferType.DEVELOPER_DETERMINED
+                pricingMode = MobilyProductOfferPricingMode.RECURRING
+            } else {
+                type = MobilyProductOfferType.parse(typeStr)
+                pricingMode = MobilyProductOfferPricingMode.parse(jsonOffer.getString("pricingMode"))
+            }
+            // val type = MobilyProductOfferType.parse(jsonOffer.getString("type"))
+            // val pricingMode = MobilyProductOfferPricingMode.parse(jsonOffer.getString("pricingMode"))
+
             val extras = jsonOffer.optJSONObject("extras")
             val android_offerId = jsonOffer.getString("android_offerId")
 
@@ -64,8 +84,8 @@ class MobilySubscriptionOffer(
                     Logger.w("Offer $sku/$basePlanId/${android_offerId} is incompatible with MobilyFlow (only 2 pricingPhases allowed)")
                     status = MobilyProductStatus.INVALID
                 } else {
-                    if (type == MobilyProductOfferType.FREE_TRIAL && androidOffer.pricingPhases.pricingPhaseList[0].priceAmountMicros > 0) {
-                        Logger.w("Offer $sku/$basePlanId/${android_offerId ?: "null"} should be a free trial")
+                    if (pricingMode == MobilyProductOfferPricingMode.FREE_TRIAL && androidOffer.pricingPhases.pricingPhaseList[0].priceAmountMicros > 0) {
+                        Logger.w("Offer $sku/$basePlanId/${android_offerId ?: "null"} should be a FREE_TRIAL")
                         status = MobilyProductStatus.INVALID
                     }
                     for (phase in androidOffer.pricingPhases.pricingPhaseList) {
@@ -92,7 +112,7 @@ class MobilySubscriptionOffer(
 
                 priceFormatted = Utils.formatPrice(priceMillis, currencyCode)
 
-                if (type == MobilyProductOfferType.FREE_TRIAL) {
+                if (pricingMode == MobilyProductOfferPricingMode.FREE_TRIAL) {
                     periodCount = jsonOffer.getInt("offerPeriodCount")
                     periodUnit = PeriodUnit.parse(jsonOffer.getString("offerPeriodUnit"))
                     countBillingCycle = 1
@@ -127,6 +147,7 @@ class MobilySubscriptionOffer(
                 currencyCode = currencyCode,
                 priceFormatted = priceFormatted,
                 type = type,
+                pricingMode = pricingMode,
                 periodCount = periodCount,
                 periodUnit = periodUnit,
                 countBillingCycle = countBillingCycle,

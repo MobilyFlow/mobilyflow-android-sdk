@@ -62,8 +62,8 @@ class MobilyPurchaseSDKHelper() {
                 MobilyPurchaseRegistry.getAndroidOffer(
                     product.android_sku,
                     product.android_basePlanId,
-                    if (options?.offer == null && product.subscription!!.freeTrial?.status == MobilyProductStatus.AVAILABLE)
-                        product.subscription.freeTrial.android_offerId
+                    if (options?.offer == null && product.subscription!!.introductoryOffer?.status == MobilyProductStatus.AVAILABLE)
+                        product.subscription.introductoryOffer.android_offerId
                     else
                         options?.offer?.android_offerId
                 )
