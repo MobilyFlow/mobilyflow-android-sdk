@@ -87,6 +87,7 @@ class MobilyPurchaseAPI(
             platformOriginalTransactionIds = jsonArrayToStringArray(jsonResponse.getJSONArray("platformOriginalTransactionIds")),
             entitlements = jsonResponse.getJSONArray("entitlements"),
             haveMonitoringRequests = jsonResponse.optBoolean("haveMonitoringRequests"),
+            ForceUpdate = jsonResponse.optJSONObject("ForceUpdate"),
         )
     }
 

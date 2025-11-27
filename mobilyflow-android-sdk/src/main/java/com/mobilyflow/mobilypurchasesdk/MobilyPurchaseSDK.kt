@@ -1,10 +1,13 @@
 package com.mobilyflow.mobilypurchasesdk
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ConsumeParams
@@ -176,7 +179,36 @@ class MobilyPurchaseSDK(
             }
         }
 
-        // 4. Send monitoring if requested
+        // 4. Force Update if required
+        if (loginResponse.ForceUpdate != null) {
+            val lock = Object()
+            synchronized(lock) {
+                Handler(Looper.getMainLooper()).post {
+                    // UI code here
+                    Logger.d(
+                        "Force Update Required for version ${loginResponse.ForceUpdate.getString("minVersionName")}" +
+                                " (${loginResponse.ForceUpdate.getInt("minVersionCode")})"
+                    )
+                    val dialog = AlertDialog.Builder(context)
+                        .setMessage(loginResponse.ForceUpdate.getString("message"))
+                        .setPositiveButton(loginResponse.ForceUpdate.getString("linkText"), null)
+                        .create()
+                    dialog.setCancelable(false)
+                    dialog.setCanceledOnTouchOutside(false)
+                    dialog.setOnShowListener {
+                        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                            val intent =
+                                Intent(Intent.ACTION_VIEW, Uri.parse(loginResponse.ForceUpdate.getString("link")))
+                            context.startActivity(intent)
+                        }
+                    }
+                    dialog.show()
+                }
+                lock.wait()
+            }
+        }
+
+        // 5. Send monitoring if requested
         if (loginResponse.haveMonitoringRequests) {
             Executors.newSingleThreadExecutor().execute {
                 // When monitoring is requested, send 10 days
