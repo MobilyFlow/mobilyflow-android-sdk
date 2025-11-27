@@ -181,6 +181,7 @@ class MobilyPurchaseSDK(
 
         // 4. Force Update if required
         if (loginResponse.ForceUpdate != null) {
+            // TODO: Make this check at login can cause customer to use app is login isn't early
             val lock = Object()
             synchronized(lock) {
                 Handler(Looper.getMainLooper()).post {
