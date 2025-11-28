@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.Application
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.net.Uri
@@ -101,7 +102,7 @@ class MobilyPurchaseSDK(
         diagnostics = MobilyPurchaseSDKDiagnostics(context, billingClient, null)
         waiter = MobilyPurchaseSDKWaiter(API, diagnostics)
         syncer = MobilyPurchaseSDKSyncer(API, billingClient)
-        
+
         lifecycleListener = object : AppLifecycleProvider.AppLifecycleCallbacks() {
             override fun onActivityPaused(activity: Activity) {
                 Logger.d("onActivityPaused")
@@ -142,7 +143,7 @@ class MobilyPurchaseSDK(
     /* ****************************** LOGIN ****************************** */
     /* ******************************************************************* */
 
-    fun login(activity: Activity, externalRef: String): MobilyCustomer {
+    fun login(externalRef: String, activity: Activity? = null): MobilyCustomer {
         // 1. Logout previous user
         this.logout()
 
@@ -184,30 +185,41 @@ class MobilyPurchaseSDK(
         // 4. Force Update if required
         if (loginResponse.ForceUpdate != null) {
             // TODO: Make this check at login can cause customer to use app is login isn't early
-            val lock = Object()
-            synchronized(lock) {
-                Handler(Looper.getMainLooper()).post {
-                    // UI code here
-                    Logger.d(
-                        "Force Update Required for version ${loginResponse.ForceUpdate.getString("minVersionName")}" +
-                                " (${loginResponse.ForceUpdate.getInt("minVersionCode")})"
-                    )
-                    val dialog = AlertDialog.Builder(activity)
-                        .setMessage(loginResponse.ForceUpdate.getString("message"))
-                        .setPositiveButton(loginResponse.ForceUpdate.getString("linkText"), null)
-                        .create()
-                    dialog.setCancelable(false)
-                    dialog.setCanceledOnTouchOutside(false)
-                    dialog.setOnShowListener {
-                        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                            val intent =
-                                Intent(Intent.ACTION_VIEW, Uri.parse(loginResponse.ForceUpdate.getString("link")))
-                            context.startActivity(intent)
+            val finalActivity = this.getCurrentActivity(activity ?: context)
+            if (finalActivity != null) {
+                val lock = Object()
+                synchronized(lock) {
+                    Handler(Looper.getMainLooper()).post {
+                        // UI code here
+                        Logger.d(
+                            "Force Update Required for version ${loginResponse.ForceUpdate.getString("minVersionName")}" +
+                                    " (${loginResponse.ForceUpdate.getInt("minVersionCode")})"
+                        )
+                        val dialog = AlertDialog.Builder(finalActivity)
+                            .setMessage(loginResponse.ForceUpdate.getString("message"))
+                            .setPositiveButton(loginResponse.ForceUpdate.getString("linkText"), null)
+                            .create()
+                        dialog.setCancelable(false)
+                        dialog.setCanceledOnTouchOutside(false)
+                        dialog.setOnShowListener {
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                                val intent =
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(loginResponse.ForceUpdate.getString("link")))
+                                context.startActivity(intent)
+                            }
                         }
+                        dialog.show()
                     }
-                    dialog.show()
+                    lock.wait()
                 }
-                lock.wait()
+            } else {
+                // TODO: This can happen if:
+                //  - No activity is provided to this function
+                //  - SDK context isn't an Activity or isn't a ContextWrapper that wrap an Activity
+                //  - SDK was initial after activity resume that make AppLifecycleProvider unable to get the current Activity
+                //  -> We still allow user to use the app if we cannot get the Activity
+                Logger.e("ForceUpdate doesn't find a activity to present dialog")
+                sendDiagnostic()
             }
         }
 
@@ -654,5 +666,15 @@ class MobilyPurchaseSDK(
 
     fun getSDKVersion(): String {
         return MOBILYFLOW_SDK_VERSION
+    }
+
+    private fun getCurrentActivity(context: Context): Activity? {
+        if (context is Activity) {
+            return context
+        } else if (context is ContextWrapper) {
+            return this.getCurrentActivity(context.baseContext)
+        } else {
+            return AppLifecycleProvider.getCurrentActivity()
+        }
     }
 }

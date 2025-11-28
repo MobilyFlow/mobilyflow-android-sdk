@@ -5,6 +5,7 @@ import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
 import android.os.Bundle
 import android.util.Log
+import java.lang.ref.WeakReference
 
 /**
  * This class is designed to provide static access to Application LifeCycle.
@@ -15,36 +16,46 @@ class AppLifecycleProvider {
     companion object {
         private val listeners = mutableListOf<AppLifecycleCallbacks>()
         private var instance: AppLifecycleProvider? = null
+        private var currentActivity: WeakReference<Activity>? = null
 
         fun init(application: Application) {
             if (instance == null) {
                 instance = AppLifecycleProvider()
                 application.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
                     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                        currentActivity = WeakReference(activity)
                         listeners.forEach { listener ->
                             listener.onActivityCreated(activity, savedInstanceState)
                         }
                     }
 
                     override fun onActivityStarted(activity: Activity) {
+                        currentActivity = WeakReference(activity)
                         listeners.forEach { listener ->
                             listener.onActivityStarted(activity)
                         }
                     }
 
                     override fun onActivityResumed(activity: Activity) {
+                        currentActivity = WeakReference(activity)
                         listeners.forEach { listener ->
                             listener.onActivityResumed(activity)
                         }
                     }
 
                     override fun onActivityPaused(activity: Activity) {
+                        if (currentActivity?.get() == activity) {
+                            currentActivity = null
+                        }
                         listeners.forEach { listener ->
                             listener.onActivityPaused(activity)
                         }
                     }
 
                     override fun onActivityStopped(activity: Activity) {
+                        if (currentActivity?.get() == activity) {
+                            currentActivity = null
+                        }
                         listeners.forEach { listener ->
                             listener.onActivityStopped(activity)
                         }
@@ -57,6 +68,9 @@ class AppLifecycleProvider {
                     }
 
                     override fun onActivityDestroyed(activity: Activity) {
+                        if (currentActivity?.get() == activity) {
+                            currentActivity = null
+                        }
                         listeners.forEach { listener ->
                             listener.onActivityDestroyed(activity)
                         }
@@ -81,6 +95,10 @@ class AppLifecycleProvider {
 
         fun unregisterListener(listener: AppLifecycleCallbacks) {
             listeners.remove(listener)
+        }
+
+        fun getCurrentActivity(): Activity? {
+            return currentActivity?.get()
         }
     }
 
