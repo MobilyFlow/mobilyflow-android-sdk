@@ -2,6 +2,7 @@ package com.mobilyflow.mobilypurchasesdk
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -75,6 +76,7 @@ class MobilyPurchaseSDK(
     private val productsCaches = mutableMapOf<String, MobilyProduct>()
 
     init {
+        AppLifecycleProvider.init(context.applicationContext as Application)
         Monitoring.initialize(context, "MobilyFlow", options?.debug == true) { logFile ->
             API.uploadMonitoring(context, customer?.id, logFile)
         }
@@ -99,7 +101,7 @@ class MobilyPurchaseSDK(
         diagnostics = MobilyPurchaseSDKDiagnostics(context, billingClient, null)
         waiter = MobilyPurchaseSDKWaiter(API, diagnostics)
         syncer = MobilyPurchaseSDKSyncer(API, billingClient)
-
+        
         lifecycleListener = object : AppLifecycleProvider.AppLifecycleCallbacks() {
             override fun onActivityPaused(activity: Activity) {
                 Logger.d("onActivityPaused")
@@ -140,7 +142,7 @@ class MobilyPurchaseSDK(
     /* ****************************** LOGIN ****************************** */
     /* ******************************************************************* */
 
-    fun login(externalRef: String): MobilyCustomer {
+    fun login(activity: Activity, externalRef: String): MobilyCustomer {
         // 1. Logout previous user
         this.logout()
 
@@ -190,7 +192,7 @@ class MobilyPurchaseSDK(
                         "Force Update Required for version ${loginResponse.ForceUpdate.getString("minVersionName")}" +
                                 " (${loginResponse.ForceUpdate.getInt("minVersionCode")})"
                     )
-                    val dialog = AlertDialog.Builder(context)
+                    val dialog = AlertDialog.Builder(activity)
                         .setMessage(loginResponse.ForceUpdate.getString("message"))
                         .setPositiveButton(loginResponse.ForceUpdate.getString("linkText"), null)
                         .create()

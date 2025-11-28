@@ -2,6 +2,7 @@ package com.mobilyflow.mobilypurchasesdk.Monitoring
 
 import android.app.Activity
 import android.util.Log
+import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
@@ -13,7 +14,6 @@ import java.text.Normalizer
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import kotlinx.datetime.Clock
 
 enum class LogFolderType(val value: String) {
     RAW_LOGS("raw"),
@@ -47,14 +47,6 @@ class Logger private constructor(
 
             override fun onActivityPaused(activity: Activity) {
                 stopFlushTask()
-            }
-
-            override fun onLowMemory() {
-                flush()
-            }
-
-            override fun onTrimMemory(level: Int) {
-                flush()
             }
 
             override fun uncaughtException(t: Thread?, e: Throwable?) {
