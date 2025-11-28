@@ -8,5 +8,4 @@ class LoginResponse(
     val entitlements: JSONArray,
     val platformOriginalTransactionIds: Array<String>,
     val haveMonitoringRequests: Boolean,
-    val ForceUpdate: JSONObject?,
 ) {}

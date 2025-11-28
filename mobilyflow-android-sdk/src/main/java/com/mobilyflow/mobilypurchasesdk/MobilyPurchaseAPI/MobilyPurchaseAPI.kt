@@ -40,6 +40,30 @@ class MobilyPurchaseAPI(
     )
 
     /**
+     * Get ForceUpdate data if update is required
+     */
+    @Throws(MobilyException::class)
+    fun getCheckForceUpdate(context: Context): JSONObject? {
+        val request = ApiRequest("GET", "/apps/me/platforms/check-force-update/android")
+        request.addParam("appVersionName", DeviceInfo.getAppVersionName(context))
+        request.addParam("appVersionCode", DeviceInfo.getAppVersionCode(context))
+
+        val response: ApiResponse?
+        try {
+            response = this.helper.request(request)
+        } catch (e: Exception) {
+            throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
+        }
+
+        if (!response.success) {
+            Logger.w("[getCheckForceUpdate] API Error: ${response.string()}")
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+        }
+
+        return response.json().optJSONObject("data")
+    }
+
+    /**
      * Log user into MobilyFlow with his externalRef and return his uuid.
      * Throws on error.
      */
@@ -87,7 +111,6 @@ class MobilyPurchaseAPI(
             platformOriginalTransactionIds = jsonArrayToStringArray(jsonResponse.getJSONArray("platformOriginalTransactionIds")),
             entitlements = jsonResponse.getJSONArray("entitlements"),
             haveMonitoringRequests = jsonResponse.optBoolean("haveMonitoringRequests"),
-            ForceUpdate = jsonResponse.optJSONObject("ForceUpdate"),
         )
     }
 

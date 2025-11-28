@@ -3,6 +3,8 @@ package com.mobilyflow.mobilypurchasesdk.Monitoring
 import android.app.Activity
 import android.app.Application
 import android.app.Application.ActivityLifecycleCallbacks
+import android.content.Context
+import android.content.ContextWrapper
 import android.os.Bundle
 import android.util.Log
 import java.lang.ref.WeakReference
@@ -18,7 +20,9 @@ class AppLifecycleProvider {
         private var instance: AppLifecycleProvider? = null
         private var currentActivity: WeakReference<Activity>? = null
 
-        fun init(application: Application) {
+        fun init(context: Context) {
+            setCurrentActivityFromContext(context)
+            val application = context.applicationContext as Application
             if (instance == null) {
                 instance = AppLifecycleProvider()
                 application.registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
@@ -99,6 +103,14 @@ class AppLifecycleProvider {
 
         fun getCurrentActivity(): Activity? {
             return currentActivity?.get()
+        }
+
+        private fun setCurrentActivityFromContext(context: Context) {
+            if (context is Activity) {
+                currentActivity = WeakReference(context)
+            } else if (context is ContextWrapper) {
+                this.setCurrentActivityFromContext(context.baseContext)
+            }
         }
     }
 

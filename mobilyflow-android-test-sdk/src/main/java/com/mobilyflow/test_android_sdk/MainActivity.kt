@@ -47,17 +47,15 @@ import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyTransferOwnershipException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDK
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseSDKOptions
+import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Models.MobilyCustomer
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionOffer
-import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.test_android_sdk.ui.theme.MobilyflowAndroidSDKTheme
 import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
-    private var mobily: MobilyPurchaseSDK? = null
-
     private var products = MutableLiveData<List<MobilyProduct>?>()
     private var error = MutableLiveData<String?>()
 
@@ -67,8 +65,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        mobily = MobilyPurchaseSDK(
-            this,
+        MobilyPurchaseSDK.initialize(
+            activity = this,
             appId = BuildConfig.MOBILYFLOW_APP_ID,
             apiKey = BuildConfig.MOBILYFLOW_API_KEY,
             environment = MobilyEnvironment.DEVELOPMENT,
@@ -118,7 +116,6 @@ class MainActivity : ComponentActivity() {
                                     products!!.forEach { p ->
                                         IAPButton(
                                             activity = this@MainActivity,
-                                            sdk = mobily!!,
                                             product = p,
                                             offer = null,
                                         )
@@ -135,7 +132,6 @@ class MainActivity : ComponentActivity() {
                                                 p.subscription!!.promotionalOffers.forEach { offer ->
                                                     IAPButton(
                                                         activity = this@MainActivity,
-                                                        sdk = mobily!!,
                                                         product = p,
                                                         offer = offer,
                                                     )
@@ -158,14 +154,14 @@ class MainActivity : ComponentActivity() {
                                     Text(text = "Reload Mobily")
                                 }
                                 Button(onClick = {
-                                    this@MainActivity.mobily!!.openManageSubscription()
+                                    MobilyPurchaseSDK.openManageSubscription()
                                 }) {
                                     Text(text = "Manage Subscription")
                                 }
                                 Button(onClick = {
                                     Executors.newSingleThreadExecutor().execute {
                                         try {
-                                            this@MainActivity.mobily!!.requestTransferOwnership()
+                                            MobilyPurchaseSDK.requestTransferOwnership()
                                         } catch (error: MobilyException) {
                                             Log.e(
                                                 "MobilyFlow",
@@ -223,7 +219,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        this.mobily?.close()
+        MobilyPurchaseSDK.close()
         super.onDestroy()
     }
 
@@ -251,27 +247,27 @@ class MainActivity : ComponentActivity() {
                 val externalRef = "gregoire-android-xx"
 
                 Log.d("MobilyFlow", "Go login ")
-                customer = mobily!!.login(this, externalRef)
+                customer = MobilyPurchaseSDK.login(externalRef, this)
                 Log.d("MobilyFlow", "Login on customer ${customer!!.id}")
                 Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer!!.forwardNotificationEnable))
 //                Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
 
-                val products = mobily!!.getProducts(null, false)
+                val products = MobilyPurchaseSDK.getProducts(null, false)
 
                 Log.d(
                     "MobilyFlow",
-                    "StoreCountry: ${this.mobily!!.getStoreCountry()} (available ${this.mobily!!.isBillingAvailable()})"
+                    "StoreCountry: ${MobilyPurchaseSDK.getStoreCountry()} (available ${MobilyPurchaseSDK.isBillingAvailable()})"
                 )
 
                 Log.d("MobilyFlow", "External Entitlements: ")
-                val entitlements = mobily!!.getExternalEntitlements()
+                val entitlements = MobilyPurchaseSDK.getExternalEntitlements()
                 for (entitlement in entitlements) {
                     Log.d("MobilyFlow", "    ${entitlement.Product.identifier} / ${entitlement.customerId}")
                 }
                 Log.d("MobilyFlow", "==================")
 
                 Log.d("MobilyFlow", "SubGroup (test_group_managed): ")
-                val group = mobily!!.getSubscriptionGroupById("7169b477-c649-4981-91ef-f3c0d7fa64ca")
+                val group = MobilyPurchaseSDK.getSubscriptionGroupById("7169b477-c649-4981-91ef-f3c0d7fa64ca")
                 for (product in group.Products) {
                     Log.d("MobilyFlow", "Product: ${product.identifier} / ${product.status}")
                 }
@@ -446,7 +442,6 @@ class PurchaseProductHelper(
 @Composable
 fun IAPButton(
     activity: Activity,
-    sdk: MobilyPurchaseSDK,
     product: MobilyProduct,
     offer: MobilySubscriptionOffer?,
 ) {
@@ -455,14 +450,14 @@ fun IAPButton(
             try {
                 if (offer == null) {
                     Log.d("MobilyFlow", "Click ${product.identifier}")
-                    val status = sdk.purchaseProduct(activity, product)
+                    val status = MobilyPurchaseSDK.purchaseProduct(activity, product)
                     Log.d("MobilyFlow", "Purchase result = $status")
                 } else {
                     Log.d(
                         "MobilyFlow",
                         "Click ${product.identifier} offer ${offer.android_offerId}"
                     )
-                    val status = sdk.purchaseProduct(activity, product, PurchaseOptions().setOffer(offer))
+                    val status = MobilyPurchaseSDK.purchaseProduct(activity, product, PurchaseOptions().setOffer(offer))
                     Log.d("MobilyFlow", "Purchase result = $status")
                 }
             } catch (e: MobilyPurchaseException) {
