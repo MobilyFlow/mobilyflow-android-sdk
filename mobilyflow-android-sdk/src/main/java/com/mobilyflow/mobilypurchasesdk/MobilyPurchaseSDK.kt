@@ -1,6 +1,7 @@
 package com.mobilyflow.mobilypurchasesdk
 
 import android.app.Activity
+import android.content.Context
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyTransferOwnershipStatus
 import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyException
@@ -23,7 +24,7 @@ object MobilyPurchaseSDK {
     @JvmStatic
     @Throws(MobilyException::class)
     fun initialize(
-        activity: Activity,
+        context: Context,
         appId: String,
         apiKey: String,
         environment: MobilyEnvironment,
@@ -32,7 +33,7 @@ object MobilyPurchaseSDK {
         if (instance != null) {
             instance!!.reinit(appId, apiKey, environment, options)
         } else {
-            instance = MobilyPurchaseSDKImpl(activity, appId, apiKey, environment, options)
+            instance = MobilyPurchaseSDKImpl(context, appId, apiKey, environment, options)
         }
     }
 
