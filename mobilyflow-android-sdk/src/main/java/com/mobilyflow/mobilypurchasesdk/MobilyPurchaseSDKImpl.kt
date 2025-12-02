@@ -216,7 +216,7 @@ internal class MobilyPurchaseSDKImpl(
     /* ****************************** LOGIN ****************************** */
     /* ******************************************************************* */
 
-    fun login(externalRef: String, activity: Activity? = null): MobilyCustomer {
+    fun login(externalRef: String): MobilyCustomer {
         // 1. Logout previous user
         this.logout()
 

@@ -52,9 +52,9 @@ object MobilyPurchaseSDK {
 
     @JvmStatic
     @Throws(MobilyException::class)
-    fun login(externalRef: String, activity: Activity? = null): MobilyCustomer {
+    fun login(externalRef: String): MobilyCustomer {
         ensureInit()
-        return instance!!.login(externalRef, activity)
+        return instance!!.login(externalRef)
     }
 
     @JvmStatic
