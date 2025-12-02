@@ -36,17 +36,22 @@ object MobilyPurchaseSDK {
         }
     }
 
-    private fun ensureInit() {
+    private fun ensureInit(checkOnly: Boolean = false): Boolean {
+        if (checkOnly) {
+            return instance != null
+        }
         if (instance == null) {
             throw MobilyException(MobilyException.Type.SDK_NOT_INITIALIZED)
         }
+        return true
     }
 
     @JvmStatic
     @Throws(MobilyException::class)
     fun close() {
-        ensureInit()
-        instance!!.close()
+        if (ensureInit(checkOnly = true)) {
+            instance!!.close()
+        }
         instance = null
     }
 
@@ -60,8 +65,9 @@ object MobilyPurchaseSDK {
     @JvmStatic
     @Throws(MobilyException::class)
     fun logout() {
-        ensureInit()
-        instance!!.logout()
+        if (ensureInit(checkOnly = true)) {
+            instance!!.logout()
+        }
     }
 
     @JvmStatic
@@ -88,8 +94,10 @@ object MobilyPurchaseSDK {
     @JvmStatic
     @Throws(MobilyException::class)
     fun DANGEROUS_getProductFromCacheWithId(id: String): MobilyProduct? {
-        ensureInit()
-        return instance!!.getProductFromCacheWithId(id)
+        if (ensureInit(checkOnly = true)) {
+            return instance!!.getProductFromCacheWithId(id)
+        }
+        return null
     }
 
     @JvmStatic
