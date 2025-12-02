@@ -49,11 +49,8 @@ class AppLifecycleProvider {
                             listener.onActivityResumed(activity)
                         }
                         if (executeOnActivityListeners.isNotEmpty()) {
-                            Logger.w("[executeOnActivity] Resume on ${executeOnActivityListeners.size} listeners")
                             executeOnActivityListeners.forEach { callback ->
-                                Logger.w("[executeOnActivity] Before Callback")
                                 callback(activity)
-                                Logger.w("[executeOnActivity] After Callback")
                             }
                             executeOnActivityListeners.clear()
                         }
@@ -123,12 +120,10 @@ class AppLifecycleProvider {
         fun executeOnActivity(callback: (activity: Activity) -> Unit) {
             val activity = currentActivity?.get()
             if (activity != null) {
-                Logger.d("[executeOnActivity] Run directly")
                 Handler(Looper.getMainLooper()).post {
                     callback(activity)
                 }
             } else {
-                Logger.w("[executeOnActivity] Wait for an Activity to be resumed")
                 executeOnActivityListeners.add(callback)
             }
         }
