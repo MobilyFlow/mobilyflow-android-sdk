@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.net.Uri
-import android.os.Handler
-import android.os.Looper
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.ConsumeParams
@@ -78,20 +76,18 @@ internal class MobilyPurchaseSDKImpl(
             AppLifecycleProvider.init(baseContext) // Pass baseContext in case it's an Activity
 
             Monitoring.initialize(context, "MobilyFlow", options?.debug == true) { logFile ->
-                // This callback works only when SDK is fully initialized, we wait for initLock to be released
+                // This callback works only when SDK is fully initialized, we wait for initLock to be available
                 synchronized(initLock) {
-                    initLock.wait()
                     API!!.uploadMonitoring(context, customer?.id, logFile)
                 }
             }
 
             this.billingClient = BillingClientWrapper(context) { billingResult, purchases ->
                 // Note: for out-of-app purchase, this function is called only when app is in background (but not when restart)
-                // This callback works only when SDK is fully initialized, we wait for initLock to be released
-                synchronized(initLock) {
-                    initLock.wait()
-                    if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && !purchases.isNullOrEmpty()) {
-                        Executors.newSingleThreadExecutor().execute {
+                Executors.newSingleThreadExecutor().execute {
+                    // This callback works only when SDK is fully initialized, we wait for initLock to be available
+                    synchronized(initLock) {
+                        if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && !purchases.isNullOrEmpty()) {
                             try {
                                 for (purchase in purchases) {
                                     finishPurchase(purchase, true)
@@ -157,7 +153,6 @@ internal class MobilyPurchaseSDKImpl(
 
             waiter = MobilyPurchaseSDKWaiter(API!!, diagnostics)
             syncer = MobilyPurchaseSDKSyncer(API!!, billingClient)
-            this.initLock.notifyAll()
         }
 
         Executors.newSingleThreadExecutor().execute {
