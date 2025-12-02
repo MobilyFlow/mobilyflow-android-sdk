@@ -167,31 +167,25 @@ internal class MobilyPurchaseSDKImpl(
                 // TODO: Check appId match the apiKey
                 if (forceUpdate != null) {
                     AppLifecycleProvider.executeOnActivity { activity ->
-                        val lock = Object()
-                        synchronized(lock) {
-                            Handler(Looper.getMainLooper()).post {
-                                // UI code here
-                                Logger.d(
-                                    "Force Update Required for version ${forceUpdate.getString("minVersionName")}" +
-                                            " (${forceUpdate.getInt("minVersionCode")})"
-                                )
-                                val dialog = AlertDialog.Builder(activity)
-                                    .setMessage(forceUpdate.getString("message"))
-                                    .setPositiveButton(forceUpdate.getString("linkText"), null)
-                                    .create()
-                                dialog.setCancelable(false)
-                                dialog.setCanceledOnTouchOutside(false)
-                                dialog.setOnShowListener {
-                                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                                        val intent =
-                                            Intent(Intent.ACTION_VIEW, Uri.parse(forceUpdate.getString("link")))
-                                        context.startActivity(intent)
-                                    }
-                                }
-                                dialog.show()
+                        Logger.d(
+                            "Force Update Required for version ${forceUpdate.getString("minVersionName")}" +
+                                    " (${forceUpdate.getInt("minVersionCode")})"
+                        )
+                        val dialog = AlertDialog.Builder(activity)
+                            .setMessage(forceUpdate.getString("message"))
+                            .setPositiveButton(forceUpdate.getString("linkText"), null)
+                            .create()
+                        dialog.setCancelable(false)
+                        dialog.setCanceledOnTouchOutside(false)
+                        dialog.setOnShowListener {
+                            // Use this code to avoid closing the dialog when pressing the button
+                            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                                val intent =
+                                    Intent(Intent.ACTION_VIEW, Uri.parse(forceUpdate.getString("link")))
+                                context.startActivity(intent)
                             }
-                            lock.wait() // Dialog is non-blocking, we wait for the eternity with this call
                         }
+                        dialog.show()
                     }
                 }
             }

@@ -6,6 +6,8 @@ import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import java.lang.ref.WeakReference
 
@@ -49,7 +51,9 @@ class AppLifecycleProvider {
                         if (executeOnActivityListeners.isNotEmpty()) {
                             Logger.w("[executeOnActivity] Resume on ${executeOnActivityListeners.size} listeners")
                             executeOnActivityListeners.forEach { callback ->
+                                Logger.w("[executeOnActivity] Before Callback")
                                 callback(activity)
+                                Logger.w("[executeOnActivity] After Callback")
                             }
                             executeOnActivityListeners.clear()
                         }
@@ -120,7 +124,9 @@ class AppLifecycleProvider {
             val activity = currentActivity?.get()
             if (activity != null) {
                 Logger.d("[executeOnActivity] Run directly")
-                callback(activity)
+                Handler(Looper.getMainLooper()).post {
+                    callback(activity)
+                }
             } else {
                 Logger.w("[executeOnActivity] Wait for an Activity to be resumed")
                 executeOnActivityListeners.add(callback)

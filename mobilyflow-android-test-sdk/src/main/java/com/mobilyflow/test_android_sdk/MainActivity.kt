@@ -65,8 +65,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        Log.d("MobilyFlow", "Init Activity")
         MobilyPurchaseSDK.initialize(
-            activity = this,
+            context = this,
             appId = BuildConfig.MOBILYFLOW_APP_ID,
             apiKey = BuildConfig.MOBILYFLOW_API_KEY,
             environment = MobilyEnvironment.DEVELOPMENT,
