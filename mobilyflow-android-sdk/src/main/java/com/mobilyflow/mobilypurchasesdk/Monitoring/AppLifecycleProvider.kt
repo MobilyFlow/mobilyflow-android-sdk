@@ -17,6 +17,7 @@ class AppLifecycleProvider {
 
     companion object {
         private val listeners = mutableListOf<AppLifecycleCallbacks>()
+        private val executeOnActivityListeners = mutableListOf<(activity: Activity) -> Unit>()
         private var instance: AppLifecycleProvider? = null
         private var currentActivity: WeakReference<Activity>? = null
 
@@ -44,6 +45,13 @@ class AppLifecycleProvider {
                         currentActivity = WeakReference(activity)
                         listeners.forEach { listener ->
                             listener.onActivityResumed(activity)
+                        }
+                        if (executeOnActivityListeners.isNotEmpty()) {
+                            Logger.w("[executeOnActivity] Resume on ${executeOnActivityListeners.size} listeners")
+                            executeOnActivityListeners.forEach { callback ->
+                                callback(activity)
+                            }
+                            executeOnActivityListeners.clear()
                         }
                     }
 
@@ -103,6 +111,20 @@ class AppLifecycleProvider {
 
         fun getCurrentActivity(): Activity? {
             return currentActivity?.get()
+        }
+
+        /**
+         * Execute a callback on the currentActivity, if no Activity is available, wait for the next activity to be available
+         */
+        fun executeOnActivity(callback: (activity: Activity) -> Unit) {
+            val activity = currentActivity?.get()
+            if (activity != null) {
+                Logger.d("[executeOnActivity] Run directly")
+                callback(activity)
+            } else {
+                Logger.w("[executeOnActivity] Wait for an Activity to be resumed")
+                executeOnActivityListeners.add(callback)
+            }
         }
 
         private fun setCurrentActivityFromContext(context: Context) {

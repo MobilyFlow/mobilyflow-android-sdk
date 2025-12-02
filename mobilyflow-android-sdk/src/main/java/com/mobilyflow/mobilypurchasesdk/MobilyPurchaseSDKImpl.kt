@@ -46,7 +46,7 @@ import java.util.concurrent.Executors
 
 
 internal class MobilyPurchaseSDKImpl(
-    activity: Activity,
+    baseContext: Context,
     appId: String,
     apiKey: String,
     environment: MobilyEnvironment,
@@ -55,7 +55,7 @@ internal class MobilyPurchaseSDKImpl(
     private var appId = appId
     private var environment = environment
 
-    private val context: Context = activity.applicationContext
+    private val context: Context
     private val billingClient: BillingClientWrapper
     private val diagnostics: MobilyPurchaseSDKDiagnostics
     private var lastAppPauseTime: Long? = null
@@ -72,8 +72,11 @@ internal class MobilyPurchaseSDKImpl(
     private val productsCaches = mutableMapOf<String, MobilyProduct>()
 
     init {
+        context = baseContext.applicationContext
+
         synchronized(initLock) {
-            AppLifecycleProvider.init(activity)
+            AppLifecycleProvider.init(baseContext) // Pass baseContext in case it's an Activity
+
             Monitoring.initialize(context, "MobilyFlow", options?.debug == true) { logFile ->
                 // This callback works only when SDK is fully initialized, we wait for initLock to be released
                 synchronized(initLock) {
@@ -163,8 +166,7 @@ internal class MobilyPurchaseSDKImpl(
 
                 // TODO: Check appId match the apiKey
                 if (forceUpdate != null) {
-                    val finalActivity = AppLifecycleProvider.getCurrentActivity()
-                    if (finalActivity != null) {
+                    AppLifecycleProvider.executeOnActivity { activity ->
                         val lock = Object()
                         synchronized(lock) {
                             Handler(Looper.getMainLooper()).post {
@@ -173,7 +175,7 @@ internal class MobilyPurchaseSDKImpl(
                                     "Force Update Required for version ${forceUpdate.getString("minVersionName")}" +
                                             " (${forceUpdate.getInt("minVersionCode")})"
                                 )
-                                val dialog = AlertDialog.Builder(finalActivity)
+                                val dialog = AlertDialog.Builder(activity)
                                     .setMessage(forceUpdate.getString("message"))
                                     .setPositiveButton(forceUpdate.getString("linkText"), null)
                                     .create()
@@ -190,15 +192,6 @@ internal class MobilyPurchaseSDKImpl(
                             }
                             lock.wait() // Dialog is non-blocking, we wait for the eternity with this call
                         }
-                    } else {
-                        // TODO: This shouldn't happen because we pass activity to initialize the SDK, but still not sure if it's a good idea
-
-                        // TODO: This can happen if (finally not true but I keep it if we change back to context):
-                        //  - SDK context isn't an Activity or isn't a ContextWrapper that wrap an Activity
-                        //  - SDK was initial after activity resume that make AppLifecycleProvider unable to get the current Activity
-                        //  -> We still allow user to use the app if we cannot get the Activity
-                        Logger.e("ForceUpdate doesn't find an activity to present dialog")
-                        sendDiagnostic()
                     }
                 }
             }

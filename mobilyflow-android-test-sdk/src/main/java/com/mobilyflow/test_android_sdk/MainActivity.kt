@@ -247,7 +247,7 @@ class MainActivity : ComponentActivity() {
                 val externalRef = "gregoire-android-xx"
 
                 Log.d("MobilyFlow", "Go login ")
-                customer = MobilyPurchaseSDK.login(externalRef, this)
+                customer = MobilyPurchaseSDK.login(externalRef)
                 Log.d("MobilyFlow", "Login on customer ${customer!!.id}")
                 Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer!!.forwardNotificationEnable))
 //                Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
