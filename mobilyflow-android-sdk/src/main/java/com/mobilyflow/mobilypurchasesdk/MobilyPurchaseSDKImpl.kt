@@ -37,6 +37,7 @@ import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKDiagnostics
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKHelper
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKSyncer
 import com.mobilyflow.mobilypurchasesdk.SDKHelpers.MobilyPurchaseSDKWaiter
+import com.mobilyflow.mobilypurchasesdk.Utils.DeviceInfo
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.getPreferredLocales
 import org.json.JSONArray
 import java.util.Locale
@@ -157,9 +158,16 @@ internal class MobilyPurchaseSDKImpl(
 
         Executors.newSingleThreadExecutor().execute {
             runCatching {
-                val forceUpdate = API!!.getCheckForceUpdate(context)
+                // Check app package, platform config & force update
+                val appPlatform = API!!.getAppPlatform(context)
 
-                // TODO: Check appId match the apiKey
+                val mobilyPackage = appPlatform.getString("identifier")
+                val androidPackage = DeviceInfo.getAppPackage(context)
+                if (mobilyPackage != androidPackage) {
+                    Logger.e("Bundle identifier is configured on MobilyFlow backoffice to \"$mobilyPackage\" (actual app have \"$androidPackage\"), in-app purchase may be broken.")
+                }
+
+                val forceUpdate = appPlatform.optJSONObject("ForceUpdate")
                 if (forceUpdate != null) {
                     AppLifecycleProvider.executeOnActivity { activity ->
                         Logger.d(

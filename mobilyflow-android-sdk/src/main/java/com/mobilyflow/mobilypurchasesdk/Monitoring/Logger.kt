@@ -176,7 +176,7 @@ class Logger private constructor(
             finalMsg += "\n" + Log.getStackTraceString(tr)
         }
 
-        if (allowLogging) {
+        if (allowLogging || level == Log.WARN || level == Log.ERROR) {
             Log.println(level, tag, finalMsg)
         }
 
