@@ -132,7 +132,7 @@ internal class MobilyPurchaseSDKImpl(
         AppLifecycleProvider.registerListener(lifecycleListener)
     }
 
-    fun reinit(
+    internal fun reinit(
         appId: String,
         apiKey: String,
         environment: MobilyEnvironment,
