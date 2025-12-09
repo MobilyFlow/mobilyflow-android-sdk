@@ -5,6 +5,7 @@ class MobilyException(val type: Type, cause: Throwable? = null) : Exception(caus
         STORE_UNAVAILABLE, // Main cause: user not logged into PlayStore
         SERVER_UNAVAILABLE,
         NO_CUSTOMER_LOGGED,
-        UNKNOWN_ERROR
+        UNKNOWN_ERROR,
+        SDK_NOT_INITIALIZED,
     }
 }

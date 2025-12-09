@@ -52,7 +52,7 @@ class MobilyProduct(
         val groupLevel: Int,
         val groupId: String,
 
-        val freeTrial: MobilySubscriptionOffer?,
+        val introductoryOffer: MobilySubscriptionOffer?,
         val promotionalOffers: List<MobilySubscriptionOffer>,
     ) {}
 
@@ -92,7 +92,7 @@ class MobilyProduct(
             } else {
                 val periodCount: Int
                 val periodUnit: PeriodUnit
-                var freeTrial: MobilySubscriptionOffer? = null
+                var introductoryOffer: MobilySubscriptionOffer? = null
                 val promotionalOffers = mutableListOf<MobilySubscriptionOffer>()
 
                 val baseOffer = MobilyPurchaseRegistry.getAndroidOffer(android_sku, android_basePlanId, null)
@@ -136,16 +136,21 @@ class MobilyProduct(
                         val offer =
                             MobilySubscriptionOffer.parse(android_sku, android_basePlanId, jsonProduct, jsonOffer)
 
-                        if (offer.type == MobilyProductOfferType.FREE_TRIAL) {
-                            if (freeTrial != null) {
-                                Logger.w("Offer $android_sku/$android_basePlanId/${offer.android_offerId} is incompatible with MobilyFlow (too many free trials)")
+                        if (offer.type == MobilyProductOfferType.INTRODUCTORY) {
+                            if (introductoryOffer != null) {
+                                Logger.w("Offer $android_sku/$android_basePlanId/${offer.android_offerId} is incompatible with MobilyFlow (too many INTRODUCTORY offers)")
                                 continue
                             }
-                            freeTrial = offer
+                            introductoryOffer = offer
                         } else {
                             promotionalOffers.add(offer)
                         }
                     }
+                }
+
+                if (introductoryOffer != null && introductoryOffer.status != MobilyProductStatus.AVAILABLE) {
+                    // Remove UNAVAILABLE introductoryOffer
+                    introductoryOffer = null
                 }
 
                 subscription = MobilySubscriptionProduct(
@@ -153,7 +158,7 @@ class MobilyProduct(
                     periodUnit = periodUnit,
                     groupLevel = jsonProduct.getInt("subscriptionGroupLevel"),
                     groupId = jsonProduct.getString("subscriptionGroupId"),
-                    freeTrial = freeTrial,
+                    introductoryOffer = introductoryOffer,
                     promotionalOffers = promotionalOffers,
                 )
             }
