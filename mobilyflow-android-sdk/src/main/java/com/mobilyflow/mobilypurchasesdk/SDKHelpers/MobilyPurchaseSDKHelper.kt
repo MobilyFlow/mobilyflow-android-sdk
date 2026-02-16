@@ -8,6 +8,7 @@ import com.mobilyflow.mobilypurchasesdk.Exceptions.MobilyPurchaseException
 import com.mobilyflow.mobilypurchasesdk.MobilyPurchaseAPI.MapTransactionItem
 import com.mobilyflow.mobilypurchasesdk.Models.Internal.PurchaseOptions
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
+import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils.Companion.sha256
 
 class MobilyPurchaseSDKHelper() {
@@ -72,6 +73,8 @@ class MobilyPurchaseSDKHelper() {
             }
 
             if (androidProduct == null || (product.type == MobilyProductType.SUBSCRIPTION && androidOffer == null)) {
+                Logger.w("[createBillingFlowParams] androidProduct = ${androidProduct?.productId ?: "null"}")
+                Logger.w("[createBillingFlowParams] androidOffer = ${androidOffer?.offerId ?: "null"}")
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.PRODUCT_UNAVAILABLE)
             }
 

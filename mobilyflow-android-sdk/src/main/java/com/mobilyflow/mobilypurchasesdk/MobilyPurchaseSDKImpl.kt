@@ -561,7 +561,13 @@ internal class MobilyPurchaseSDKImpl(
             }
         } catch (e: MobilyException) {
             if (e.type == MobilyException.Type.UNKNOWN_ERROR) {
-                Logger.e("purchaseProduct unknown error", e)
+                Logger.e("purchaseProduct UNKNOWN_ERROR", e)
+                this.sendDiagnostic()
+            }
+            throw e
+        } catch (e: MobilyPurchaseException) {
+            if (e.type == MobilyPurchaseException.Type.PRODUCT_UNAVAILABLE) {
+                Logger.e("purchaseProduct MobilyPurchaseException.PRODUCT_UNAVAILABLE", e)
                 this.sendDiagnostic()
             }
             throw e
