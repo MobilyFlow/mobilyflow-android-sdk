@@ -44,7 +44,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class)
     fun getAppPlatform(context: Context): JSONObject {
-        val request = ApiRequest("GET", "/apps/${this.appId}/platforms/for-app/android")
+        val request = ApiRequest("GET", "/sdk/platforms/android")
         request.addParam("appVersionName", DeviceInfo.getAppVersionName(context))
         request.addParam("appVersionCode", DeviceInfo.getAppVersionCode(context))
 
@@ -100,7 +100,7 @@ class MobilyPurchaseAPI(
             )
 
             response = this.helper.request(
-                ApiRequest("POST", "/apps/${this.appId}/customers/login/android").setData(data)
+                ApiRequest("POST", "/sdk/customers/login/android").setData(data)
             )
         } catch (e: Exception) {
             throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
@@ -122,7 +122,7 @@ class MobilyPurchaseAPI(
 
     @Throws(MobilyException::class)
     fun getMinimalProductForAndroidPurchase(sku: String): MinimalProductForAndroidPurchase {
-        val request = ApiRequest("GET", "/apps/${this.appId}/products/minimal-product-for-android-purchase/$sku")
+        val request = ApiRequest("GET", "/sdk/products/minimal-product-for-android-purchase/$sku")
 
         val response: ApiResponse?
         try {
@@ -152,7 +152,7 @@ class MobilyPurchaseAPI(
             return JSONArray()
         }
 
-        val request = ApiRequest("GET", "/apps/${this.appId}/products/for-app")
+        val request = ApiRequest("GET", "/sdk/products")
         request.addParam("environment", environment.value)
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
@@ -190,7 +190,7 @@ class MobilyPurchaseAPI(
             return JSONArray()
         }
 
-        val request = ApiRequest("GET", "/apps/${this.appId}/subscription-groups/for-app")
+        val request = ApiRequest("GET", "/sdk/subscription-groups")
         request.addParam("environment", environment.value)
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
@@ -224,7 +224,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class)
     fun getSubscriptionGroupById(id: String): JSONObject {
-        val request = ApiRequest("GET", "/apps/${this.appId}/subscription-groups/for-app/${id}")
+        val request = ApiRequest("GET", "/sdk/subscription-groups/${id}")
         request.addParam("environment", environment.value)
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
@@ -254,7 +254,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class)
     fun getCustomerEntitlements(customerId: String): JSONArray {
-        val request = ApiRequest("GET", "/apps/${this.appId}/customers/${customerId}/entitlements")
+        val request = ApiRequest("GET", "/sdk/customers/${customerId}/entitlements")
         request.addParam("locale", this.locale)
         request.addParam("platform", "android")
 
@@ -282,7 +282,7 @@ class MobilyPurchaseAPI(
      * Get external entitlements
      */
     @Throws(MobilyException::class)
-    fun getCustomerExternalEntitlements(customerId: String, transactions: Array<String>): JSONArray {
+    fun getCustomerExternalEntitlements(transactions: Array<String>, customerId: String?): JSONArray {
         val jsonTransactions = JSONArray()
         for (tx in transactions) {
             jsonTransactions.put(tx)
@@ -292,6 +292,11 @@ class MobilyPurchaseAPI(
             .put("locale", this.locale)
             .put("transactions", jsonTransactions)
             .put("platform", "android")
+            .put("environment", environment.value)
+
+        if (customerId != null) {
+            data.put("customerId", customerId)
+        }
 
         val currentRegion = this.getCurrentRegion()
         if (currentRegion != null) {
@@ -299,7 +304,7 @@ class MobilyPurchaseAPI(
         }
 
         val request =
-            ApiRequest("POST", "/apps/${this.appId}/customers/${customerId}/external-entitlements").setData(data)
+            ApiRequest("POST", "/sdk/customers/external-entitlements").setData(data)
 
         val response: ApiResponse?
         try {
@@ -331,7 +336,7 @@ class MobilyPurchaseAPI(
                 .put("transactions", jsonTransactions)
 
             response = this.helper.request(
-                ApiRequest("POST", "/apps/${this.appId}/customers/mappings/android").setData(data)
+                ApiRequest("POST", "/sdk/customer-mappings/android").setData(data)
             )
         } catch (e: Exception) {
             throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
@@ -359,7 +364,7 @@ class MobilyPurchaseAPI(
             response = this.helper.request(
                 ApiRequest(
                     "POST",
-                    "/apps/${this.appId}/customer-transfer-ownerships/request/android"
+                    "/sdk/customer-transfer-ownerships/android"
                 ).setData(data)
             )
         } catch (e: Exception) {
@@ -392,7 +397,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class, MobilyTransferOwnershipException::class)
     fun getTransferRequestStatus(requestId: String): MobilyTransferOwnershipStatus {
-        val request = ApiRequest("GET", "/apps/${this.appId}/customer-transfer-ownerships/${requestId}/status")
+        val request = ApiRequest("GET", "/sdk/customer-transfer-ownerships/${requestId}/status")
 
         val response: ApiResponse?
         try {
@@ -419,7 +424,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class)
     fun getWebhookResult(purchaseToken: String, transactionId: String): MobilyWebhookResult {
-        val request = ApiRequest("POST", "/apps/${this.appId}/events/webhook-result/android")
+        val request = ApiRequest("POST", "/sdk/events/webhook-result/android")
 
         request.setData(
             JSONObject()
@@ -453,7 +458,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class)
     fun uploadMonitoring(context: Context, customerId: String?, file: File) {
-        val request = ApiRequest("POST", "/apps/${this.appId}/monitoring/upload")
+        val request = ApiRequest("POST", "/sdk/monitoring/upload")
         request.addData("platform", "android")
         if (customerId != null) {
             request.addData("customerId", customerId)
@@ -475,11 +480,31 @@ class MobilyPurchaseAPI(
     }
 
     @Throws(MobilyException::class)
-    fun isForwardingEnable(externalRef: String?): Boolean {
-        val request = ApiRequest("GET", "/apps/${this.appId}/customers/is-forwarding-enable")
-        if (externalRef != null) {
-            request.addParam("externalRef", externalRef)
+    fun isForwardingEnableByCustomerId(customerId: String): Boolean {
+        val request = ApiRequest("GET", "/sdk/customers/is-forwarding-enable")
+        request.addParam("customerId", customerId)
+        request.addParam("platform", "android")
+
+        val response: ApiResponse?
+        try {
+            response = this.helper.request(request)
+        } catch (e: Exception) {
+            throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
         }
+
+        if (!response.success) {
+            Logger.w("[isForwardingEnable] API Error: ${response.string()}")
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+        }
+
+        val jsonResponse = response.json().getJSONObject("data")
+        return jsonResponse.getBoolean("enable")
+    }
+
+    @Throws(MobilyException::class)
+    fun isForwardingEnableByExternalRef(externalRef: String): Boolean {
+        val request = ApiRequest("GET", "/sdk/customers/is-forwarding-enable")
+        request.addParam("externalRef", externalRef)
         request.addParam("environment", environment.value)
         request.addParam("platform", "android")
 

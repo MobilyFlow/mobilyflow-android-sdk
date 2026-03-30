@@ -411,17 +411,14 @@ internal class MobilyPurchaseSDKImpl(
 
     @Throws(MobilyException::class)
     fun getExternalEntitlements(): List<MobilyCustomerEntitlement> {
-        if (customer == null) {
-            throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
-        }
-
         try {
             val purchases = this.billingClient.queryPurchases()
             val transactionsToClaim = MobilyPurchaseSDKHelper.getAllPurchaseTokens(purchases)
             val entitlements = mutableListOf<MobilyCustomerEntitlement>()
 
             if (transactionsToClaim.isNotEmpty()) {
-                val entitlementsJson = this.API!!.getCustomerExternalEntitlements(customer!!.id, transactionsToClaim)
+                val entitlementsJson =
+                    this.API!!.getCustomerExternalEntitlements(transactionsToClaim, customer?.id)
 
                 for (i in 0..<entitlementsJson.length()) {
                     val jsonEntitlement = entitlementsJson.getJSONObject(i)
@@ -686,7 +683,7 @@ internal class MobilyPurchaseSDKImpl(
     }
 
     fun isForwardingEnable(externalRef: String): Boolean {
-        return this.API!!.isForwardingEnable(externalRef)
+        return this.API!!.isForwardingEnableByExternalRef(externalRef)
     }
 
     fun getCustomer(): MobilyCustomer? {
