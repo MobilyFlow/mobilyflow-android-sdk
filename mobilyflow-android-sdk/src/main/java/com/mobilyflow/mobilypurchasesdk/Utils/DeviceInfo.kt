@@ -3,7 +3,6 @@ package com.mobilyflow.mobilypurchasesdk.Utils
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Build
-import com.google.android.gms.ads.identifier.AdvertisingIdClient
 import com.google.android.gms.appset.AppSet
 import java.util.UUID
 
@@ -76,17 +75,22 @@ class DeviceInfo {
         }
 
         fun getAdid(context: Context): String? {
-            val info = AdvertisingIdClient.getAdvertisingIdInfo(context)
-            if (info.isLimitAdTrackingEnabled) {
-                return null
-            } else {
-                val id = info.id
+            // Using reflection to avoid importing `play-services-ads-identifier`, because this library will automatically
+            // add AD_ID manifest permission (we don't want that, prefer keep it optional)
+            try {
+                val clazz = Class.forName("com.google.android.gms.ads.identifier.AdvertisingIdClient")
+                val method = clazz.getMethod("getAdvertisingIdInfo", Context::class.java)
+                val info = method.invoke(null, context)
 
-                if (id == null || id == "00000000-0000-0000-0000-000000000000") {
-                    return null
-                }
+                val isLimitedTracking = info.javaClass.getMethod("isLimitAdTrackingEnabled").invoke(info) as Boolean
+                if (isLimitedTracking) return null
+
+                val id = info.javaClass.getMethod("getId").invoke(info) as? String
+                if (id == null || id == "00000000-0000-0000-0000-000000000000") return null
 
                 return id
+            } catch (e: Exception) {
+                return null
             }
         }
     }

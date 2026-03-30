@@ -245,7 +245,14 @@ class MainActivity : ComponentActivity() {
 //                val externalRef = "044209a1-8331-4bdc-9a73-8eebbe0acdaa" // gregoire-android
 //                val externalRef = "random-user-android"
 //                val externalRef = "android-user"
-                val externalRef = "gregoire-android-xx"
+                val externalRef = "gregoire-android"
+
+                Log.d("MobilyFlow", "External Entitlements (not logged): ")
+                val externalEntitlementNoLog = MobilyPurchaseSDK.getExternalEntitlements()
+                for (entitlement in externalEntitlementNoLog) {
+                    Log.d("MobilyFlow", "    ${entitlement.Product.identifier} / ${entitlement.customerId}")
+                }
+                Log.d("MobilyFlow", "==================")
 
                 Log.d("MobilyFlow", "Go login ")
                 customer = MobilyPurchaseSDK.login(externalRef)

@@ -88,6 +88,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.play.services.ads.identifier)
 
     implementation(project(":mobilyflow-android-sdk"))
 }

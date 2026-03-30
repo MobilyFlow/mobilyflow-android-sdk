@@ -39,7 +39,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.billing)
     implementation(libs.play.services.appset)
-    implementation(libs.play.services.ads.identifier)
 }
 
 mavenPublishing {
