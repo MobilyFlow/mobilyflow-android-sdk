@@ -258,7 +258,10 @@ class MainActivity : ComponentActivity() {
                 customer = MobilyPurchaseSDK.login(externalRef)
                 Log.d("MobilyFlow", "Login on customer ${customer!!.id}")
                 Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer!!.forwardNotificationEnable))
-//                Log.d("MobilyFlow", "isForwardingEnable (direct): " + (mobily!!.isForwardingEnable(externalRef)))
+                Log.d(
+                    "MobilyFlow",
+                    "isForwardingEnable (direct): " + (MobilyPurchaseSDK.isForwardingEnable(externalRef))
+                )
 
                 val products = MobilyPurchaseSDK.getProducts(null, false)
 
