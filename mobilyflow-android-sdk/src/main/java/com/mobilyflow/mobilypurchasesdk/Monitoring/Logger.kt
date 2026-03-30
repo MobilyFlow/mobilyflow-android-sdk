@@ -180,6 +180,14 @@ class Logger private constructor(
             Log.println(level, tag, finalMsg)
         }
 
+        if (CrashlyticsLogger.isCrashlyticsAvailable()) {
+            var crashlitycsMessage = "[$tag] [${getLevelLabel(level)}] $finalMsg"
+            if (tr != null) {
+                crashlitycsMessage += "\n\t" + tr.toString()
+            }
+            CrashlyticsLogger.log(crashlitycsMessage)
+        }
+
         finalMsg = Clock.System.now().toString() + " [" + getLevelLabel(level) + "] " + finalMsg + '\n'
         synchronized(this) {
             runCatching {
