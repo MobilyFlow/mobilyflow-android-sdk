@@ -34,35 +34,6 @@ abstract class Monitoring {
             this.slug = Logger.slugify(tag)
             Logger.initialize(this.baseDir!!, tag, allowLogging)
 
-            // TODO: This should be removed and is here for retro-compatibility
-
-            try {
-                val baseLogFolder = Logger.getLogFolder(null)
-                val rawLogFolder = Logger.getLogFolder(LogFolderType.RAW_LOGS)
-
-                val listFiles = baseLogFolder.listFiles()
-                if (listFiles != null) {
-                    for (oldFile in listFiles) {
-                        if (oldFile.isFile && oldFile.name.endsWith(".log")) {
-                            val newFile = File(rawLogFolder, oldFile.name)
-
-                            if (newFile.exists()) {
-                                // New file already exists, remove the old one
-                                Logger.d("Remove old log file ${oldFile.path}")
-                                newFile.delete()
-                            } else {
-                                Logger.d("Move old log file ${oldFile.path} to ${newFile.path}")
-                                Utils.moveFile(oldFile, newFile)
-                            }
-                        }
-                    }
-                }
-            } catch (error: Exception) {
-                Logger.e("Can't move log to new structure", error)
-            }
-
-            // ----------------------------------------------------------------
-
             lifecycleListener = object : AppLifecycleProvider.AppLifecycleCallbacks() {
                 override fun onActivityResumed(activity: Activity) {
                     if (checkInit(false)) {

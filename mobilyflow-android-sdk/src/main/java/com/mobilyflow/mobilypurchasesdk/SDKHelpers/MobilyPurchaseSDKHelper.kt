@@ -73,8 +73,27 @@ class MobilyPurchaseSDKHelper() {
             }
 
             if (androidProduct == null || (product.type == MobilyProductType.SUBSCRIPTION && androidOffer == null)) {
+                Logger.w("[createBillingFlowParams] options.offer = ${options?.offer?.android_offerId ?: "null"}")
+                Logger.w("[createBillingFlowParams] android_sku = ${product.android_sku}")
+                Logger.w("[createBillingFlowParams] android_basePlanId = ${product.android_basePlanId}")
                 Logger.w("[createBillingFlowParams] androidProduct = ${androidProduct?.productId ?: "null"}")
                 Logger.w("[createBillingFlowParams] androidOffer = ${androidOffer?.offerId ?: "null"}")
+
+                if (androidProduct != null) {
+                    Logger.w("[createBillingFlowParams] androidProduct.productId = ${androidProduct.productId}")
+                    Logger.w("[createBillingFlowParams] androidProduct.productType = ${androidProduct.productType}")
+
+                    val offerDetails = androidProduct.subscriptionOfferDetails
+                    if (!offerDetails.isNullOrEmpty()) {
+                        for (offerDetail in offerDetails) {
+                            Logger.w("    offerDetail.offerId = ${offerDetail.offerId}")
+                            Logger.w("    offerDetail.offerToken = ${offerDetail.offerToken}")
+                            Logger.w("    offerDetail.basePlanId = ${offerDetail.basePlanId}")
+                        }
+                    }
+
+                }
+
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.PRODUCT_UNAVAILABLE)
             }
 

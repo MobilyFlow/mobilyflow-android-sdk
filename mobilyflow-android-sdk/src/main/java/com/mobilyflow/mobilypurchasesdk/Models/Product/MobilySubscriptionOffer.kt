@@ -46,23 +46,8 @@ class MobilySubscriptionOffer(
             val referenceName = jsonOffer.getString("referenceName")
             val name = TranslationUtils.getTranslationValue(jsonOffer.optJSONArray("_translations"), "name") ?: ""
 
-            // TODO: Retro compatibility with old backend, remove it after API updates
-            var type: MobilyProductOfferType
-            var pricingMode: MobilyProductOfferPricingMode
-
-            val typeStr = jsonOffer.getString("type")
-            if (typeStr == "free_trial") {
-                type = MobilyProductOfferType.INTRODUCTORY
-                pricingMode = MobilyProductOfferPricingMode.FREE_TRIAL
-            } else if (typeStr == "recurring") {
-                type = MobilyProductOfferType.DEVELOPER_DETERMINED
-                pricingMode = MobilyProductOfferPricingMode.RECURRING
-            } else {
-                type = MobilyProductOfferType.parse(typeStr)
-                pricingMode = MobilyProductOfferPricingMode.parse(jsonOffer.getString("pricingMode"))
-            }
-            // val type = MobilyProductOfferType.parse(jsonOffer.getString("type"))
-            // val pricingMode = MobilyProductOfferPricingMode.parse(jsonOffer.getString("pricingMode"))
+            val type = MobilyProductOfferType.parse(jsonOffer.getString("type"))
+            val pricingMode = MobilyProductOfferPricingMode.parse(jsonOffer.getString("pricingMode"))
 
             val extras = jsonOffer.optJSONObject("extras")
             val android_offerId = jsonOffer.getString("android_offerId")
