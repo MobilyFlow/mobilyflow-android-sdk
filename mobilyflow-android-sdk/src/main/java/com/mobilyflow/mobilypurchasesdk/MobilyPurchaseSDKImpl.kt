@@ -207,6 +207,8 @@ internal class MobilyPurchaseSDKImpl(
     /* ******************************************************************* */
 
     fun login(externalRef: String): MobilyCustomer {
+        Logger.d("Login customer with externalRef $externalRef")
+
         // 1. Logout previous user
         this.logout()
 
@@ -254,6 +256,7 @@ internal class MobilyPurchaseSDKImpl(
             }
         }
 
+        Logger.d("Customer logged successfully")
         return customer!!
     }
 
@@ -411,17 +414,14 @@ internal class MobilyPurchaseSDKImpl(
 
     @Throws(MobilyException::class)
     fun getExternalEntitlements(): List<MobilyCustomerEntitlement> {
-        if (customer == null) {
-            throw MobilyException(MobilyException.Type.NO_CUSTOMER_LOGGED)
-        }
-
         try {
             val purchases = this.billingClient.queryPurchases()
             val transactionsToClaim = MobilyPurchaseSDKHelper.getAllPurchaseTokens(purchases)
             val entitlements = mutableListOf<MobilyCustomerEntitlement>()
 
             if (transactionsToClaim.isNotEmpty()) {
-                val entitlementsJson = this.API!!.getCustomerExternalEntitlements(customer!!.id, transactionsToClaim)
+                val entitlementsJson =
+                    this.API!!.getCustomerExternalEntitlements(transactionsToClaim, customer?.id)
 
                 for (i in 0..<entitlementsJson.length()) {
                     val jsonEntitlement = entitlementsJson.getJSONObject(i)
@@ -452,6 +452,7 @@ internal class MobilyPurchaseSDKImpl(
             if (transactionsToClaim.isNotEmpty()) {
                 val requestId = this.API!!.transferOwnershipRequest(customer!!.id, transactionsToClaim)
                 val status = this.waiter!!.waitTransferOwnershipWebhook(requestId)
+                this.syncer!!.ensureSync(true)
                 Logger.d("Request ownership transfer complete with status ${status.toString().lowercase()}")
                 return status
             } else {
@@ -686,7 +687,7 @@ internal class MobilyPurchaseSDKImpl(
     }
 
     fun isForwardingEnable(externalRef: String): Boolean {
-        return this.API!!.isForwardingEnable(externalRef)
+        return this.API!!.isForwardingEnableByExternalRef(externalRef)
     }
 
     fun getCustomer(): MobilyCustomer? {
