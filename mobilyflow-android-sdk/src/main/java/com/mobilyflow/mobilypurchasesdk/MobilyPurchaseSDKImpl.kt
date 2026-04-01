@@ -207,6 +207,8 @@ internal class MobilyPurchaseSDKImpl(
     /* ******************************************************************* */
 
     fun login(externalRef: String): MobilyCustomer {
+        Logger.d("Login customer with externalRef $externalRef")
+
         // 1. Logout previous user
         this.logout()
 
@@ -254,6 +256,7 @@ internal class MobilyPurchaseSDKImpl(
             }
         }
 
+        Logger.d("Customer logged successfully")
         return customer!!
     }
 

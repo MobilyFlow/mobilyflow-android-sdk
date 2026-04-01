@@ -98,7 +98,7 @@ class AppLifecycleProvider {
                     existingHandler?.uncaughtException(thread, throwable)
                 }
             } else {
-                Log.e("MobilyFlow", "AppLifecycleProvider already initialized")
+                Log.w("MobilyFlow", "AppLifecycleProvider already initialized")
             }
         }
 
