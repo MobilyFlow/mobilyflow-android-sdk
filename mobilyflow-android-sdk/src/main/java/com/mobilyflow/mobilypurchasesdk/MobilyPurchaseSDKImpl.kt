@@ -449,6 +449,7 @@ internal class MobilyPurchaseSDKImpl(
             if (transactionsToClaim.isNotEmpty()) {
                 val requestId = this.API!!.transferOwnershipRequest(customer!!.id, transactionsToClaim)
                 val status = this.waiter!!.waitTransferOwnershipWebhook(requestId)
+                this.syncer!!.ensureSync(true)
                 Logger.d("Request ownership transfer complete with status ${status.toString().lowercase()}")
                 return status
             } else {
