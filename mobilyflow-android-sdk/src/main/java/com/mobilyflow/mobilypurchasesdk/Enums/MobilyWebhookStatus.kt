@@ -2,7 +2,7 @@ package com.mobilyflow.mobilypurchasesdk.Enums
 
 
 enum class MobilyWebhookStatus(val value: String) {
-    NOT_SENT("NOT_SENT"),
+    PENDING("PENDING"),
     FAILED("FAILED"),
     IGNORED("IGNORED"),
     SUCCESS("SUCCESS");
@@ -10,8 +10,8 @@ enum class MobilyWebhookStatus(val value: String) {
     companion object {
         // TODO: Retro-compatibility fallback
         private val legacyMap: Map<String, MobilyWebhookStatus> = mapOf(
-            "not-sent" to NOT_SENT,
-            "pending" to NOT_SENT,
+            "not-sent" to PENDING,
+            "pending" to PENDING,
             "failed" to FAILED,
             "error" to FAILED,
             "ignored" to IGNORED,
