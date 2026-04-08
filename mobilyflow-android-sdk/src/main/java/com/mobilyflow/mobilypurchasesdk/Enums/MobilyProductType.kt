@@ -5,6 +5,11 @@ enum class MobilyProductType(val value: String) {
     SUBSCRIPTION("SUBSCRIPTION");
 
     companion object {
+        private val legacyMap: Map<String, MobilyProductType> = mapOf(
+            "one_time" to ONE_TIME,
+            "subscription" to SUBSCRIPTION,
+        )
+
         fun parse(value: String): MobilyProductType {
             for (it in entries) {
                 if (it.value == value) {
@@ -13,10 +18,9 @@ enum class MobilyProductType(val value: String) {
             }
 
             // TODO: Retro-compatibility fallback
-            if (value == "one_time") {
-                return ONE_TIME
-            } else if (value == "subscription") {
-                return SUBSCRIPTION
+            val legacy = legacyMap[value]
+            if (legacy != null) {
+                return legacy
             }
             // ----------------------------------
 

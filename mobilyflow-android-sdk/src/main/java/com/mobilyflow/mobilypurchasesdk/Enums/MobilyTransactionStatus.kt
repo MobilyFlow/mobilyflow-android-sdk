@@ -6,6 +6,12 @@ enum class MobilyTransactionStatus(val value: String) {
     REFUNDED("REFUNDED");
 
     companion object {
+        private val legacyMap: Map<String, MobilyTransactionStatus> = mapOf(
+            "success" to SUCCESS,
+            "billing-error" to BILLING_ERROR,
+            "refunded" to REFUNDED,
+        )
+
         fun parse(value: String): MobilyTransactionStatus {
             for (it in entries) {
                 if (it.value == value) {
@@ -14,12 +20,9 @@ enum class MobilyTransactionStatus(val value: String) {
             }
 
             // TODO: Retro-compatibility fallback
-            if (value == "success") {
-                return SUCCESS
-            } else if (value == "billing-error") {
-                return BILLING_ERROR
-            } else if (value == "refunded") {
-                return REFUNDED
+            val legacy = legacyMap[value]
+            if (legacy != null) {
+                return legacy
             }
             // ----------------------------------
 
