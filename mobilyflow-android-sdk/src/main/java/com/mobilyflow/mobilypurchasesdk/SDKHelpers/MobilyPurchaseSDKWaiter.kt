@@ -22,14 +22,14 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
         }
 
         var retry = 0
-        var result = MobilyWebhookResult(MobilyWebhookStatus.PENDING, null)
+        var result = MobilyWebhookResult(MobilyWebhookStatus.NOT_SENT, null)
 
         Logger.d("Wait webhook for ${purchase.orderId} (purchaseToken: ${purchase.purchaseToken})")
 
-        while (result.status == MobilyWebhookStatus.PENDING) {
+        while (result.status == MobilyWebhookStatus.NOT_SENT) {
             result = this.API.getWebhookResult(purchase.purchaseToken, purchase.orderId!!)
 
-            if (result.status == MobilyWebhookStatus.PENDING) {
+            if (result.status == MobilyWebhookStatus.NOT_SENT) {
                 // Exit the wait function after 1 minute
                 if (startTime + 60000 < System.currentTimeMillis()) {
                     Logger.e("Webhook still pending after 1 minutes (The user has probably paid without being credited)")
@@ -44,7 +44,7 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
 
         Logger.d("Webhook wait completed (${result.status})")
 
-        if (result.status == MobilyWebhookStatus.ERROR) {
+        if (result.status == MobilyWebhookStatus.FAILED) {
             throw MobilyPurchaseException(MobilyPurchaseException.Type.WEBHOOK_FAILED)
         }
 

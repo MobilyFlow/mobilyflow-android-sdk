@@ -6,7 +6,7 @@ enum class MobilyProductOfferType(val value: String) {
 
     companion object {
         fun parse(value: String): MobilyProductOfferType {
-            for (it in MobilyProductOfferType.values()) {
+            for (it in entries) {
                 if (it.value == value) {
                     return it
                 }

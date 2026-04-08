@@ -30,7 +30,7 @@ enum class PeriodUnit(val value: String) {
         }
 
         fun parse(value: String): PeriodUnit {
-            for (it in PeriodUnit.values()) {
+            for (it in entries) {
                 if (it.value == value) {
                     return it
                 }
