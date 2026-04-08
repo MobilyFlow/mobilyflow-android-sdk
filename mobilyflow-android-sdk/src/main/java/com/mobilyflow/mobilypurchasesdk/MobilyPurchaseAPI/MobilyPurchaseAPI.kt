@@ -408,10 +408,6 @@ class MobilyPurchaseAPI(
 
         if (response.success) {
             val jsonResponse = response.json().getJSONObject("data")
-            val statusStr = jsonResponse.getString("status").uppercase()
-            if (statusStr == "ERROR") {
-                throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_FAILED)
-            }
             return MobilyTransferOwnershipStatus.parse(jsonResponse.getString("status"))
         } else {
             Logger.w("[getTransferRequestStatus] API Error: ${response.string()}")

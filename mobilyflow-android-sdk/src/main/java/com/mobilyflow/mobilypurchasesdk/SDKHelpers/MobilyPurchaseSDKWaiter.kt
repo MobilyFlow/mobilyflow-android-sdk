@@ -68,6 +68,8 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
 
                 Thread.sleep(Utils.calcWaitWebhookTime(retry))
                 retry++
+            } else if (result == MobilyTransferOwnershipStatus.ERROR) {
+                throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_FAILED)
             }
         }
 
