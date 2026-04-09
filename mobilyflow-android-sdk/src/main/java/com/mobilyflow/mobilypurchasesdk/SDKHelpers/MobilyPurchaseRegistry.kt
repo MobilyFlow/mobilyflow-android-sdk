@@ -4,6 +4,7 @@ import com.android.billingclient.api.BillingClient.ProductType
 import com.android.billingclient.api.ProductDetails
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientException
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductType
 import com.mobilyflow.mobilypurchasesdk.Monitoring.Logger
 import org.json.JSONArray
 
@@ -31,10 +32,10 @@ abstract class MobilyPurchaseRegistry {
 
                 for (i in 0..<jsonProducts.length()) {
                     val sku = jsonProducts.getJSONObject(i).getString("android_sku")
-                    val type = jsonProducts.getJSONObject(i).getString("type")
+                    val type = MobilyProductType.parse(jsonProducts.getJSONObject(i).getString("type"))
 
                     if (sku.isNotEmpty() && !skuToProduct.containsKey(sku)) {
-                        if (type == "one_time") {
+                        if (type == MobilyProductType.ONE_TIME) {
                             if (!iapIds.contains(sku)) {
                                 iapIds.add(sku)
                             }
