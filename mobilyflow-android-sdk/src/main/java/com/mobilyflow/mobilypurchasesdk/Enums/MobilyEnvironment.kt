@@ -7,7 +7,7 @@ enum class MobilyEnvironment(val value: String) {
 
     companion object {
         fun parse(value: String): MobilyEnvironment {
-            for (it in MobilyEnvironment.values()) {
+            for (it in entries) {
                 if (it.value == value) {
                     return it
                 }

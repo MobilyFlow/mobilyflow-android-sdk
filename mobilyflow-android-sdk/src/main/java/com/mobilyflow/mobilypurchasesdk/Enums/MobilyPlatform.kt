@@ -6,7 +6,7 @@ enum class MobilyPlatform(val value: String) {
 
     companion object {
         fun parse(value: String): MobilyPlatform {
-            for (it in MobilyPlatform.values()) {
+            for (it in entries) {
                 if (it.value == value) {
                     return it
                 }

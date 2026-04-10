@@ -44,7 +44,7 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
 
         Logger.d("Webhook wait completed (${result.status})")
 
-        if (result.status == MobilyWebhookStatus.ERROR) {
+        if (result.status == MobilyWebhookStatus.FAILED) {
             throw MobilyPurchaseException(MobilyPurchaseException.Type.WEBHOOK_FAILED)
         }
 
@@ -53,14 +53,14 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
 
     @Throws(MobilyTransferOwnershipException::class)
     fun waitTransferOwnershipWebhook(requestId: String): MobilyTransferOwnershipStatus {
-        var result = MobilyTransferOwnershipStatus.PENDING
+        var status = MobilyTransferOwnershipStatus.PENDING
         val startTime = System.currentTimeMillis()
         var retry = 0
 
-        while (result == MobilyTransferOwnershipStatus.PENDING) {
-            result = this.API.getTransferRequestStatus(requestId)
+        while (status == MobilyTransferOwnershipStatus.PENDING) {
+            status = this.API.getTransferRequestStatus(requestId)
 
-            if (result == MobilyTransferOwnershipStatus.PENDING) {
+            if (status == MobilyTransferOwnershipStatus.PENDING) {
                 // Exit the wait function after 1 minute
                 if (startTime + 60000 < System.currentTimeMillis()) {
                     throw MobilyTransferOwnershipException(MobilyTransferOwnershipException.Type.WEBHOOK_NOT_PROCESSED)
@@ -71,6 +71,10 @@ class MobilyPurchaseSDKWaiter(val API: MobilyPurchaseAPI, val diagnostics: Mobil
             }
         }
 
-        return result
+        if (status == MobilyTransferOwnershipStatus.ERROR) {
+            throw MobilyPurchaseException(MobilyPurchaseException.Type.WEBHOOK_FAILED)
+        }
+
+        return status
     }
 }

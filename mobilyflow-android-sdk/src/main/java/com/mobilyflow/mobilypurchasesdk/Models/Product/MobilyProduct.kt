@@ -1,5 +1,6 @@
 package com.mobilyflow.mobilypurchasesdk.Models.Product
 
+import android.util.Log
 import com.android.billingclient.api.ProductDetails.RecurrenceMode
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductOfferType
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyProductStatus
@@ -90,6 +91,7 @@ class MobilyProduct(
                     isMultiQuantity = jsonProduct.optBoolean("isMultiQuantity"),
                 )
             } else {
+                Log.e("MobilyFlow", "Ou là -> ${androidProduct != null}")
                 val periodCount: Int
                 val periodUnit: PeriodUnit
                 var introductoryOffer: MobilySubscriptionOffer? = null
