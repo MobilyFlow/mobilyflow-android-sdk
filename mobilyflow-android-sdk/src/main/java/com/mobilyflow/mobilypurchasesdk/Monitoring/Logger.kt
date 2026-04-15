@@ -2,10 +2,9 @@ package com.mobilyflow.mobilypurchasesdk.Monitoring
 
 import android.app.Activity
 import android.util.Log
-import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.todayIn
+import kotlinx.datetime.toLocalDateTime
 import java.io.BufferedOutputStream
 import java.io.Closeable
 import java.io.File
@@ -14,6 +13,8 @@ import java.text.Normalizer
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 enum class LogFolderType(val value: String) {
     RAW_LOGS("raw"),
@@ -108,8 +109,9 @@ class Logger private constructor(
      *  1. Close the stream & create a new one if we are on a new day
      *  2. Remove old log file, keeping only files from last 5 days
      */
+    @OptIn(ExperimentalTime::class)
     private fun ensureFileRotation() {
-        val nowDate = Clock.System.todayIn(TimeZone.UTC)
+        val nowDate = Clock.System.now().toLocalDateTime(TimeZone.UTC).date
         if (stream == null || nowDate.toEpochDays() > lastWritingDate!!.toEpochDays()) {
             // Need to rotate
 
@@ -168,6 +170,7 @@ class Logger private constructor(
     }
 
 
+    @OptIn(ExperimentalTime::class)
     fun log(level: Int, msg: String, tr: Throwable? = null) {
         ensureFileRotation()
 
@@ -188,7 +191,8 @@ class Logger private constructor(
             CrashlyticsLogger.log(crashlitycsMessage)
         }
 
-        finalMsg = Clock.System.now().toString() + " [" + getLevelLabel(level) + "] " + finalMsg + '\n'
+        finalMsg = Clock.System.now().toLocalDateTime(TimeZone.UTC)
+            .toString() + " [" + getLevelLabel(level) + "] " + finalMsg + '\n'
         synchronized(this) {
             runCatching {
                 stream!!.write(finalMsg.toByteArray())
@@ -236,8 +240,9 @@ class Logger private constructor(
             logger?.e(msg, tr)
         }
 
+        @OptIn(ExperimentalTime::class)
         internal fun getLogFileName(slug: String, date: LocalDate? = null): String {
-            val dateStr = date?.toString() ?: Clock.System.todayIn(TimeZone.UTC).toString()
+            val dateStr = date?.toString() ?: Clock.System.now().toLocalDateTime(TimeZone.UTC).date.toString()
             return slug + "_" + dateStr + ".log"
         }
 

@@ -34,6 +34,7 @@ android {
 }
 
 dependencies {
+    // TODO: Use version range implementation("org.jetbrains.kotlinx:kotlinx-datetime:[0.6.0,)")
     implementation(libs.kotlinx.collections.immutable)
     implementation(libs.kotlinx.datetime)
     implementation(libs.okhttp)

@@ -17,7 +17,8 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 import java.util.Locale
-import kotlinx.datetime.Instant
+import kotlin.time.ExperimentalTime
+import kotlin.time.Instant
 import java.text.NumberFormat as LegacyNumberFormat
 import java.util.Currency as LegacyCurrency
 
@@ -84,6 +85,7 @@ abstract class Utils {
             }
         }
 
+        @OptIn(ExperimentalTime::class)
         fun parseDate(isoDate: String): LocalDateTime {
             return Instant.parse(isoDate).toLocalDateTime(TimeZone.UTC)
         }

@@ -8,7 +8,7 @@ class MapTransactionItem(val sku: String, val purchaseToken: String, val type: M
         val result = JSONObject()
         result.put("sku", sku)
         result.put("purchaseToken", purchaseToken)
-        result.put("type", type.name.lowercase())
+        result.put("type", type.value)
         return result
     }
 }

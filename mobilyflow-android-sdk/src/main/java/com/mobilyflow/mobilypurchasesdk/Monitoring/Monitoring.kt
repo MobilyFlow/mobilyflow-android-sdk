@@ -3,13 +3,12 @@ package com.mobilyflow.mobilypurchasesdk.Monitoring
 import android.app.Activity
 import android.content.Context
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
-import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
-import kotlinx.datetime.todayIn
+import kotlinx.datetime.toLocalDateTime
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -18,6 +17,8 @@ import java.io.FileOutputStream
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 abstract class Monitoring {
     companion object {
@@ -72,6 +73,7 @@ abstract class Monitoring {
          * startDate and toDate both default to now() if they are null.
          * If clearLogs is true, remove exported logfiles
          */
+        @OptIn(ExperimentalTime::class)
         private fun exportLogs(
             fromDate: LocalDate? = null,
             toDate: LocalDate? = null,
@@ -79,8 +81,8 @@ abstract class Monitoring {
         ): File {
             checkInit()
 
-            var from = fromDate ?: Clock.System.todayIn(TimeZone.UTC)
-            val to = toDate ?: Clock.System.todayIn(TimeZone.UTC)
+            var from = fromDate ?: Clock.System.now().toLocalDateTime(TimeZone.UTC).date
+            val to = toDate ?: Clock.System.now().toLocalDateTime(TimeZone.UTC).date
 
             val buffer = ByteArray(8192)
             var bytesRead: Int
@@ -151,8 +153,10 @@ abstract class Monitoring {
          * If sinceDays is 0, export only today, if it 1 export also yesterday, etc...
          * If clearLogs is true, remove exported logfiles
          */
+        @OptIn(ExperimentalTime::class)
         private fun exportLogs(sinceDays: Int = 0, clearLogs: Boolean = false): File {
-            val fromDate = Clock.System.todayIn(TimeZone.UTC).minus(sinceDays.toLong(), DateTimeUnit.DAY)
+            val fromDate =
+                Clock.System.now().toLocalDateTime(TimeZone.UTC).date.minus(sinceDays.toLong(), DateTimeUnit.DAY)
             return exportLogs(fromDate, null, clearLogs)
         }
 
