@@ -39,7 +39,12 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
-        create("release") { }
+        create("release") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
     }
 
     buildFeatures {
