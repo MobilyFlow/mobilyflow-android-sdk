@@ -91,6 +91,7 @@ internal class MobilyPurchaseSDKImpl(
                         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && !purchases.isNullOrEmpty()) {
                             try {
                                 for (purchase in purchases) {
+                                    Logger.d("billingClient detect out-of-app purchase ${purchase.purchaseToken}")
                                     finishPurchase(purchase, true)
                                 }
                             } catch (e: Exception) {
@@ -224,12 +225,7 @@ internal class MobilyPurchaseSDKImpl(
             try {
                 val purchases = this.billingClient.queryPurchases()
 
-                for (it in purchases) {
-                    if (!it.purchase.isAcknowledged) {
-                        finishPurchase(it.purchase, false, null)
-                    }
-                }
-
+                // Map transaction first
                 val transactionsToMap = MobilyPurchaseSDKHelper.getTransactionsToMap(
                     loginResponse.platformOriginalTransactionIds,
                     purchases
@@ -240,6 +236,14 @@ internal class MobilyPurchaseSDKImpl(
                         this.API!!.mapTransactions(this.customer!!.id, transactionsToMap)
                     } catch (e: Exception) {
                         Logger.e("Map transactions error", e)
+                    }
+                }
+
+                // Finish transaction after mapping (so waitWebhook works even if pending notification was
+                // "waiting-customer-mapping", as mapTransactions resolve it)
+                for (it in purchases) {
+                    if (!it.purchase.isAcknowledged) {
+                        finishPurchase(it.purchase, false, null)
                     }
                 }
             } catch (e: BillingClientException) {
