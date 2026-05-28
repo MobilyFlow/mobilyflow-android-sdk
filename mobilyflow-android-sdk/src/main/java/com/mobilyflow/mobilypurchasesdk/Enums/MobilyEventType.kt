@@ -18,39 +18,12 @@ enum class MobilyEventType(val value: String) {
     TRANSFER_OWNERSHIP_ACKNOWLEDGED("TRANSFER_OWNERSHIP_ACKNOWLEDGED");
 
     companion object {
-        // TODO: Retro-compatibility fallback
-        private val legacyMap: Map<String, MobilyEventType> = mapOf(
-            "test" to TEST,
-            "purchase" to PURCHASED,
-            "consumed" to CONSUMED,
-            "renew" to RENEWED,
-            "expired" to EXPIRED,
-            "revoked" to REVOKED,
-            "refunded" to REFUNDED,
-            "subscription-change-renew-product" to RENEW_PRODUCT_CHANGED,
-            "subscription-upgrade" to UPGRADED,
-            "subscription-extended" to EXTENDED,
-            "change-auto-renew" to AUTO_RENEW_CHANGED,
-            "change-pause-status" to PAUSE_STATUS_CHANGED,
-            "grace-period-resolved" to GRACE_PERIOD_RESOLVED,
-            "transfer-ownership-request" to TRANSFER_OWNERSHIP_REQUESTED,
-            "transfer-ownership-acknowledged" to TRANSFER_OWNERSHIP_ACKNOWLEDGED,
-        )
-
         fun parse(value: String): MobilyEventType {
             for (it in entries) {
                 if (it.value == value) {
                     return it
                 }
             }
-
-            // TODO: Retro-compatibility fallback
-            val legacy = legacyMap[value]
-            if (legacy != null) {
-                return legacy
-            }
-            // -----------------------------
-
             throw IllegalArgumentException("Unknown MobilyEventType: $value")
         }
     }
