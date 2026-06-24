@@ -33,7 +33,7 @@ class MobilyPurchaseAPI(
 
     val helper: ApiHelper = ApiHelper(
         API_URL, mapOf(
-            "Authorization" to "ApiKey $apiKey",
+            "X-API-Key" to apiKey,
             "platform" to "android",
             "sdk_version" to MOBILYFLOW_SDK_VERSION
         )
