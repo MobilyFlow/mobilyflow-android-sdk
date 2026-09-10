@@ -104,6 +104,11 @@ class MobilyPurchaseSDKHelper() {
                 productDetailsBuilder.setOfferToken(androidOffer.offerToken)
             }
 
+            // Purchase token of the subscription being replaced, when this purchase is a replacement.
+            // SubscriptionProductReplacementParams only carries the item-level replacement mode: the store
+            // still needs the old purchase token, at BillingFlowParams level, to resolve which purchase to replace.
+            var oldPurchaseToken: String? = null
+
             // Manage already purchased
             if (product.type == MobilyProductType.ONE_TIME) {
                 if (!product.oneTime!!.isConsumable) {
@@ -165,6 +170,14 @@ class MobilyPurchaseSDKHelper() {
                     )
 
                     productDetailsBuilder.setSubscriptionProductReplacementParams(replacement.build())
+
+                    // isManagedByThisStoreAccount above guarantees the purchase was found on this store
+                    // account, so lastPlatformTxOriginalId holds its purchaseToken.
+                    oldPurchaseToken = entitlement.Subscription.lastPlatformTxOriginalId
+                    if (oldPurchaseToken == null) {
+                        Logger.w("[createBillingFlowParams] No purchase token for the subscription to replace (${entitlement.Product.android_sku})")
+                        throw MobilyPurchaseException(MobilyPurchaseException.Type.NOT_MANAGED_BY_THIS_STORE_ACCOUNT)
+                    }
                 } else {
                     val storeAccountTransaction = syncer.getStoreAccountTransaction(product.android_sku)
 
@@ -175,10 +188,21 @@ class MobilyPurchaseSDKHelper() {
                 }
             }
 
-            return BillingFlowParams.newBuilder()
+            val builder = BillingFlowParams.newBuilder()
                 .setProductDetailsParamsList(listOf(productDetailsBuilder.build()))
                 .setObfuscatedAccountId(customerId)
-                .build()
+
+            if (oldPurchaseToken != null) {
+                // Never call setSubscriptionReplacementMode here: the library rejects the flow when the
+                // replacement mode is set both on SubscriptionUpdateParams and on ProductDetailsParams.
+                builder.setSubscriptionUpdateParams(
+                    BillingFlowParams.SubscriptionUpdateParams.newBuilder()
+                        .setOldPurchaseToken(oldPurchaseToken)
+                        .build()
+                )
+            }
+
+            return builder.build()
         }
     }
 }
