@@ -541,7 +541,20 @@ internal class MobilyPurchaseSDKImpl(
                 throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
             }
 
-            val event = finishPurchase(purchases[0], false, product)
+            val purchase = purchases[0]
+
+            // Trigger the webhook right away instead of waiting for the Google RTDN (best-effort: the RTDN is the
+            // source of truth and the backend de-duplicates both, so a failure here only costs latency)
+            if (purchase.purchaseState == Purchase.PurchaseState.PURCHASED && purchase.orderId != null) {
+                Logger.d("Force webhook for ${purchase.orderId}")
+                try {
+                    API!!.forceWebhook(purchase.purchaseToken, purchase.orderId!!, product.id)
+                } catch (e: Exception) {
+                    Logger.w("Force webhook error: ${e.message}")
+                }
+            }
+
+            val event = finishPurchase(purchase, false, product)
             if (event == null) {
                 throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
             }

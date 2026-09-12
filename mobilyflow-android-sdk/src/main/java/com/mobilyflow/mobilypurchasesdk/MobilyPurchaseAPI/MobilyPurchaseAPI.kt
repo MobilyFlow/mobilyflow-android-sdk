@@ -416,6 +416,33 @@ class MobilyPurchaseAPI(
     }
 
     /**
+     * Force the webhook to be triggered (before the Google RTDN is received)
+     */
+    @Throws(MobilyException::class)
+    fun forceWebhook(purchaseToken: String, orderId: String, productId: String) {
+        val request = ApiRequest("POST", "/sdk/platform-notifications/force-webhook/android")
+
+        request.setData(
+            JSONObject()
+                .put("platformTxId", orderId)
+                .put("purchaseToken", purchaseToken)
+                .put("productId", productId)
+        )
+
+        val response: ApiResponse?
+        try {
+            response = this.helper.request(request)
+        } catch (e: Exception) {
+            throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
+        }
+
+        if (!response.success) {
+            Logger.w("[forceWebhook] API Error: ${response.string()}")
+            throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
+        }
+    }
+
+    /**
      * Get webhook status from transactionID
      */
     @Throws(MobilyException::class)
