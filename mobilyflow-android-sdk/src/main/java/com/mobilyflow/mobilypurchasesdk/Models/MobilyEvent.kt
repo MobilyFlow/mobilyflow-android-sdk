@@ -22,7 +22,7 @@ class MobilyEvent(
     val itemId: String?,
     val customerId: String?,
     val type: MobilyEventType,
-    val extras: JSONObject?,
+    val details: JSONObject?,
     val platform: MobilyPlatform,
     val isSandbox: Boolean,
 
@@ -70,7 +70,7 @@ class MobilyEvent(
                 itemId = jsonEvent.optStringNull("itemId"),
                 customerId = jsonEvent.optStringNull("customerId"),
                 type = MobilyEventType.parse(jsonEvent.getString("type")),
-                extras = jsonEvent.optJSONObject("extras"),
+                details = jsonEvent.optJSONObject("details"),
                 platform = MobilyPlatform.parse(jsonEvent.getString("platform")),
                 isSandbox = jsonEvent.getBoolean("isSandbox"),
 

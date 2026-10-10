@@ -257,10 +257,10 @@ class MainActivity : ComponentActivity() {
                 Log.d("MobilyFlow", "Go login ")
                 customer = MobilyPurchaseSDK.login(externalRef)
                 Log.d("MobilyFlow", "Login on customer ${customer!!.id}")
-                Log.d("MobilyFlow", "isForwardingEnable (customer): " + (customer!!.forwardNotificationEnable))
+                Log.d("MobilyFlow", "isForwardingEnabled (customer): " + (customer!!.hasForwardingEnabled))
                 Log.d(
                     "MobilyFlow",
-                    "isForwardingEnable (direct): " + (MobilyPurchaseSDK.isForwardingEnable(externalRef))
+                    "isForwardingEnabled (direct): " + (MobilyPurchaseSDK.isForwardingEnabled(externalRef))
                 )
 
                 val products = MobilyPurchaseSDK.getProducts(null, false)
@@ -311,7 +311,7 @@ class MainActivity : ComponentActivity() {
                         "Product android_basePlanId: ${product.android_basePlanId}"
                     )
                     Log.d("AppForge", "Product type: ${product.type}")
-                    Log.d("AppForge", "Product extras: ${product.extras}")
+                    Log.d("AppForge", "Product metadata: ${product.metadata}")
 
                     Log.d("AppForge", "Product price: ${product.price}")
                     Log.d("AppForge", "Product currency: ${product.currencyCode}")

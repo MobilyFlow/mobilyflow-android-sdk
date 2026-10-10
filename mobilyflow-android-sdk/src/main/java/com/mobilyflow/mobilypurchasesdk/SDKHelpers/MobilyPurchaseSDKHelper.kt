@@ -134,7 +134,7 @@ class MobilyPurchaseSDKHelper() {
                     }
 
                     // If auto-renew is disabled, allow re-purchase in app
-                    if (entitlement.Subscription.autoRenewEnable) {
+                    if (entitlement.Subscription.isAutoRenewing) {
                         val currentRenewProduct = entitlement.Subscription.RenewProduct ?: entitlement.Product
                         val currentRenewSku = currentRenewProduct.android_sku
                         val currentRenewBasePlan = currentRenewProduct.android_basePlanId

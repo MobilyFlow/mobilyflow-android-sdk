@@ -29,7 +29,7 @@ class MobilyProduct(
     val ios_sku: String?,
 
     val type: MobilyProductType,
-    val extras: JSONObject?,
+    val metadata: JSONObject?,
 
     val priceMillis: Int,
     val currencyCode: String,
@@ -190,7 +190,7 @@ class MobilyProduct(
                 ios_sku = jsonProduct.optStringNull("ios_sku"),
 
                 type = type,
-                extras = jsonProduct.optJSONObject("extras"),
+                metadata = jsonProduct.optJSONObject("metadata"),
 
                 name = TranslationUtils.getTranslationValue(jsonProduct.optJSONArray("_translations"), "name") ?: "",
                 description = TranslationUtils.getTranslationValue(

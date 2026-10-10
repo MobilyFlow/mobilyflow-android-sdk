@@ -176,9 +176,9 @@ object MobilyPurchaseSDK {
 
     @JvmStatic
     @Throws(MobilyException::class)
-    fun isForwardingEnable(externalRef: String): Boolean {
+    fun isForwardingEnabled(externalRef: String): Boolean {
         ensureInit()
-        return instance!!.isForwardingEnable(externalRef)
+        return instance!!.isForwardingEnabled(externalRef)
     }
 
     @JvmStatic

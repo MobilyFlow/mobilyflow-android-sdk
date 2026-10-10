@@ -16,8 +16,8 @@ class MobilySubscription(
     val updatedAt: LocalDateTime,
     val productId: String,
     val productOfferId: String?,
-    val startDate: LocalDateTime,
-    val endDate: LocalDateTime,
+    val startsAt: LocalDateTime,
+    val endsAt: LocalDateTime,
     val platform: MobilyPlatform,
     val renewProductId: String?,
     val renewProductOfferId: String?,
@@ -25,14 +25,14 @@ class MobilySubscription(
     val regularPriceMillis: Int,
     val renewPriceMillis: Int,
     val currency: String,
-    val offerExpiryDate: LocalDateTime?,
+    val offerExpiresAt: LocalDateTime?,
     val offerRemainingCycle: Int,
-    val autoRenewEnable: Boolean,
+    val isAutoRenewing: Boolean,
     val isInGracePeriod: Boolean,
     val isInBillingIssue: Boolean,
     val hasPauseScheduled: Boolean,
     val isPaused: Boolean,
-    val resumeDate: LocalDateTime?,
+    val resumesAt: LocalDateTime?,
     val isExpiredOrRevoked: Boolean,
 
     val isManagedByThisStoreAccount: Boolean,
@@ -49,7 +49,7 @@ class MobilySubscription(
             storeAccountTransactions: List<BillingClientWrapper.PurchaseWithType>?
         ): MobilySubscription {
             val platform = MobilyPlatform.parse(jsonSubscription.getString("platform"))
-            var autoRenewEnable = jsonSubscription.getBoolean("autoRenewEnable")
+            var isAutoRenewing = jsonSubscription.getBoolean("isAutoRenewing")
 
             var lastPlatformTxOriginalId = jsonSubscription.optStringNull("lastPlatformTxOriginalId")
             var storeAccountTx: Purchase? = null
@@ -61,7 +61,7 @@ class MobilySubscription(
                 lastPlatformTxOriginalId = storeAccountTx?.purchaseToken
 
                 if (storeAccountTx != null) {
-                    autoRenewEnable = storeAccountTx.isAutoRenewing
+                    isAutoRenewing = storeAccountTx.isAutoRenewing
                 }
             }
 
@@ -104,8 +104,8 @@ class MobilySubscription(
                 updatedAt = Utils.parseDate(jsonSubscription.getString("updatedAt")),
                 productId = jsonSubscription.getString("productId"),
                 productOfferId = jsonSubscription.optStringNull("productOfferId"),
-                startDate = Utils.parseDate(jsonSubscription.getString("startDate")),
-                endDate = Utils.parseDate(jsonSubscription.getString("endDate")),
+                startsAt = Utils.parseDate(jsonSubscription.getString("startsAt")),
+                endsAt = Utils.parseDate(jsonSubscription.getString("endsAt")),
                 platform = platform,
                 renewProductId = jsonSubscription.optStringNull("renewProductId"),
                 renewProductOfferId = jsonSubscription.optStringNull("renewProductOfferId"),
@@ -113,14 +113,14 @@ class MobilySubscription(
                 regularPriceMillis = jsonSubscription.getInt("regularPriceMillis"),
                 renewPriceMillis = jsonSubscription.getInt("renewPriceMillis"),
                 currency = jsonSubscription.getString("currency"),
-                offerExpiryDate = Utils.parseDateOpt(jsonSubscription.optStringNull("offerExpiryDate")),
+                offerExpiresAt = Utils.parseDateOpt(jsonSubscription.optStringNull("offerExpiresAt")),
                 offerRemainingCycle = jsonSubscription.optInt("offerRemainingCycle"),
-                autoRenewEnable = autoRenewEnable,
+                isAutoRenewing = isAutoRenewing,
                 isInGracePeriod = jsonSubscription.getBoolean("isInGracePeriod"),
                 isInBillingIssue = jsonSubscription.getBoolean("isInBillingIssue"),
                 hasPauseScheduled = jsonSubscription.getBoolean("hasPauseScheduled"),
                 isPaused = jsonSubscription.getBoolean("isPaused"),
-                resumeDate = Utils.parseDateOpt(jsonSubscription.optStringNull("resumeDate")),
+                resumesAt = Utils.parseDateOpt(jsonSubscription.optStringNull("resumesAt")),
                 isExpiredOrRevoked = jsonSubscription.getBoolean("isExpiredOrRevoked"),
 
                 isManagedByThisStoreAccount = storeAccountTx != null,

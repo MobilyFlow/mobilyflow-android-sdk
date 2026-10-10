@@ -10,7 +10,7 @@ class MobilySubscriptionGroup(
     val referenceName: String,
     val name: String,
     val description: String,
-    val extras: JSONObject?,
+    val metadata: JSONObject?,
     var Products: List<MobilyProduct>
 ) {
     companion object {
@@ -27,7 +27,7 @@ class MobilySubscriptionGroup(
                     jsonGroup.optJSONArray("_translations"),
                     "description"
                 ) ?: "",
-                extras = jsonGroup.optJSONObject("extras"),
+                metadata = jsonGroup.optJSONObject("metadata"),
                 Products = arrayListOf(),
             )
 

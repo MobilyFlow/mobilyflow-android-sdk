@@ -9,7 +9,7 @@ class MobilyCustomer(
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
     val externalRef: String,
-    var forwardNotificationEnable: Boolean,
+    var hasForwardingEnabled: Boolean,
 ) {
     companion object {
         internal fun parse(json: JSONObject): MobilyCustomer {
@@ -18,7 +18,7 @@ class MobilyCustomer(
                 createdAt = Utils.parseDate(json.getString("createdAt")),
                 updatedAt = Utils.parseDate(json.getString("updatedAt")),
                 externalRef = json.getString("externalRef"),
-                forwardNotificationEnable = json.getBoolean("forwardNotificationEnable")
+                hasForwardingEnabled = json.getBoolean("hasForwardingEnabled")
             )
         }
     }

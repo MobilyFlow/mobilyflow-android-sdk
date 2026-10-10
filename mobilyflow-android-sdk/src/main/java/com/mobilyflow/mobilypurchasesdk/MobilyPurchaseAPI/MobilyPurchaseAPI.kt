@@ -116,7 +116,7 @@ class MobilyPurchaseAPI(
             customer = jsonResponse.getJSONObject("customer"),
             platformOriginalTransactionIds = jsonArrayToStringArray(jsonResponse.getJSONArray("platformOriginalTransactionIds")),
             entitlements = jsonResponse.getJSONArray("entitlements"),
-            haveMonitoringRequests = jsonResponse.optBoolean("haveMonitoringRequests"),
+            hasMonitoringRequests = jsonResponse.optBoolean("hasMonitoringRequests"),
         )
     }
 
@@ -503,7 +503,7 @@ class MobilyPurchaseAPI(
     }
 
     @Throws(MobilyException::class)
-    fun isForwardingEnableByCustomerId(customerId: String): Boolean {
+    fun isForwardingEnabledByCustomerId(customerId: String): Boolean {
         val request = ApiRequest("GET", "/sdk/customers/is-forwarding-enable")
         request.addParam("customerId", customerId)
         request.addParam("platform", "android")
@@ -516,12 +516,12 @@ class MobilyPurchaseAPI(
         }
 
         if (!response.success) {
-            Logger.w("[isForwardingEnable] API Error: ${response.string()}")
+            Logger.w("[isForwardingEnabled] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
         val jsonResponse = response.json().getJSONObject("data")
-        return jsonResponse.getBoolean("enable")
+        return jsonResponse.getBoolean("isEnabled")
     }
 
     @Throws(MobilyException::class)
@@ -539,11 +539,11 @@ class MobilyPurchaseAPI(
         }
 
         if (!response.success) {
-            Logger.w("[isForwardingEnable] API Error: ${response.string()}")
+            Logger.w("[isForwardingEnabled] API Error: ${response.string()}")
             throw MobilyException(MobilyException.Type.UNKNOWN_ERROR)
         }
 
         val jsonResponse = response.json().getJSONObject("data")
-        return jsonResponse.getBoolean("enable")
+        return jsonResponse.getBoolean("isEnabled")
     }
 }

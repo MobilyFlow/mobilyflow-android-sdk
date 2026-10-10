@@ -55,11 +55,11 @@ class MobilyPurchaseSDKSyncer(
 
         // Synchronized ensure a new call to ensureSync will wait the old one to finish
         synchronized(this) {
-            if (customer != null && customer!!.forwardNotificationEnable) {
+            if (customer != null && customer!!.hasForwardingEnabled) {
                 // If a customer is flag as forwarded, we double check if it's still the case (so if we disable forwarding
                 // on the backoffice, it's take effect instantly)
-                val isForwardingEnable = this.API.isForwardingEnableByCustomerId(customer!!.id)
-                customer!!.forwardNotificationEnable = isForwardingEnable
+                val isForwardingEnabled = this.API.isForwardingEnabledByCustomerId(customer!!.id)
+                customer!!.hasForwardingEnabled = isForwardingEnabled
             }
 
             if (

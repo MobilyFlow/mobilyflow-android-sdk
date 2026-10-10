@@ -252,7 +252,7 @@ internal class MobilyPurchaseSDKImpl(
         }
 
         // 4. Send monitoring if requested
-        if (loginResponse.haveMonitoringRequests) {
+        if (loginResponse.hasMonitoringRequests) {
             Executors.newSingleThreadExecutor().execute {
                 // When monitoring is requested, send 10 days
                 Logger.d("Send monitoring as requested by the server")
@@ -518,7 +518,7 @@ internal class MobilyPurchaseSDKImpl(
         val previousScreenOrientation = activity.requestedOrientation
         activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LOCKED
         try {
-            if (this.customer!!.forwardNotificationEnable) {
+            if (this.customer!!.hasForwardingEnabled) {
                 throw MobilyPurchaseException(MobilyPurchaseException.Type.CUSTOMER_FORWARDED)
             }
 
@@ -672,7 +672,7 @@ internal class MobilyPurchaseSDKImpl(
                 }
             }
 
-            if (!this.customer!!.forwardNotificationEnable) {
+            if (!this.customer!!.hasForwardingEnabled) {
                 val result = this.waiter!!.waitPurchaseWebhook(purchase)
                 if (result.event != null) {
                     event = MobilyEvent.parse(result.event, this.billingClient.queryPurchases())
@@ -703,7 +703,7 @@ internal class MobilyPurchaseSDKImpl(
         return this.billingClient.isAvailable()
     }
 
-    fun isForwardingEnable(externalRef: String): Boolean {
+    fun isForwardingEnabled(externalRef: String): Boolean {
         return this.API!!.isForwardingEnableByExternalRef(externalRef)
     }
 

@@ -28,7 +28,7 @@ class MobilySubscriptionOffer(
     val countBillingCycle: Int,
     val android_offerId: String,
     val ios_offerId: String?,
-    val extras: JSONObject?,
+    val metadata: JSONObject?,
     val status: MobilyProductStatus,
 
     val name: String,
@@ -49,7 +49,7 @@ class MobilySubscriptionOffer(
             val type = MobilyProductOfferType.parse(jsonOffer.getString("type"))
             val pricingMode = MobilyProductOfferPricingMode.parse(jsonOffer.getString("pricingMode"))
 
-            val extras = jsonOffer.optJSONObject("extras")
+            val metadata = jsonOffer.optJSONObject("metadata")
             val android_offerId = jsonOffer.getString("android_offerId")
 
             val priceMillis: Int
@@ -138,7 +138,7 @@ class MobilySubscriptionOffer(
                 countBillingCycle = countBillingCycle,
                 android_offerId = android_offerId,
                 ios_offerId = jsonOffer.optStringNull("ios_offerId"),
-                extras = extras,
+                metadata = metadata,
                 status = status,
             )
         }

@@ -28,9 +28,9 @@ class MobilyTransaction(
     val itemId: String?,
     val productOfferId: String?,
     val platform: MobilyPlatform,
-    val startDate: LocalDateTime?,
-    val endDate: LocalDateTime?,
-    val refundDate: LocalDateTime?,
+    val startsAt: LocalDateTime?,
+    val endsAt: LocalDateTime?,
+    val refundedAt: LocalDateTime?,
     val isSandbox: Boolean,
 ) {
     companion object {
@@ -68,9 +68,9 @@ class MobilyTransaction(
                 itemId = jsonTx.optStringNull("itemId"),
                 productOfferId = jsonTx.optStringNull("productOfferId"),
                 platform = platform,
-                startDate = Utils.parseDateOpt(jsonTx.optStringNull("startDate")),
-                endDate = Utils.parseDateOpt(jsonTx.optStringNull("endDate")),
-                refundDate = Utils.parseDateOpt(jsonTx.optStringNull("refundDate")),
+                startsAt = Utils.parseDateOpt(jsonTx.optStringNull("startsAt")),
+                endsAt = Utils.parseDateOpt(jsonTx.optStringNull("endsAt")),
+                refundedAt = Utils.parseDateOpt(jsonTx.optStringNull("refundedAt")),
                 isSandbox = jsonTx.getBoolean("isSandbox"),
             )
         }
