@@ -45,7 +45,7 @@ mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
 
-    coordinates("com.mobilyflow", "mobilyflow-android-sdk", "0.7.3-alpha.0")
+    coordinates("com.mobilyflow", "mobilyflow-android-sdk", "0.8.0")
 
     pom {
         name.set("MobilyFlow Android SDK")
