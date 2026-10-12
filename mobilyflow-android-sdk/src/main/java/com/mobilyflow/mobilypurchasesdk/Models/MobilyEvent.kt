@@ -4,6 +4,7 @@ import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrappe
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEnvironment
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyEventType
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyStore
 import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilyItem
 import com.mobilyflow.mobilypurchasesdk.Models.Entitlement.MobilySubscription
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
@@ -24,6 +25,11 @@ class MobilyEvent(
     val type: MobilyEventType,
     val details: JSONObject?,
     val platform: MobilyPlatform,
+    /**
+     * Store where the purchase was made (App Store or Play Store), whereas `platform` is the OS of the device.
+     * Null for purchases made before this field existed, until the backend backfill has run.
+     */
+    val store: MobilyStore?,
     val isSandbox: Boolean,
 
     val Customer: MobilyCustomer?,
@@ -72,6 +78,7 @@ class MobilyEvent(
                 type = MobilyEventType.parse(jsonEvent.getString("type")),
                 details = jsonEvent.optJSONObject("details"),
                 platform = MobilyPlatform.parse(jsonEvent.getString("platform")),
+                store = MobilyStore.parse(jsonEvent.optStringNull("store")),
                 isSandbox = jsonEvent.getBoolean("isSandbox"),
 
                 Customer = if (jsonCustomer != null) MobilyCustomer.parse(jsonCustomer) else null,

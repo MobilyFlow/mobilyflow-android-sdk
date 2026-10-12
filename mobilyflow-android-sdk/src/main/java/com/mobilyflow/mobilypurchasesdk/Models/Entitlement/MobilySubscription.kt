@@ -3,6 +3,7 @@ package com.mobilyflow.mobilypurchasesdk.Models.Entitlement
 import com.android.billingclient.api.Purchase
 import com.mobilyflow.mobilypurchasesdk.BillingClientWrapper.BillingClientWrapper
 import com.mobilyflow.mobilypurchasesdk.Enums.MobilyPlatform
+import com.mobilyflow.mobilypurchasesdk.Enums.MobilyStore
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilyProduct
 import com.mobilyflow.mobilypurchasesdk.Models.Product.MobilySubscriptionOffer
 import com.mobilyflow.mobilypurchasesdk.Utils.Utils
@@ -19,6 +20,11 @@ class MobilySubscription(
     val startsAt: LocalDateTime,
     val endsAt: LocalDateTime,
     val platform: MobilyPlatform,
+    /**
+     * Store where the purchase was made (App Store or Play Store), whereas `platform` is the OS of the device.
+     * Null for purchases made before this field existed, until the backend backfill has run.
+     */
+    val store: MobilyStore?,
     val renewProductId: String?,
     val renewProductOfferId: String?,
     val lastPriceMillis: Int,
@@ -36,7 +42,7 @@ class MobilySubscription(
     val isExpiredOrRevoked: Boolean,
 
     val isManagedByThisStoreAccount: Boolean,
-    val lastPlatformTxOriginalId: String?,
+    val lastStoreOriginalTransactionId: String?,
 
     val Product: MobilyProduct?,
     val ProductOffer: MobilySubscriptionOffer?,
@@ -51,14 +57,14 @@ class MobilySubscription(
             val platform = MobilyPlatform.parse(jsonSubscription.getString("platform"))
             var isAutoRenewing = jsonSubscription.getBoolean("isAutoRenewing")
 
-            var lastPlatformTxOriginalId = jsonSubscription.optStringNull("lastPlatformTxOriginalId")
+            var lastStoreOriginalTransactionId = jsonSubscription.optStringNull("lastStoreOriginalTransactionId")
             var storeAccountTx: Purchase? = null
 
             if (platform == MobilyPlatform.ANDROID) {
                 val relatedPurchase =
-                    Utils.getPurchaseWithSha256PurchaseToken(lastPlatformTxOriginalId, storeAccountTransactions)
+                    Utils.getPurchaseWithSha256PurchaseToken(lastStoreOriginalTransactionId, storeAccountTransactions)
                 storeAccountTx = relatedPurchase?.purchase
-                lastPlatformTxOriginalId = storeAccountTx?.purchaseToken
+                lastStoreOriginalTransactionId = storeAccountTx?.purchaseToken
 
                 if (storeAccountTx != null) {
                     isAutoRenewing = storeAccountTx.isAutoRenewing
@@ -107,6 +113,7 @@ class MobilySubscription(
                 startsAt = Utils.parseDate(jsonSubscription.getString("startsAt")),
                 endsAt = Utils.parseDate(jsonSubscription.getString("endsAt")),
                 platform = platform,
+                store = MobilyStore.parse(jsonSubscription.optStringNull("store")),
                 renewProductId = jsonSubscription.optStringNull("renewProductId"),
                 renewProductOfferId = jsonSubscription.optStringNull("renewProductOfferId"),
                 lastPriceMillis = jsonSubscription.getInt("lastPriceMillis"),
@@ -124,7 +131,7 @@ class MobilySubscription(
                 isExpiredOrRevoked = jsonSubscription.getBoolean("isExpiredOrRevoked"),
 
                 isManagedByThisStoreAccount = storeAccountTx != null,
-                lastPlatformTxOriginalId = lastPlatformTxOriginalId,
+                lastStoreOriginalTransactionId = lastStoreOriginalTransactionId,
 
                 Product = product,
                 ProductOffer = productOffer,

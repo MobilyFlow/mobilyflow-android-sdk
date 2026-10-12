@@ -172,8 +172,8 @@ class MobilyPurchaseSDKHelper() {
                     productDetailsBuilder.setSubscriptionProductReplacementParams(replacement.build())
 
                     // isManagedByThisStoreAccount above guarantees the purchase was found on this store
-                    // account, so lastPlatformTxOriginalId holds its purchaseToken.
-                    oldPurchaseToken = entitlement.Subscription.lastPlatformTxOriginalId
+                    // account, so lastStoreOriginalTransactionId holds its purchaseToken.
+                    oldPurchaseToken = entitlement.Subscription.lastStoreOriginalTransactionId
                     if (oldPurchaseToken == null) {
                         Logger.w("[createBillingFlowParams] No purchase token for the subscription to replace (${entitlement.Product.android_sku})")
                         throw MobilyPurchaseException(MobilyPurchaseException.Type.NOT_MANAGED_BY_THIS_STORE_ACCOUNT)

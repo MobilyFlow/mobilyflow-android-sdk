@@ -114,7 +114,7 @@ class MobilyPurchaseAPI(
         val jsonResponse = response.json().getJSONObject("data")
         return LoginResponse(
             customer = jsonResponse.getJSONObject("customer"),
-            platformOriginalTransactionIds = jsonArrayToStringArray(jsonResponse.getJSONArray("platformOriginalTransactionIds")),
+            storeOriginalTransactionIds = jsonArrayToStringArray(jsonResponse.getJSONArray("storeOriginalTransactionIds")),
             entitlements = jsonResponse.getJSONArray("entitlements"),
             hasMonitoringRequests = jsonResponse.optBoolean("hasMonitoringRequests"),
         )
@@ -424,7 +424,7 @@ class MobilyPurchaseAPI(
 
         request.setData(
             JSONObject()
-                .put("platformTxId", orderId)
+                .put("storeId", orderId)
                 .put("purchaseToken", purchaseToken)
                 .put("productId", productId)
         )
@@ -452,7 +452,7 @@ class MobilyPurchaseAPI(
         request.setData(
             JSONObject()
                 .put("signedTransaction", purchaseToken)
-                .put("platformTxId", transactionId)
+                .put("storeId", transactionId)
                 .put("environment", environment.value)
         )
 

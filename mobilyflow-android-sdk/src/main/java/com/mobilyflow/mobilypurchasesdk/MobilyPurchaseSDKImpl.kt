@@ -227,7 +227,7 @@ internal class MobilyPurchaseSDKImpl(
 
                 // Map transaction first
                 val transactionsToMap = MobilyPurchaseSDKHelper.getTransactionsToMap(
-                    loginResponse.platformOriginalTransactionIds,
+                    loginResponse.storeOriginalTransactionIds,
                     purchases
                 )
 
