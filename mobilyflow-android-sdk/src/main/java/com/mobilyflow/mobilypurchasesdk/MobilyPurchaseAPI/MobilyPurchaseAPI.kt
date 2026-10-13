@@ -447,7 +447,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class)
     fun getWebhookResult(purchaseToken: String, transactionId: String): MobilyWebhookResult {
-        val request = ApiRequest("POST", "/sdk/events/webhook-result/android")
+        val request = ApiRequest("POST", "/sdk/events/webhook-result/play-store")
 
         request.setData(
             JSONObject()
