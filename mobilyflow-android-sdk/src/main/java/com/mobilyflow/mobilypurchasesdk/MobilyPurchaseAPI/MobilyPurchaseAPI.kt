@@ -80,6 +80,7 @@ class MobilyPurchaseAPI(
             val data = JSONObject()
                 .put("externalRef", externalRef)
                 .put("environment", environment.value)
+                .put("store", "play-store")
                 .put("locale", this.locale)
 
             val currentRegion = this.getCurrentRegion()
@@ -122,7 +123,7 @@ class MobilyPurchaseAPI(
 
     @Throws(MobilyException::class)
     fun getMinimalProductForAndroidPurchase(sku: String): MinimalProductForAndroidPurchase {
-        val request = ApiRequest("GET", "/sdk/products/minimal-product-for-android-purchase/$sku")
+        val request = ApiRequest("GET", "/sdk/products/minimal-product-for-purchase/play-store/$sku")
 
         val response: ApiResponse?
         try {
@@ -291,7 +292,7 @@ class MobilyPurchaseAPI(
         val data = JSONObject()
             .put("locale", this.locale)
             .put("transactions", jsonTransactions)
-            .put("platform", "android")
+            .put("store", "play-store")
             .put("environment", environment.value)
 
         if (customerId != null) {
@@ -336,7 +337,7 @@ class MobilyPurchaseAPI(
                 .put("transactions", jsonTransactions)
 
             response = this.helper.request(
-                ApiRequest("POST", "/sdk/customer-mappings/android").setData(data)
+                ApiRequest("POST", "/sdk/customer-mappings/play-store").setData(data)
             )
         } catch (e: Exception) {
             throw MobilyException(MobilyException.Type.SERVER_UNAVAILABLE, e)
@@ -364,7 +365,7 @@ class MobilyPurchaseAPI(
             response = this.helper.request(
                 ApiRequest(
                     "POST",
-                    "/sdk/customer-transfer-ownerships/android"
+                    "/sdk/customer-transfer-ownerships/play-store"
                 ).setData(data)
             )
         } catch (e: Exception) {
@@ -420,7 +421,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class)
     fun forceWebhook(purchaseToken: String, orderId: String, productId: String) {
-        val request = ApiRequest("POST", "/sdk/platform-notifications/force-webhook/android")
+        val request = ApiRequest("POST", "/sdk/platform-notifications/force-webhook/play-store")
 
         request.setData(
             JSONObject()
