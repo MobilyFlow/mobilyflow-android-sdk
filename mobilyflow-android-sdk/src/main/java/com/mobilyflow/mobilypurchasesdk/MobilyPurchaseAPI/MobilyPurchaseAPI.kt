@@ -421,7 +421,7 @@ class MobilyPurchaseAPI(
      */
     @Throws(MobilyException::class)
     fun forceWebhook(purchaseToken: String, orderId: String, productId: String) {
-        val request = ApiRequest("POST", "/sdk/platform-notifications/force-webhook/play-store")
+        val request = ApiRequest("POST", "/sdk/store-notifications/force-webhook/play-store")
 
         request.setData(
             JSONObject()
