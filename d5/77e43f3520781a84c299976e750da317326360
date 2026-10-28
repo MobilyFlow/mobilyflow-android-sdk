@@ -1,0 +1,19 @@
+mobilyflow-android-sdk/src/main/java/com/mobilyflow/mobilypurchasesdk/MobilyPurchaseAPI/MobilyPurchaseAPI.kt
+  s_6b784d365304b0::t_13f33df24e1c63 424
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d577e43f3520781a84c299976e750da317326360",
+  "prompts": {},
+  "sessions": {
+    "s_6b784d365304b0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39ff642e-defa-47d8-bcf2-f13042b55696",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "LaGregance <gregoire.taja@gmail.com>"
+    }
+  }
+}
