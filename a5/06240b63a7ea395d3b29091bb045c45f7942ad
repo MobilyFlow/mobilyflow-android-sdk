@@ -1,0 +1,16 @@
+mobilyflow-android-sdk/build.gradle.kts
+  h_c12f6e934b9ef0 48
+mobilyflow-android-sdk/src/main/java/com/mobilyflow/mobilypurchasesdk/Version.kt
+  h_c12f6e934b9ef0 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a506240b63a7ea395d3b29091bb045c45f7942ad",
+  "prompts": {},
+  "humans": {
+    "h_c12f6e934b9ef0": {
+      "author": "LaGregance <gregoire.taja@gmail.com>"
+    }
+  }
+}
